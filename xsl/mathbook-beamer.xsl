@@ -89,7 +89,10 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   <xsl:text>\usepackage{ifxetex,ifluatex}&#xa;</xsl:text>
   <xsl:text>%% Raster graphics inclusion&#xa;</xsl:text>
   <xsl:text>\usepackage{graphicx}&#xa;</xsl:text>
+<<<<<<< HEAD
   <xsl:text>\usepackage{adjustbox}&#xa;</xsl:text>
+=======
+>>>>>>> first attempt
 
   <xsl:if test="$docinfo/latex-image-preamble">
       <xsl:text>%% Graphics Preamble Entries&#xa;</xsl:text>
