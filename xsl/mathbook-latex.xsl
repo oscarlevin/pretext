@@ -5573,8 +5573,8 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\begin{figure}&#xa;</xsl:text>
     <xsl:text>\centering&#xa;</xsl:text>
     <xsl:apply-templates select="*[not(self::caption)]"/>
-    <xsl:text>\end{figure}&#xa;</xsl:text>
     <xsl:apply-templates select="caption" />
+    <xsl:text>\end{figure}&#xa;</xsl:text>
 </xsl:template>
 
 <!-- Listings -->
