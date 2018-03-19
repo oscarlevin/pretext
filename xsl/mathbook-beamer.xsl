@@ -142,21 +142,21 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   <xsl:apply-templates select="*" mode="beamer-images" />
 </xsl:template>
 
-<!-- <xsl:template match="figure|sidebyside[image]" mode="beamer-images"> -->
-<xsl:template match="image" mode="beamer-images">
+<xsl:template match="figure|sidebyside[image]" mode="beamer-images">
+<!-- <xsl:template match="image" mode="beamer-images"> -->
   <xsl:text>\begin{frame}[plain]&#xa; &#xa;</xsl:text>
   <!-- <xsl:text>\resizebox{!}{0.9\textheight}{% &#xa;</xsl:text> -->
-  <xsl:text>\begin{adjustbox}{max totalsize={0.9\textwidth}{0.7\textheight},center}&#xa;</xsl:text>
+  <!-- <xsl:text>\begin{adjustbox}{max totalsize={0.9\textwidth}{0.7\textheight},center}&#xa;&#xa;</xsl:text> -->
   <xsl:apply-templates select="." />
-  <xsl:text>\end{adjustbox}&#xa;</xsl:text>
+  <!-- <xsl:text>&#xa;\end{adjustbox}&#xa;</xsl:text> -->
   <!-- <xsl:text>}&#xa;</xsl:text> -->
-  <xsl:text>\end{frame}&#xa; &#xa;</xsl:text>
+  <xsl:text>&#xa;\end{frame}&#xa; &#xa;</xsl:text>
 </xsl:template>
 
 
 <!-- Figures -->
 <!-- Standard LaTeX figure environment redefined, see preamble comments -->
-<xsl:template match="figure" mode="beamer-images">
+<!-- <xsl:template match="figure" mode="beamer-images">
     <xsl:if test="not(preceding-sibling::*[not(&SUBDIVISION-METADATA-FILTER;)])">
         <xsl:call-template name="leave-vertical-mode" />
     </xsl:if>
@@ -171,7 +171,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\end{figure}&#xa;</xsl:text>
     <xsl:text>\vfill&#xa;</xsl:text>
     <xsl:text>\end{frame}&#xa; &#xa;</xsl:text>
-</xsl:template>
+</xsl:template> -->
 
 <!-- With full source specified, default to PDF format -->
 <xsl:template match="image[@source]" >
