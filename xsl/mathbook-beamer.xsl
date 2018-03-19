@@ -142,7 +142,19 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   <xsl:apply-templates select="*" mode="beamer-images" />
 </xsl:template>
 
-<xsl:template match="figure|sidebyside[image]" mode="beamer-images">
+<xsl:template match="figure" mode="beamer-images">
+<!-- <xsl:template match="image" mode="beamer-images"> -->
+  <xsl:text>\begin{frame}[plain]&#xa; &#xa;</xsl:text>
+  <!-- <xsl:text>\resizebox{!}{0.9\textheight}{% &#xa;</xsl:text> -->
+  <xsl:text>\begin{adjustbox}{max totalsize={0.9\textwidth}{0.9\textheight},center}&#xa;&#xa;</xsl:text>
+  <xsl:apply-templates select="." />
+  <xsl:text>&#xa;\end{adjustbox}&#xa;</xsl:text>
+  <!-- <xsl:text>}&#xa;</xsl:text> -->
+  <xsl:text>&#xa;\end{frame}&#xa; &#xa;</xsl:text>
+</xsl:template>
+
+
+<xsl:template match="sidebyside[image]" mode="beamer-images">
 <!-- <xsl:template match="image" mode="beamer-images"> -->
   <xsl:text>\begin{frame}[plain]&#xa; &#xa;</xsl:text>
   <!-- <xsl:text>\resizebox{!}{0.9\textheight}{% &#xa;</xsl:text> -->
@@ -151,6 +163,48 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   <!-- <xsl:text>&#xa;\end{adjustbox}&#xa;</xsl:text> -->
   <!-- <xsl:text>}&#xa;</xsl:text> -->
   <xsl:text>&#xa;\end{frame}&#xa; &#xa;</xsl:text>
+</xsl:template>
+
+<!-- Hack the sidebyside panels to have acceptable max height -->
+<!-- generic "panel-panel" template          -->
+<!-- simply references the box made in setup -->
+<xsl:template match="*" mode="panel-panel">
+    <xsl:param name="width" />
+    <xsl:param name="valign" />
+    <xsl:if test="$sbsdebug">
+        <xsl:text>\fbox{</xsl:text>
+        <xsl:text>\hspace*{-0.5ex}x\hspace*{-0.5ex}</xsl:text>
+    </xsl:if>
+    <xsl:text>\begin{adjustbox}{max totalsize={0.9\textwidth}{0.9\textheight},center}\begin{minipage}[c][\panelmax]</xsl:text>
+    <!-- vertical alignment within minipage -->
+    <xsl:text>[</xsl:text>
+    <xsl:choose>
+        <xsl:when test="$valign = 'bottom'">
+            <xsl:text>b</xsl:text>
+        </xsl:when>
+        <!-- minipage anomalous, halfway is "c" -->
+        <xsl:when test="$valign = 'middle'">
+            <xsl:text>c</xsl:text>
+        </xsl:when>
+        <xsl:when test="$valign = 'top'">
+            <xsl:text>t</xsl:text>
+        </xsl:when>
+    </xsl:choose>
+    <xsl:text>]</xsl:text>
+    <xsl:text>{</xsl:text>
+    <xsl:value-of select="substring-before($width,'%') div 100" />
+    <xsl:text>\linewidth}</xsl:text>
+    <xsl:text>\usebox{\panelbox</xsl:text>
+    <xsl:apply-templates select="." mode="panel-id" />
+    <xsl:text>}</xsl:text>
+    <xsl:text>\end{minipage}\end{adjustbox}</xsl:text>
+    <xsl:if test="$sbsdebug">
+        <xsl:text>\hspace*{-0.5ex}x\hspace*{-0.5ex}</xsl:text>
+        <xsl:text>}</xsl:text>
+    </xsl:if>
+    <xsl:if test="following-sibling::*">
+        <xsl:text>&amp;&#xa;</xsl:text>
+    </xsl:if>
 </xsl:template>
 
 
