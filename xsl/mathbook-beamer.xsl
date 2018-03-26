@@ -1871,9 +1871,9 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- \null target text was unnecessary and visible (2015-12-12)   -->
 <!-- (See also modal templates for "xref-link" and "xref-number") -->
 <xsl:template match="p|paragraphs|blockquote|exercises//exercise|biblio|biblio/note|proof|exercisegroup|case|ol/li|dl/li|hint|answer|solution|contributor|colophon" mode="label">
-    <!-- <xsl:text>\hypertarget{</xsl:text>
+    <xsl:text>\hypertarget{</xsl:text>
     <xsl:apply-templates select="." mode="internal-id" />
-    <xsl:text>}{}</xsl:text> -->
+    <xsl:text>}{}</xsl:text>
 </xsl:template>
 
 
@@ -1883,9 +1883,9 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Calls to this template need come from where LaTeX likes -->
 <!-- a \label, generally someplace that can be numbered      -->
 <xsl:template match="*" mode="label">
-    <!-- <xsl:text>\label{</xsl:text>
+    <xsl:text>\label{</xsl:text>
     <xsl:apply-templates select="." mode="internal-id" />
-    <xsl:text>}</xsl:text> -->
+    <xsl:text>}</xsl:text>
 </xsl:template>
 
 <!-- Do not put index entries in there. -->
@@ -2021,6 +2021,14 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         </xsl:otherwise>
     </xsl:choose>
 </xsl:template>
+
+
+<xsl:template match="assemblage|theorem|objectives" mode="beamer">
+  <xsl:call-template name="start-slide" />
+  <xsl:apply-templates select="."/>
+  <xsl:call-template name="end-slide" />
+</xsl:template>
+
 
 
 <!-- Start and end of slides -->
