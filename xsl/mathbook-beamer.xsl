@@ -75,9 +75,14 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- This is where I need to split up files based on chunk level -->
 <!-- Also, probably change file names based on content? -->
 <xsl:template match="/">
+  <!-- Generate includable preamble -->
+  <exsl:document href="beamer-preamble.tex" method="text" >
+    <xsl:call-template name="beamer-preamble-full"/>
+  </exsl:document>
+  <!-- Generate main slides -->
   <exsl:document href="slides.tex" method="text" >
     <xsl:text>\documentclass{beamer}&#xa;&#xa;</xsl:text>
-    <xsl:call-template name="beamer-preamble" />
+    <xsl:call-template name="beamer-preamble-clean" />
     <xsl:text>\begin{document}&#xa;</xsl:text>
 <!-- Here the mode will be determined by the amount of content to include? -->
 <!-- Or do I kill off those things not included later?  That probably would be better -->
@@ -86,27 +91,53 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   </exsl:document>
 </xsl:template>
 
+<!-- Default behavior is to skip all elements unless defined below. -->
+<xsl:template match="*" mode="beamer">
+  <xsl:apply-templates select="*" mode="beamer" />
+</xsl:template>
+
+
+<xsl:template match="chapter" mode="beamer">
+  <xsl:text>\section*{</xsl:text>
+  <xsl:apply-templates select="." mode="long-name" />
+  <xsl:text>}&#xa;</xsl:text>
+  <xsl:apply-templates select="*" mode="beamer"/>
+</xsl:template>
 
 
 <!-- This was working at some point -->
-<xsl:template match="section">
+<xsl:template match="section" mode="beamer">
+  <xsl:text>\subsection*{</xsl:text>
+  <xsl:apply-templates select="." mode="long-name" />
+  <xsl:text>}&#xa;</xsl:text>
+  <xsl:apply-templates select="*" mode="beamer"/>
     <!-- <xsl:param name="content" /> -->
     <xsl:variable name="filename">
-      <!-- I need to fix this to include the section numbers -->
-        <xsl:apply-templates select="." mode="internal-id" />
+        <xsl:apply-templates select="." mode="long-name" />
         <text>.tex</text>
     </xsl:variable>
     <exsl:document href="{$filename}" method="text" >
       <xsl:text>\documentclass{beamer}&#xa;&#xa;</xsl:text>
-      <xsl:call-template name="beamer-preamble" />
-      <xsl:text>\begin{documnent}&#xa;</xsl:text>
-      <xsl:apply-templates />
+      <xsl:call-template name="beamer-preamble-clean" />
+      <xsl:text>\begin{document}&#xa;</xsl:text>
+      <xsl:text>\subsection*{</xsl:text>
+      <xsl:apply-templates select="." mode="long-name" />
+      <xsl:text>}&#xa;</xsl:text>
+      <xsl:apply-templates select="*" mode="beamer"/>
       <xsl:text>\end{document}&#xa;</xsl:text>
     </exsl:document>
 </xsl:template>
 
+<xsl:template match="subsection" mode="beamer">
+  <xsl:text>\subsubsection*{</xsl:text>
+  <xsl:apply-templates select="." mode="long-name" />
+  <xsl:text>}&#xa;</xsl:text>
+  <xsl:apply-templates select="*" mode="beamer"/>
+</xsl:template>
 
-
+<xsl:template name="beamer-preamble-clean">
+  <xsl:text>\input{beamer-preamble.tex}&#xa;</xsl:text>
+</xsl:template>
 
 <!-- Preamble template -->
 <!-- There is likely lots to fix here -->
@@ -116,7 +147,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!--    Removed newtheorems (included in beamer) -->
 <!--    Removed index code (we never have an index) -->
 <!-- It would be nice to either really clean this up or put it all in a new file -->
-<xsl:template name="beamer-preamble">
+<xsl:template name="beamer-preamble-full">
   <xsl:text>%% Preamble:&#xa;</xsl:text>
 
   <xsl:text>%% Custom Preamble Entries, early (use latex.preamble.early)&#xa;</xsl:text>
@@ -1526,9 +1557,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- ###### -->
 <!-- <xsl:template match="*" mode="beamer" \> -->
 
-<xsl:template match="*" mode="beamer">
-  <xsl:apply-templates select="*" mode="beamer" />
-</xsl:template>
+
 
 
 <xsl:template match="sidebyside[image]" mode="beamer">
@@ -2023,19 +2052,20 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 </xsl:template>
 
 
-<xsl:template match="assemblage|theorem|objectives" mode="beamer">
+<xsl:template match="&REMARK-LIKE;|&COMPUTATION-LIKE;|&EXAMPLE-LIKE;|&PROJECT-LIKE;|&DEFINITION-LIKE;|&THEOREM-LIKE;|&AXIOM-LIKE;" mode="beamer">
   <xsl:call-template name="start-slide" />
   <xsl:apply-templates select="."/>
   <xsl:call-template name="end-slide" />
 </xsl:template>
 
-
+<xsl:template match="solution">
+</xsl:template>
 
 <!-- Start and end of slides -->
 <!-- These will eventually get more, including comments -->
 <!--   which include section numbers to easily identify them -->
 <xsl:template name="start-slide">
-    <xsl:text>\begin{frame}[plain]&#xa; &#xa;</xsl:text>
+    <xsl:text>\begin{frame}[allowframebreaks, plain]&#xa; &#xa;</xsl:text>
 </xsl:template>
 
 <xsl:template name="end-slide">
