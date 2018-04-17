@@ -440,7 +440,8 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Source Analysis -->
 <!-- Some boolean variables ("b-*") for -->
 <!-- the presence of certain elements -->
-<xsl:variable name="b-has-jsxgraph" select="boolean($document-root//jsxgraph)" />
+<xsl:variable name="b-has-geogebra" select="boolean($document-root//interactive[@platform='geogebra'])" />
+<xsl:variable name="b-has-jsxgraph" select="boolean($document-root//interactive[@platform='jsxgraph'])" />
 
 <!-- Some groups of elements are counted distinct -->
 <!-- from other blocks.  A configuration element  -->
@@ -1792,6 +1793,9 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     </xsl:if>
 </xsl:template>
 
+<!-- If the substring is not contained, the first substring-after()   -->
+<!-- will return empty and entire template will return empty.  To     -->
+<!-- get the whole string, prepend $input with $substr prior to using -->
 <xsl:template name="substring-after-last">
     <xsl:param name="input"/>
     <xsl:param name="substr"/>
@@ -2158,14 +2162,21 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- File Extension -->
 <!-- Input: full filename                       -->
 <!-- Output: extension (no period), lowercase'd -->
+<!-- Note: appended query string is stripped    -->
 <xsl:template name="file-extension">
     <xsl:param name="filename" />
+    <!-- Add a question mark, then grab leading substring -->
+    <!-- This will fail if "?" is encoded                 -->
+    <xsl:variable name="no-query-string" select="substring-before(concat($filename, '?'), '?')" />
+    <!-- get extension after last period   -->
+    <!-- will return empty if no extension -->
     <xsl:variable name="extension">
         <xsl:call-template name="substring-after-last">
-            <xsl:with-param name="input" select="$filename" />
+            <xsl:with-param name="input" select="$no-query-string" />
             <xsl:with-param name="substr" select="'.'" />
         </xsl:call-template>
     </xsl:variable>
+    <!-- to lowercase -->
     <xsl:value-of select="translate($extension, &UPPERCASE;, &LOWERCASE;)" />
 </xsl:template>
 
@@ -2785,11 +2796,13 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 <!-- Text generators (eg <today />) may fool this, but applying       -->
 <!-- templates first will introduce LaTeX macros that will fool this  -->
 <!-- To debug: add messages here, then call via this default template -->
+<!-- TODO: maybe warn about "bad" ending-punctuation, like a colon? -->
 <xsl:template match="title|subtitle" mode="has-punctuation">
+    <xsl:variable name="title-ending-punctuation" select="'?!'" />
     <xsl:variable name="all-text" select="normalize-space(string(.))" />
     <xsl:variable name="last-char" select="substring($all-text, string-length($all-text))" />
     <!-- title should not be empty, but if so, the contains() alone is true -->
-    <xsl:value-of select="$last-char and contains('?!', $last-char)" />
+    <xsl:value-of select="$last-char and contains($title-ending-punctuation, $last-char)" />
 </xsl:template>
 
 
@@ -2830,32 +2843,40 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 <!-- Entirely similar for jsxgraph and video but we do                    -->
 <!-- not consult default *image* width in docinfo                         -->
 
-<xsl:template match="image[not(ancestor::sidebyside)]|video[not(ancestor::sidebyside)]|jsxgraph[not(ancestor::sidebyside)]" mode="get-width-percentage">
+<xsl:template match="image[not(ancestor::sidebyside)]|video[not(ancestor::sidebyside)]|jsxgraph[not(ancestor::sidebyside)]|interactive[not(ancestor::sidebyside)]|slate[not(ancestor::sidebyside)]" mode="get-width-percentage">
+    <!-- find it first -->
+    <xsl:variable name="raw-width">
+        <xsl:choose>
+            <!-- right on the element! -->
+            <xsl:when test="@width">
+                <xsl:value-of select="@width" />
+            </xsl:when>
+            <!-- not on an image, but doc-wide default exists -->
+            <xsl:when test="self::image and $docinfo/defaults/image-width">
+                <xsl:value-of select="$docinfo/defaults/image-width" />
+            </xsl:when>
+            <!-- naked slate, look to enclosing interactive -->
+            <xsl:when test="self::slate">
+                <xsl:apply-templates select="parent::interactive" mode="get-width-percentage" />
+            </xsl:when>
+            <!-- what to do? Author will figure it out if too extreme -->
+            <xsl:otherwise>
+                <xsl:text>100%</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:variable>
+    <!-- now sanitize it -->
+    <xsl:variable name="normalized-width" select="normalize-space($raw-width)" />
     <xsl:choose>
-         <!-- check for @width on the image itself -->
-         <!-- a good place to check author input   -->
-        <xsl:when test="@width">
-            <xsl:variable name="normalized-width" select="normalize-space(@width)" />
-            <xsl:choose>
-                <xsl:when test="not(substring($normalized-width, string-length($normalized-width)) = '%')">
-                    <xsl:message>MBX:ERROR:   a "width" attribute should be given as a percentage (such as "40%", not as "<xsl:value-of select="$normalized-width" />"</xsl:message>
-                    <xsl:apply-templates select="." mode="location-report" />
-                    <!-- replace by 100% -->
-                    <xsl:text>100%</xsl:text>
-                </xsl:when>
-                <!-- test for stray spaces? -->
-                <xsl:otherwise>
-                    <xsl:value-of select="$normalized-width" />
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:when>
-        <!-- perhaps an author-specific default width for images -->
-        <xsl:when test="self::image and $docinfo/defaults/image-width">
-            <xsl:value-of select="normalize-space($docinfo/defaults/image-width)" />
-        </xsl:when>
-        <!-- what else to do? Author will figure it out if too extreme -->
-        <xsl:otherwise>
+        <xsl:when test="not(substring($normalized-width, string-length($normalized-width)) = '%')">
+            <xsl:message>MBX:ERROR:   a "width" attribute should be given as a percentage (such as "40%", not as "<xsl:value-of select="$normalized-width" />, using 100% instead"</xsl:message>
+            <xsl:apply-templates select="." mode="location-report" />
+            <!-- replace by 100% -->
             <xsl:text>100%</xsl:text>
+        </xsl:when>
+        <!-- test for stray interior spaces here? -->
+        <xsl:otherwise>
+            <xsl:value-of select="$normalized-width" />
         </xsl:otherwise>
     </xsl:choose>
 </xsl:template>
@@ -2866,7 +2887,7 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 <!-- Widths from sidebyside layouts have been error-checked as input    -->
 
 <!-- occurs in a figure, not contained in a sidebyside -->
-<xsl:template match="image[ancestor::sidebyside]|video[ancestor::sidebyside]|jsxgraph[ancestor::sidebyside]" mode="get-width-percentage">
+<xsl:template match="image[ancestor::sidebyside]|video[ancestor::sidebyside]|jsxgraph[ancestor::sidebyside]|interactive[ancestor::sidebyside]|slate[ancestor::sidebyside]" mode="get-width-percentage">
     <!-- in a side-by-side, get layout, locate in layout -->
     <!-- and get width.  The layout-parameters template  -->
     <!-- will analyze an enclosing sbsgroup              -->
@@ -2892,7 +2913,7 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 <!-- Input:  "width:height", or decimal width/height -->
 <!-- Return: real number as fraction width/height    -->
 <!-- Totally blank means nothing could be determined -->
-<xsl:template match="jsxgraph|video" mode="get-aspect-ratio">
+<xsl:template match="slate|interactive|jsxgraph|video" mode="get-aspect-ratio">
     <xsl:param name="default-aspect" select="''" />
 
     <!-- look to element first, then to supplied default          -->
@@ -2929,6 +2950,59 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
         </xsl:otherwise>
     </xsl:choose>
 </xsl:template>
+
+<!-- This is cribbed from the CSS "max-width"-->
+<!-- Design width, measured in pixels        -->
+<!-- NB: the exact same value, for similar,  -->
+<!-- but not identical, reasons is used in   -->
+<!-- the formation of WeBWorK problems       -->
+<xsl:variable name="design-width-pixels" select="'600'" />
+
+
+<!-- Pixels are an HTML thing, but we may need these numbers -->
+<!-- elsewhere, and these are are pure text templates        -->
+<xsl:template match="slate|video|interactive" mode="get-width-pixels">
+    <xsl:variable name="width-percent">
+        <xsl:apply-templates select="." mode="get-width-percentage" />
+    </xsl:variable>
+    <xsl:variable name="width-fraction">
+        <xsl:value-of select="substring-before($width-percent,'%') div 100" />
+    </xsl:variable>
+    <xsl:value-of select="$design-width-pixels * $width-fraction" />
+</xsl:template>
+
+<!-- Square by default, when asked.  Can override -->
+<xsl:template match="slate|video|interactive" mode="get-height-pixels">
+    <xsl:param name="default-aspect" select="'1:1'" />
+
+    <xsl:variable name="width-percent">
+        <xsl:apply-templates select="." mode="get-width-percentage" />
+    </xsl:variable>
+    <xsl:variable name="width-fraction">
+        <xsl:value-of select="substring-before($width-percent,'%') div 100" />
+    </xsl:variable>
+    <xsl:variable name="aspect-ratio">
+        <xsl:apply-templates select="." mode="get-aspect-ratio">
+            <xsl:with-param name="default-aspect" select="$default-aspect" />
+        </xsl:apply-templates>
+    </xsl:variable>
+    <xsl:value-of select="$design-width-pixels * $width-fraction div $aspect-ratio" />
+</xsl:template>
+
+<!-- The HTML conversion generates "standalone" pages for videos   -->
+<!-- and other interactives.  Then the LaTeX conversion will make  -->
+<!-- links to these pages (eg, via QR codes).  And we might use    -->
+<!-- these pages as the basis for scraping preview images.  So we  -->
+<!-- place a template here to achieve consistency across uses.     -->
+<xsl:template match="video|interactive" mode="standalone-filename">
+    <xsl:apply-templates select="." mode="internal-id" />
+    <xsl:text>.html</xsl:text>
+</xsl:template>
+<xsl:template match="*" mode="standalone-filename">
+    <xsl:apply-templates select="." mode="internal-id" />
+    <xsl:text>-ERROR-no-standalone-filename.html</xsl:text>
+</xsl:template>
+
 
 <!-- ################ -->
 <!-- Names of Objects -->
@@ -3049,6 +3123,18 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
             <xsl:number level="any" />
         </xsl:otherwise>
     </xsl:choose>
+</xsl:template>
+
+<!-- We manufacture Javascript variables sometimes using            -->
+<!-- this id to keep them unique, but a dash (encouraged in PTX)    -->
+<!-- is banned in Javascript, so we make a "no-only" version,     -->
+<!-- by replacing a hyphen by a double-underscore.                  -->
+<!-- NB: This runs some non-zero probability of breaking uniqueness -->
+<xsl:template match="*" mode="internal-id-no-dash">
+    <xsl:variable name="the-id">
+        <xsl:apply-templates select="." mode="internal-id" />
+    </xsl:variable>
+    <xsl:value-of select="str:replace($the-id, '-', '__')" />
 </xsl:template>
 
 <!--            -->
@@ -3669,8 +3755,8 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 
 <!-- Serial Numbers: List Items -->
 
-<!-- First, the number of a list item within its own list -->
-<!-- This trades on the MBX format codes being identical to the XSLT codes -->
+<!-- First, the number of a list item within its own ordered list.  This -->
+<!-- trades on the MBX format codes being identical to the XSLT codes.   -->
 <xsl:template match="ol/li" mode="item-number">
     <xsl:variable name="code">
         <xsl:apply-templates select=".." mode="format-code" />
@@ -3678,20 +3764,21 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
     <xsl:number format="{$code}" />
 </xsl:template>
 
-<!-- Second, the serial number computed recursively             -->
-<!-- We first check if the list is inside a named list and      -->
-<!-- prefix with that number, using a colon to help distinguish -->
-<xsl:template match="li" mode="serial-number">
-    <xsl:if test="not(ancestor::li) and ancestor::list">
-        <xsl:apply-templates select="ancestor::list" mode="number" />
-        <xsl:text>:</xsl:text>
-    </xsl:if>
+<!-- Second, the serial number computed recursively.  The       -->
+<!-- entire hierarchy should be ordered lists, since otherwise, -->
+<!-- the template just below will apply instead.                -->
+<xsl:template match="ol/li" mode="serial-number">
     <xsl:if test="ancestor::li">
         <xsl:apply-templates select="ancestor::li[1]" mode="serial-number" />
         <xsl:text>.</xsl:text>
     </xsl:if>
     <xsl:apply-templates select="." mode="item-number" />
 </xsl:template>
+
+<!-- If any ancestor of a list item is not ordered, this     -->
+<!-- template should match first, and the serial number      -->
+<!-- will be empty, the signal that an object has no number. -->
+<xsl:template match="ul//li|dl//li" mode="serial-number" />
 
 
 <!-- Serial Numbers: Exercise Groups -->
@@ -3751,9 +3838,11 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 <!-- Poems go by their titles, not numbers -->
 <xsl:template match="poem" mode="serial-number" />
 
-<!-- If a list item has any ancestor that is not  -->
-<!-- an ordered list, then it gets no number      -->
-<xsl:template match="ul//li|dl//li" mode="serial-number" />
+<!-- List items, subordinate to an unordered list, or a description  -->
+<!-- list, will have numbers that are especically ambiguous, perhaps -->
+<!-- even very clsoe within a multi-level list. They are unnumbered  -->
+<!-- in the vicinity of computing serial numbers of list items in    -->
+<!-- ordered lists.                                                  -->
 
 <!-- References in the backmatter are the "master" version -->
 <!-- The subdivision gets no number and the references     -->
@@ -4054,21 +4143,22 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 </xsl:template>
 
 <!-- Structure Numbers: Lists -->
-<!-- Lists themselves are not numbered, though     -->
-<!-- some individual list items are, so we just    -->
-<!-- provide an empty string to prefix list items. -->
-<!-- In effect, references are "local"             -->
-<xsl:template match="ol/li" mode="structure-number">
-    <xsl:text />
+<!-- Lists occur in paragraphs (anonymously), in "list"      -->
+<!-- blocks (numbered), and within exercises (numbered).     -->
+<!-- Typically we are interested in list items (only),       -->
+<!-- since that is where there is content.  And then we      -->
+<!-- are only interested in the list items within an ordered -->
+<!-- list.  We control for items under unordered lists or    -->
+<!-- description lists elsewhere by providing empty numbers. -->
+<!-- NB: the order of these templates may matter             -->
+<xsl:template match="li" mode="structure-number" />
+
+<xsl:template match="list//li" mode="structure-number">
+    <xsl:apply-templates select="ancestor::list" mode="number" />
 </xsl:template>
-<!-- An exception is lists inside of exercises, so we     -->
-<!-- use the number of the exercise itself as a prefix    -->
-<!-- to the number within the list.  We provide the       -->
-<!-- separator here since the list item number is allowed -->
-<!-- to be local and has no leading symbol                -->
-<!-- NB: these templates have equal priority, so order matters -->
-<xsl:template match="exercise//ol/li" mode="structure-number">
-    <xsl:apply-templates select="ancestor::exercise[1]" mode="number" />
+
+<xsl:template match="exercise//li" mode="structure-number">
+    <xsl:apply-templates select="ancestor::exercise" mode="number" />
 </xsl:template>
 
 <!-- Structure Numbers: Tasks (in projects) -->
@@ -4096,10 +4186,11 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 <!-- Full Numbers -->
 <!--              -->
 
-<!-- Now trivial, container structure plus serial -->
-<!-- We condition on empty serial number in       -->
-<!-- order to create empty full numbers           -->
-<!-- This is where we add separator, a period     -->
+<!-- Now trivial, the container structure plus the serial.  -->
+<!-- We condition on empty serial number in order to create -->
+<!-- empty full numbers.  This is where we add separator,   -->
+<!-- normally a period, but for a list item within a named  -->
+<!-- list, we use a colon (a double period?).               -->
 <xsl:template match="*" mode="number">
     <xsl:variable name="serial">
         <xsl:apply-templates select="." mode="serial-number" />
@@ -4112,7 +4203,14 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
             </xsl:variable>
             <xsl:if test="not($structure='')">
                 <xsl:value-of select="$structure" />
-                <xsl:text>.</xsl:text>
+                <xsl:choose>
+                    <xsl:when test="self::li and ancestor::list">
+                        <xsl:text>:</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>.</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:if>
             <xsl:value-of select="$serial" />
         </xsl:otherwise>
@@ -6124,6 +6222,12 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:when>
+        <!-- special case for phrase options and list items of anonymous lists        -->
+        <!-- catch this first and provide no text at all (could provide busted text?) -->
+        <!-- anonymous lists live in "p", but this is an unreliable indication        -->
+        <xsl:when test="($text-style = 'phrase-global' or $text-style = 'phrase-hybrid') and ($target/self::li and not($target/ancestor::list or $target/ancestor::objectives or $target/ancestor::exercise))">
+            <xsl:message>MBX:WARNING: a cross-reference to a list item of an anonymous list ("<xsl:apply-templates select="$target" mode="serial-number" />") with 'phrase-global' and 'phrase-hybrid' styles for the xref text will yield no text at all, and possibly create unpredictable results in output</xsl:message>
+        </xsl:when>
         <xsl:when test="$text-style = 'phrase-global' or $text-style = 'phrase-hybrid'">
             <!-- no content override in this case -->
             <!-- maybe we can relax this somehow? -->
@@ -6280,6 +6384,8 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
             </xsl:variable>
             <!-- now know local/global, write trailing portion of text -->
             <!-- here based on the style and the global requirement    -->
+            <!-- NB: the "choose" is mirrored in the more specific template, next -->
+            <!-- Question:  why does "phrase-global" come through here?           -->
             <xsl:choose>
                 <!-- phrase styles may need remainder of phrase -->
                 <xsl:when test="(($text-style='phrase-global') or ($text-style='phrase-hybrid')) and ($requires-global = 'true')">
@@ -6333,6 +6439,55 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
         <!-- impossible to get here -->
     </xsl:choose>
 </xsl:template>
+
+<!-- A hybrid scheme for a list item is only for list items         -->
+<!-- of an ordered list, we drop the list number (structure number) -->
+<!-- when xref and target are both inside the same list.            -->
+<!-- No need to recurse.  $target is context, allowing a match.     -->
+
+<xsl:template match="list//li" mode="smart-xref-text">
+    <xsl:param name="text-style" />
+    <xsl:param name="xref" />
+    <xsl:param name="target" />
+
+    <xsl:variable name="targets-list" select="$target/ancestor::list" />
+    <xsl:variable name="xrefs-list"   select="$xref/ancestor::list" />
+
+    <!-- To be a local xref, the "xref" must live in some "list", and -->
+    <!-- it must be the same "list" as the "li" (which is in a list   -->
+    <!-- due to the match).  We use the negation to keep the logic    -->
+    <!-- the same as in the more general template, above              -->
+    <xsl:variable name="requires-global" select="not((count($xrefs-list) = 1) and (count($targets-list|$xrefs-list) = 1))" />
+
+    <!-- This "choose" largely matches above, and so maybe  -->
+    <!-- could be consolidated into a parameterized template -->
+    <xsl:choose>
+        <!-- phrase styles may need remainder of phrase -->
+        <xsl:when test="(($text-style='phrase-global') or ($text-style='phrase-hybrid')) and ($requires-global = 'true')">
+            <!-- connector, internationalize -->
+            <xsl:text> of </xsl:text>
+            <xsl:apply-templates select="$targets-list" mode="type-name" />
+            <xsl:apply-templates select="." mode="nbsp" />
+            <xsl:apply-templates select="$targets-list" mode="xref-number">
+                <xsl:with-param name="xref" select="." />
+            </xsl:apply-templates>
+        </xsl:when>
+        <!-- hybrid styles need number for remainder -->
+        <xsl:when test="($text-style='hybrid') or ($text-style='type-hybrid')">
+            <xsl:choose>
+                <xsl:when test="$requires-global = 'true'">
+                    <xsl:apply-templates select="$target" mode="xref-number">
+                        <xsl:with-param name="xref" select="." />
+                    </xsl:apply-templates>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="$target" mode="serial-number" />
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:when>
+    </xsl:choose>
+</xsl:template>
+
 
 <!-- This is an abstract template, to accomodate -->
 <!-- hard-coded HTML numbers and for LaTeX the   -->
@@ -6407,6 +6562,38 @@ Neither: A structural node that is simply a (visual) subdivision of a chunk
 <xsl:template match="pretext">
     <xsl:text>PreTeXt</xsl:text>
 </xsl:template>
+
+<!-- We place the 13 Latin abbreviations here since they  -->
+<!-- are so simple, however, we override them all in the  -->
+<!-- LaTeX conversion, since most need special treatment  -->
+<!-- of the periods. -->
+
+<!-- anno Domini, in the year of the Lord -->
+<xsl:template match="ad">    <xsl:text>AD</xsl:text></xsl:template>
+<!-- ante meridiem, before midday -->
+<xsl:template match="am">    <xsl:text>A.M.</xsl:text></xsl:template>
+<!-- before Christ? -->
+<xsl:template match="bc">    <xsl:text>BC</xsl:text></xsl:template>
+<!-- circa, about -->
+<xsl:template match="circa"> <xsl:text>c.</xsl:text></xsl:template>
+<!-- exempli gratia, for example -->
+<xsl:template match="eg">    <xsl:text>e.g.</xsl:text></xsl:template>
+<!-- et alia, and others -->
+<xsl:template match="etal">  <xsl:text>et al.</xsl:text></xsl:template>
+<!-- et caetera, and the rest -->
+<xsl:template match="etc">   <xsl:text>etc.</xsl:text></xsl:template>
+<!-- id est, in other words -->
+<xsl:template match="ie">    <xsl:text>i.e.</xsl:text></xsl:template>
+<!-- nota bene, note well -->
+<xsl:template match="nb">    <xsl:text>N.B.</xsl:text></xsl:template>
+<!-- post meridiem, after midday -->
+<xsl:template match="pm">    <xsl:text>P.M.</xsl:text></xsl:template>
+<!-- post scriptum, after what has been written -->
+<xsl:template match="ps">    <xsl:text>P.S.</xsl:text></xsl:template>
+<!-- versus, against -->
+<xsl:template match="vs">    <xsl:text>vs.</xsl:text></xsl:template>
+<!-- videlicet, namely -->
+<xsl:template match="viz">   <xsl:text>viz.</xsl:text></xsl:template>
 
 <!-- ################## -->
 <!-- Special Characters -->
@@ -6654,77 +6841,128 @@ http://andrewmccarthy.ie/2014/11/06/swung-dash-in-latex/
 <!-- as a polymorphic technique for the actual characters    -->
 <!-- LaTeX quotes are odd, so we override "q" and "sq" there -->
 
+<!-- NB: An RTF has a "root" node.  Then the elements      -->
+<!-- manufactured for it occur as children.  If the        -->
+<!-- "apply-templates" fails to have the "/*" at the end   -->
+<!-- of the "select", then the main entry template will be -->
+<!-- called to do any housekeeping it might do.            -->
+<!-- This was a really tough bug to track down.            -->
+
 <xsl:template match="q">
     <xsl:variable name="lq-rtf">
         <lq />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($lq-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($lq-rtf)/*" />
     <xsl:apply-templates />
     <xsl:variable name="rq-rtf">
         <rq />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($rq-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($rq-rtf)/*" />
 </xsl:template>
 
 <xsl:template match="sq">
     <xsl:variable name="lsq-rtf">
         <lsq />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($lsq-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($lsq-rtf)/*" />
     <xsl:apply-templates />
     <xsl:variable name="rsq-rtf">
         <rsq />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($rsq-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($rsq-rtf)/*" />
 </xsl:template>
 
 <xsl:template match="braces">
     <xsl:variable name="lbrace-rtf">
         <lbrace />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($lbrace-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($lbrace-rtf)/*" />
     <xsl:apply-templates />
     <xsl:variable name="rbrace-rtf">
         <rbrace />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($rbrace-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($rbrace-rtf)/*" />
 </xsl:template>
 
 <xsl:template match="brackets">
     <xsl:variable name="lbracket-rtf">
         <lbracket />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($lbracket-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($lbracket-rtf)/*" />
     <xsl:apply-templates />
     <xsl:variable name="rbracket-rtf">
         <rbracket />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($rbracket-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($rbracket-rtf)/*" />
 </xsl:template>
 
 <xsl:template match="dblbrackets">
     <xsl:variable name="ldblbracket-rtf">
         <ldblbracket />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($ldblbracket-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($ldblbracket-rtf)/*" />
     <xsl:apply-templates />
     <xsl:variable name="rdblbracket-rtf">
         <rdblbracket />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($rdblbracket-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($rdblbracket-rtf)/*" />
 </xsl:template>
 
 <xsl:template match="angles">
     <xsl:variable name="langle-rtf">
         <langle />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($langle-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($langle-rtf)/*" />
     <xsl:apply-templates />
     <xsl:variable name="rangle-rtf">
         <rangle />
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($rangle-rtf)" />
+    <xsl:apply-templates select="exsl:node-set($rangle-rtf)/*" />
 </xsl:template>
+
+<!-- ########## -->
+<!-- XML Syntax -->
+<!-- ########## -->
+
+<!-- So we can write knowledgeably about XML in documentation -->
+<!-- NB: we can use RTFs to keep this in -common since the    -->
+<!-- content of each element is so simple                     -->
+
+<!-- A tag, with angle brackets and monospace font -->
+<xsl:template match="tag">
+    <xsl:variable name="the-element">
+        <c>
+            <xsl:text>&lt;</xsl:text>
+            <xsl:apply-templates />
+            <xsl:text>&gt;</xsl:text>
+        </c>
+    </xsl:variable>
+    <xsl:apply-templates select="exsl:node-set($the-element)" />
+</xsl:template>
+
+<!-- An empty tag, with angle brackets and monospace font -->
+<xsl:template match="tage">
+    <xsl:variable name="the-element">
+        <c>
+            <xsl:text>&lt;</xsl:text>
+            <xsl:apply-templates />
+            <xsl:text> /&gt;</xsl:text>
+        </c>
+    </xsl:variable>
+    <xsl:apply-templates select="exsl:node-set($the-element)" />
+</xsl:template>
+
+<!-- An attribute, with @ and monospace font -->
+<xsl:template match="attr">
+    <xsl:variable name="the-attribute">
+        <c>
+            <xsl:text>@</xsl:text>
+            <xsl:apply-templates />
+        </c>
+    </xsl:variable>
+    <xsl:apply-templates select="exsl:node-set($the-attribute)" />
+</xsl:template>
+
 
 <!-- ############ -->
 <!-- Conveniences -->
@@ -7363,6 +7601,13 @@ http://andrewmccarthy.ie/2014/11/06/swung-dash-in-latex/
         <xsl:with-param name="occurences" select="$document-root//booktitle" />
         <xsl:with-param name="date-string" select="'2018-02-05'" />
         <xsl:with-param name="message" select="'the &quot;booktitle&quot; element has been replaced by the functionally equivalent &quot;pubtitle&quot;'" />
+    </xsl:call-template>
+    <!--  -->
+    <!-- 2018-04-06  jsxgraph absorbed into interactive -->
+    <xsl:call-template name="deprecation-message">
+        <xsl:with-param name="occurences" select="$document-root//jsxgraph" />
+        <xsl:with-param name="date-string" select="'2018-04-06'" />
+        <xsl:with-param name="message" select="'the &quot;jsxgraph&quot; element has been deprecated, but remains functional, rework with the &quot;interactive&quot; element'" />
     </xsl:call-template>
 </xsl:template>
 

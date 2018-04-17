@@ -365,6 +365,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\usepackage{tcolorbox}&#xa;</xsl:text>
     <xsl:text>\tcbuselibrary{skins}&#xa;</xsl:text>
     <xsl:text>\tcbuselibrary{breakable}&#xa;</xsl:text>
+    <xsl:text>\tcbuselibrary{raster}&#xa;</xsl:text>
     <xsl:text>%% Hyperref should be here, but likes to be loaded late&#xa;</xsl:text>
     <xsl:text>%%&#xa;</xsl:text>
     <xsl:text>%% Inline math delimiters, \(, \), need to be robust&#xa;</xsl:text>
@@ -889,7 +890,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:text>\newtcolorbox{assemblage}[1][]&#xa;</xsl:text>
         <xsl:text>  {breakable, skin=enhanced, arc=2ex, colback=blue!5, colframe=blue!75!black,&#xa;</xsl:text>
         <xsl:text>   colbacktitle=blue!20, coltitle=black, boxed title style={sharp corners, frame hidden},&#xa;</xsl:text>
-        <xsl:text>   fonttitle=\bfseries, attach boxed title to top left={xshift=4mm,yshift=-3mm}, top=3mm, title=#1}&#xa;</xsl:text>
+        <xsl:text>   fonttitle=\bfseries, attach boxed title to top left={xshift=4mm,yshift=-3mm}, top=3mm, title={#1}}&#xa;</xsl:text>
         <xsl:text>%% end: assemblage&#xa;</xsl:text>
     </xsl:if>
     <!-- Following chould be duplicated as three environments, perhaps with  \tcbset{}   -->
@@ -900,7 +901,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:text>\newtcolorbox{aside}[1]&#xa;</xsl:text>
         <xsl:text>  {breakable, skin=enhanced, sharp corners, colback=blue!3, colframe=blue!50!black,&#xa;</xsl:text>
         <xsl:text>   add to width=-1ex, shadow={1ex}{-1ex}{0ex}{black!50!white},&#xa;</xsl:text>
-        <xsl:text>   coltitle=black, fonttitle=\bfseries, title=#1, detach title, before upper={\tcbtitle\ \ }}&#xa;</xsl:text>
+        <xsl:text>   coltitle=black, fonttitle=\bfseries, title={#1}, detach title, before upper={\tcbtitle\ \ }}&#xa;</xsl:text>
     </xsl:if>
     <xsl:if test="//objectives">
         <xsl:text>%% objectives: early in a subdivision, introduction/list/conclusion&#xa;</xsl:text>
@@ -1232,6 +1233,50 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         </xsl:call-template>
         <xsl:text>}\makeatother&#xa;</xsl:text>
     </xsl:if>
+    <!-- Interactives -->
+    <xsl:if test="$document-root//video|$document-root//interactive">
+        <xsl:text>%% QR Code Support&#xa;</xsl:text>
+        <xsl:text>%% Videos and other interactives&#xa;</xsl:text>
+        <xsl:text>\usepackage{qrcode}&#xa;</xsl:text>
+        <xsl:text>\newlength{\qrsize}&#xa;</xsl:text>
+        <xsl:text>\newlength{\previewwidth}&#xa;</xsl:text>
+        <xsl:text>%% tcolorbox styles for interactive previews&#xa;</xsl:text>
+        <xsl:text>%% changing size= and/or colback can aid in debugging&#xa;</xsl:text>
+        <xsl:text>\tcbset{ previewstyle/.style={size=minimal, halign=center, colback=white} }&#xa;</xsl:text>
+        <xsl:text>\tcbset{ qrstyle/.style={hbox, size=minimal, colback=white} }&#xa;</xsl:text>
+        <xsl:text>\tcbset{ captionstyle/.style={width=\linewidth, size=minimal, left=1em, colback=white} }&#xa;</xsl:text>
+        <!-- Page: https://commons.wikimedia.org/wiki/File:YouTube_Play_Button.svg             -->
+        <!-- File: https://upload.wikimedia.org/wikipedia/commons/d/d1/YouTube_Play_Button.svg -->
+        <!-- License text:  This image only consists of simple geometric shapes or text.       -->
+        <!-- It does not meet the threshold of originality needed for copyright protection,    -->
+        <!-- and is therefore in the public domain.                                            -->
+        <!-- Converted from HTML's SVG into tikZ code via  github.com/kjellmf/svg2tikz.git     -->
+        <xsl:text>%% Generic red play button (from SVG)&#xa;</xsl:text>
+        <xsl:text>\definecolor{playred}{RGB}{230,33,23}&#xa;</xsl:text>
+        <xsl:text>\newcommand{\genericpreview}{
+        \begin{tikzpicture}[y=0.80pt, x=0.80pt, yscale=-1.000000, xscale=1.000000, inner sep=0pt, outer sep=0pt]
+        \path[fill=playred] (94.9800,28.8400) .. controls (94.9800,28.8400) and
+        (94.0400,22.2400) .. (91.1700,19.3400) .. controls (87.5300,15.5300) and
+        (83.4500,15.5100) .. (81.5800,15.2900) .. controls (68.1800,14.3200) and
+        (48.0600,14.4400) .. (48.0600,14.4400) .. controls (48.0600,14.4400) and
+        (27.9400,14.3200) .. (14.5400,15.2900) .. controls (12.6700,15.5100) and
+        (8.5900,15.5300) .. (4.9500,19.3400) .. controls (2.0800,22.2400) and
+        (1.1400,28.8400) .. (1.1400,28.8400) .. controls (1.1400,28.8400) and
+        (0.1800,36.5800) .. (0.0000,44.3300) -- (0.0000,51.5900) .. controls
+        (0.1800,59.3400) and (1.1400,67.0800) .. (1.1400,67.0800) .. controls
+        (1.1400,67.0800) and (2.0700,73.6800) .. (4.9500,76.5800) .. controls
+        (8.5900,80.3900) and (13.3800,80.2700) .. (15.5100,80.6700) .. controls
+        (23.0400,81.3900) and (47.2100,81.5600) .. (48.0500,81.5700) .. controls
+        (48.0600,81.5700) and (68.1900,81.6000) .. (81.5900,80.6300) .. controls
+        (83.4600,80.4100) and (87.5400,80.3900) .. (91.1800,76.5800) .. controls
+        (94.0500,73.6800) and (94.9900,67.0800) .. (94.9900,67.0800) .. controls
+        (94.9900,67.0800) and (95.9500,59.3300) .. (96.0100,51.5900) --
+        (96.0100,44.3300) .. controls (95.9400,36.5800) and (94.9800,28.8400) ..
+        (94.9800,28.8400) -- cycle(38.2800,61.4100) -- (38.2800,34.4100) --
+        (64.0200,47.9100) -- (38.2800,61.4100) -- cycle;
+        \end{tikzpicture}
+        }&#xa;</xsl:text>
+    </xsl:if>
     <!-- Poetry -->
     <xsl:if test="//poem">
         <xsl:text>%% Poetry Support&#xa;</xsl:text>
@@ -1248,7 +1293,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:text>\newcommand{\poemlineright}[1]{{\raggedleft{#1}\par}\vspace{-\parskip}}&#xa;</xsl:text>
     </xsl:if>
     <!-- Music -->
-    <xsl:if test="//n or //scaledeg or //chord">
+    <xsl:if test="$document-root//flat | $document-root//doubleflat | $document-root//sharp | $document-root//doublesharp | $document-root//natural | $document-root//n | $document-root//scaledeg | $document-root//chord">
         <xsl:text>%% Musical Symbol Support&#xa;</xsl:text>
         <xsl:text>\ifthenelse{\boolean{xetex}}{&#xa;</xsl:text>
         <xsl:text>%% begin: xelatex-specific configuration&#xa;</xsl:text>
@@ -4397,79 +4442,239 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:apply-templates />
 </xsl:template>
 
-<!-- Hosted Video -->
-<!-- not implemented, perhaps we'll use <static> -->
-<xsl:template match="video[@source]">
-    <xsl:text>[video]</xsl:text>
-</xsl:template>
+<!-- ###################################### -->
+<!-- Static Versions of Interactive Content -->
+<!-- ###################################### -->
 
-<!-- YouTube Video -->
-<!-- Assuming thumbnails have been scraped with the    -->
-<!-- mbx script, we make a short static display, using -->
-<!-- a title of an enclosing figure, if available      -->
-<xsl:template match="video[@youtube]">
-    <!-- we analyze width to figure out -->
-    <!-- how long a link to write       -->
-    <xsl:variable name="width">
-        <xsl:apply-templates select="." mode="get-width-percentage" />
-    </xsl:variable>
-    <xsl:variable name="youtube-url-visible">
+
+<xsl:template match="video|interactive[(@platform = 'html5')]">
+    <!-- scale to fit into a side-by-side -->
+    <xsl:variable name="width-percentage">
         <xsl:choose>
-            <xsl:when test="substring-before($width,'%') &lt; 50">
-                <xsl:text>YouTube: </xsl:text>
+            <xsl:when test="ancestor::sidebyside">
+                <xsl:apply-templates select="." mode="get-width-percentage" />
+                <xsl:text>&#xa;</xsl:text>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:text>www.youtube.com/watch?v=</xsl:text>
+                <xsl:text>100%</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:value-of select="@youtube" />
     </xsl:variable>
-    <xsl:variable name="youtube-url-link">
-        <xsl:text>https://www.youtube.com/watch?v=</xsl:text>
-        <xsl:value-of select="@youtube" />
-        <xsl:if test="@start">
-            <xsl:text>\&amp;start=</xsl:text>
-            <xsl:value-of select="@start" />
-        </xsl:if>
-        <xsl:if test="@end">
-            <xsl:text>\&amp;end=</xsl:text>
-            <xsl:value-of select="@end" />
-        </xsl:if>
+
+    <!-- Adjust lengths for just this interactive -->
+    <!-- i.e., these values are local             -->
+    <!-- maybe get this scale factor via general % sanitization -->
+    <!-- 11em at 10pt is about 1.5 inches, we go a bit smaller  -->
+    <!--  9em at 10pt is closer to 1.25 inches                  -->
+    <xsl:variable name="width-scale" select="substring-before($width-percentage,'%') div 100" />
+    <xsl:text>\setlength{\qrsize}{</xsl:text>
+    <xsl:value-of select="9 * $width-scale" />
+    <xsl:text>em}&#xa;</xsl:text>
+    <!-- give over all additional space to preview image -->
+    <!-- this forces QR code to left margin              -->
+    <xsl:text>\setlength{\previewwidth}{\linewidth}&#xa;</xsl:text>
+    <xsl:text>\addtolength{\previewwidth}{-\qrsize}&#xa;</xsl:text>
+
+    <xsl:text>\begin{tcbraster}[raster columns=2, raster column skip=1pt, raster halign=center, raster force size=false]%&#xa;</xsl:text>
+
+    <!-- preview image (supplied or scraped) -->
+    <xsl:text>\begin{tcolorbox}[previewstyle, width=\previewwidth]%&#xa;</xsl:text>
+    <xsl:apply-templates select="." mode="static-image" />
+    <xsl:text>%&#xa;</xsl:text>
+    <xsl:text>\end{tcolorbox}%&#xa;</xsl:text>
+
+    <!-- QR code to the right, or default [LINK] -->
+    <xsl:text>\begin{tcolorbox}[qrstyle]%&#xa;</xsl:text>
+    <xsl:apply-templates select="." mode="static-qr" />
+    <xsl:text>\end{tcolorbox}%&#xa;</xsl:text>
+
+    <xsl:variable name="the-caption">
+        <xsl:apply-templates select="." mode="static-caption">
+            <xsl:with-param name="width-scale" select="$width-scale" />
+        </xsl:apply-templates>
     </xsl:variable>
-    <xsl:text>\begin{tabular}{m{.2\linewidth}m{.6\linewidth}}&#xa;</xsl:text>
-    <xsl:text>\includegraphics[width=\linewidth]{</xsl:text>
-    <xsl:value-of select="$directory.images" />
+    <xsl:if test="not($the-caption ='')">
+        <xsl:text>\begin{tcolorbox}[captionstyle]%&#xa;</xsl:text>
+        <xsl:text>\small </xsl:text>
+        <xsl:value-of select="$the-caption" />
+        <xsl:text>\end{tcolorbox}%&#xa;</xsl:text>
+    </xsl:if>
+
+    <xsl:text>\end{tcbraster}%&#xa;</xsl:text>
+</xsl:template>
+
+<!-- Input a URL, get back LaTeX to construct a URL              -->
+<!-- The macro \qrsize is set elsewhere (ie not here)            -->
+<!-- By loading hyperref, we automatically get a version         -->
+<!-- that also functions as a link (we color it black locally)   -->
+<!-- It seems that special TeX characters (of a URL) are handled -->
+<!-- A blank URL sends back failure indicator                    -->
+<!-- TODO: switches for color, nolink in print   -->
+<!-- TODO: size as parameter, defauls to \qrsize -->
+<xsl:template match="*" mode="static-qr">
+    <xsl:variable name="the-url">
+        <xsl:apply-templates select="." mode="static-url" />
+    </xsl:variable>
+    <xsl:choose>
+        <xsl:when test="not($the-url = '')">
+            <xsl:text>{\hypersetup{urlcolor=black}</xsl:text>
+            <xsl:text>\qrcode[height=\qrsize]{</xsl:text>
+                <xsl:value-of select="$the-url" />
+            <xsl:text>}}%&#xa;</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:text>[QR LINK]</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<!-- Static URL's -->
+<!-- Predictable and/or stable URLs for versions  -->
+<!-- of interactives available online.  These are -->
+<!--  -->
+<!-- (1) "standalone" pages for author/local material,  -->
+<!-- as a product of the HTML conversion -->
+<!-- (2) computable addresses of network resources, -->
+<!-- eg the YouTube page of a resource -->
+
+<!-- point to HTML-produced, and canonically-hosted, standalone page -->
+<!-- Eventually match on all interactives                            -->
+<!-- NB baseurl is likely to change, it should be a publisher option -->
+
+<xsl:template match="video[@source]|interactive[@platform = 'html5']" mode="static-url">
+    <xsl:value-of select="$docinfo/html/baseurl/@href" />
     <xsl:text>/</xsl:text>
-    <xsl:apply-templates select="." mode="internal-id" />
-    <xsl:text>.jpg}&amp;%&#xa;</xsl:text>
-    <xsl:if test="parent::*[title]">
-        <xsl:apply-templates select="parent::*" mode="title-full" />
-        <xsl:text>\newline%&#xa;</xsl:text>
+    <xsl:apply-templates select="." mode="standalone-filename" />
+</xsl:template>
+
+<!-- Natural override for YouTube videos               -->
+<!-- Better - standalone page, with "View on You Tube" -->
+<xsl:template match="video[@youtube]" mode="static-url">
+    <xsl:text>https://www.youtube.com/watch?v=</xsl:text>
+    <xsl:value-of select="@youtube" />
+    <xsl:if test="@start">
+        <xsl:text>\&amp;start=</xsl:text>
+        <xsl:value-of select="@start" />
     </xsl:if>
-    <xsl:text>\href{</xsl:text>
-    <xsl:value-of select="$youtube-url-link" />
-    <xsl:text>}{\texttt{\nolinkurl{</xsl:text>
-    <xsl:value-of select="$youtube-url-visible" />
-    <xsl:text>}}}&#xa;</xsl:text>
-    <!-- join spaces in string so cell wraps nicely, perhaps -->
-    <xsl:if test="@start or @end">
-        <xsl:text> (</xsl:text>
-        <xsl:if test="@start">
-            <xsl:text>Start:~</xsl:text>
-            <xsl:value-of select="@start" />
-            <xsl:text>s</xsl:text>
-        </xsl:if>
-        <xsl:if test="@start and @end">
-            <xsl:text>,~</xsl:text>
-        </xsl:if>
-        <xsl:if test="@end">
-            <xsl:text>End:~</xsl:text>
-            <xsl:value-of select="@end" />
-            <xsl:text>s</xsl:text>
-        </xsl:if>
-        <xsl:text>)</xsl:text>
+    <xsl:if test="@end">
+        <xsl:text>\&amp;end=</xsl:text>
+        <xsl:value-of select="@end" />
     </xsl:if>
-    <xsl:text>\end{tabular}&#xa;</xsl:text>
+</xsl:template>
+
+<!-- unimplemented is empty, check in QR production -->
+<xsl:template match="*" mode="static-url" />
+
+<!-- Static Images -->
+<!-- (1) @preview given in source -->
+<!-- (2) scraped image, name via internal-id -->
+<!-- https://tex.stackexchange.com/questions/47245/ -->
+<!-- set-a-maximum-width-and-height-for-an-image    -->
+<xsl:template match="video" mode="static-image">
+    <xsl:choose>
+        <!-- has @preview, and is 'generic' -->
+        <xsl:when test="@preview = 'generic'">
+            <!-- We know the "Play" button has landscape orientation -->
+            <!-- the "adjustbox" package will size correctly, OR we  -->
+            <!-- could test aspect ratio against 1 and react with    -->
+            <!-- the exclamation in the other part of the \resizebox -->
+            <!-- https://tex.stackexchange.com/questions/170770/     -->
+            <xsl:text>\resizebox{!}{\qrsize}{\genericpreview}</xsl:text>
+        </xsl:when>
+        <!-- has @preview -->
+        <xsl:when test="@preview">
+            <xsl:text>\includegraphics[width=0.80\linewidth,height=\qrsize,keepaspectratio]{</xsl:text>
+            <xsl:value-of select="@preview" />
+            <xsl:text>}</xsl:text>
+        </xsl:when>
+        <!-- nothing specified, look for scraped via internal-id -->
+        <xsl:otherwise>
+            <xsl:text>\includegraphics[width=0.80\linewidth,height=\qrsize,keepaspectratio]{</xsl:text>
+            <xsl:value-of select="$directory.images" />
+            <xsl:text>/</xsl:text>
+            <xsl:apply-templates select="." mode="internal-id" />
+            <xsl:text>.jpg</xsl:text>
+            <xsl:text>}</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<xsl:template match="interactive[@platform = 'html5']" mode="static-image">
+    <xsl:choose>
+        <!-- has @preview -->
+        <xsl:when test="@preview">
+            <xsl:text>\includegraphics[width=0.80\linewidth,height=\qrsize,keepaspectratio]{</xsl:text>
+            <xsl:value-of select="@preview" />
+            <xsl:text>}</xsl:text>
+        </xsl:when>
+        <!-- nothing specified, look for scraped via internal-id -->
+        <xsl:otherwise>
+            <xsl:text>\includegraphics[width=0.80\linewidth,height=\qrsize,keepaspectratio]{</xsl:text>
+            <xsl:value-of select="$directory.images" />
+            <xsl:text>/</xsl:text>
+            <xsl:apply-templates select="." mode="internal-id" />
+            <xsl:text>.jpg</xsl:text>
+            <xsl:text>}</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<xsl:template match="video[@source]" mode="static-caption">
+    <xsl:choose>
+        <!-- author-supplied override -->
+        <xsl:when test="caption">
+            <xsl:apply-templates select="caption" />
+        </xsl:when>
+        <!-- nothing to say, empty is flag -->
+        <xsl:otherwise />
+    </xsl:choose>
+</xsl:template>
+
+<xsl:template match="video[@youtube]" mode="static-caption">
+    <xsl:param name="width-scale" />
+    <xsl:choose>
+        <!-- author-supplied override -->
+        <xsl:when test="caption">
+            <xsl:apply-templates select="caption" />
+        </xsl:when>
+        <!-- identification, url for typing-in -->
+        <xsl:when test="$width-scale &gt; 0.70">
+            <xsl:text>YouTube: </xsl:text>
+            <xsl:variable name="visual-url">
+                <c>
+                    <xsl:text>www.youtube.com/watch?v=</xsl:text>
+                    <xsl:value-of select="@youtube" />
+                </c>
+            </xsl:variable>
+            <xsl:apply-templates select="exsl:node-set($visual-url)" />
+        </xsl:when>
+        <xsl:when test="$width-scale &gt; 0.4499">
+            <xsl:variable name="visual-url">
+                <c>
+                    <xsl:text>www.youtube.com/watch?v=</xsl:text>
+                    <xsl:value-of select="@youtube" />
+                </c>
+            </xsl:variable>
+            <xsl:apply-templates select="exsl:node-set($visual-url)" />
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:text>YT: </xsl:text>
+            <xsl:variable name="visual-url">
+                <c>
+                    <xsl:value-of select="@youtube" />
+                </c>
+            </xsl:variable>
+            <xsl:apply-templates select="exsl:node-set($visual-url)" />
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<xsl:template match="interactive[(@platform = 'jsxgraph')]" mode="static-image">
+    <xsl:text>[NO PREVIEW]</xsl:text>
+</xsl:template>
+
+<xsl:template match="interactive[(@platform = 'jsxgraph') or (@platform = 'html5')]" mode="static-caption">
+    <xsl:text>[CAPTION]</xsl:text>
 </xsl:template>
 
 <!-- ############ -->
@@ -4638,6 +4843,12 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:apply-templates />
     <xsl:text>}</xsl:text>
 </xsl:template>
+<!-- Protect the version of the macro appearing in titles -->
+<xsl:template match="title//insert">
+    <xsl:text>\protect\inserted{</xsl:text>
+    <xsl:apply-templates />
+    <xsl:text>}</xsl:text>
+</xsl:template>
 
 <!-- Delete (an edit) -->
 <!-- \deleted{} defined in preamble as semantic macro -->
@@ -4646,11 +4857,23 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:apply-templates />
     <xsl:text>}</xsl:text>
 </xsl:template>
+<!-- Protect the version of the macro appearing in titles -->
+<xsl:template match="title//delete">
+    <xsl:text>\protect\deleted{</xsl:text>
+    <xsl:apply-templates />
+    <xsl:text>}</xsl:text>
+</xsl:template>
 
 <!-- Stale (no longer relevant) -->
 <!-- \stale{} defined in preamble as semantic macro -->
 <xsl:template match="stale">
     <xsl:text>\stale{</xsl:text>
+    <xsl:apply-templates />
+    <xsl:text>}</xsl:text>
+</xsl:template>
+<!-- Protect the version of the macro appearing in titles -->
+<xsl:template match="title//stale">
+    <xsl:text>\protect\stale{</xsl:text>
     <xsl:apply-templates />
     <xsl:text>}</xsl:text>
 </xsl:template>
@@ -4991,6 +5214,10 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:template match="swungdash">
     <xsl:text>\swungdash{}</xsl:text>
 </xsl:template>
+<!-- Protect the version of the macro appearing in titles -->
+<xsl:template match="title//swungdash">
+    <xsl:text>\protect\swungdash{}</xsl:text>
+</xsl:template>
 
 <!-- Per Mille -->
 <!-- Or, per thousand, like a percent sign -->
@@ -5042,33 +5269,45 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- this is a character Markdown uses, so we want to      -->
 <!-- provide this safety valve.                            -->
 <xsl:template match="backtick">
-    <xsl:text>\textasciigrave</xsl:text>
+    <xsl:text>\textasciigrave{}</xsl:text>
 </xsl:template>
+
+<!-- We override all 13 Latin abbreviations, in order -->
+<!-- to handle the periods correctly, as necessary    -->
 
 <!-- \@ following a period makes it an abbreviation, not the end of a sentence -->
 <!-- So use it for abbreviations which will not end a sentence                 -->
 <!-- Best: \makeatletter\newcommand\etc{etc\@ifnextchar.{}{.\@}}\makeatother   -->
 <!-- http://latex-alive.tumblr.com/post/827168808/correct-punctuation-spaces   -->
 
+<!-- anno Domini, in the year of the Lord -->
+<xsl:template match="ad">    <xsl:text>AD</xsl:text></xsl:template>
+<!-- ante meridiem, before midday -->
+<xsl:template match="am">    <xsl:text>A.M.\@</xsl:text></xsl:template>
+<!-- before Christ? -->
+<xsl:template match="bc">    <xsl:text>BC</xsl:text></xsl:template>
+<!-- circa, about -->
+<xsl:template match="circa"> <xsl:text>c.\@</xsl:text></xsl:template>
 <!-- exempli gratia, for example -->
-<xsl:template match="eg">
-    <xsl:text>e.g.\@</xsl:text>
-</xsl:template>
-
+<xsl:template match="eg">    <xsl:text>e.g.\@</xsl:text></xsl:template>
+<!-- et alia, and others -->
+<xsl:template match="etal">  <xsl:text>et al.\@</xsl:text></xsl:template>
+<!-- et caetera, and the rest -->
+<xsl:template match="etc">   <xsl:text>etc.\@</xsl:text></xsl:template>
 <!-- id est, in other words -->
-<xsl:template match="ie">
-    <xsl:text>i.e.\@</xsl:text>
-</xsl:template>
+<xsl:template match="ie">    <xsl:text>i.e.\@</xsl:text></xsl:template>
+<!-- nota bene, note well -->
+<xsl:template match="nb">    <xsl:text>N.B.\@</xsl:text></xsl:template>
+<!-- post meridiem, after midday -->
+<xsl:template match="pm">    <xsl:text>P.M.\@</xsl:text></xsl:template>
+<!-- post scriptum, after what has been written -->
+<xsl:template match="ps">    <xsl:text>P.S.\@</xsl:text></xsl:template>
+<!-- versus, against -->
+<xsl:template match="vs">    <xsl:text>vs.\@</xsl:text></xsl:template>
+<!-- videlicet, namely -->
+<xsl:template match="viz">   <xsl:text>viz.\@</xsl:text></xsl:template>
 
-<!-- et cetera -->
-<xsl:template match="etc">
-    <xsl:text>etc.\@</xsl:text>
-</xsl:template>
 
-<!-- circa -->
-<xsl:template match="circa">
-    <xsl:text>c.\@</xsl:text>
-</xsl:template>
 
 <!-- Copyright symbol -->
 <!-- http://tex.stackexchange.com/questions/1676/how-to-get-good-looking-copyright-and-registered-symbols -->
@@ -5125,8 +5364,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\TeX{}</xsl:text>
 </xsl:template>
 
-<!-- Foreign words/idioms        -->
-<!-- Matches HTML5 specification -->
+<!-- Foreign words/idioms -->
 <xsl:template match="foreign">
     <xsl:apply-templates select="." mode="begin-language" />
     <xsl:text>\textit{</xsl:text>
@@ -5495,17 +5733,19 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 </xsl:template>
 
 <!-- CalcPlot3D -->
-<xsl:template match="interactive[@calcplot3d]" mode="info-text">
-    <xsl:text>CalcPlot3D: \href{https://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/?</xsl:text>
+<xsl:template match="interactive[@platform='calcplot3d']" mode="info-text">
+    <!-- code/url will need sanitization -->
+    <xsl:text>CalcPlot3D: \href{https://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/}</xsl:text>
+<!--     <xsl:text>CalcPlot3D: \href{https://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/?</xsl:text>
     <xsl:value-of select="code" />
-    <xsl:text>}{\mono{www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D}}&#xa;</xsl:text>
+ -->    <xsl:text>{\mono{www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D}}&#xa;</xsl:text>
 </xsl:template>
 
 
 <!-- Static interactives -->
 <!-- Contents of "static" element, plus    -->
 <!-- a line of information below, per type -->
-<xsl:template match="interactive[@geogebra]|interactive[@geogebra]|interactive[@calcplot3d]">
+<xsl:template match="interactive[@geogebra]|interactive[@platform='calcplot3d']|interactive[@platform='calcplot3d']">
     <xsl:apply-templates select="static/*" />
     <xsl:text>\centerline{</xsl:text>
     <xsl:apply-templates select="." mode="info-text" />
@@ -5893,7 +6133,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- behaves in minipages.                                      -->
 <!-- Called in -setup and saved results recycled in -panel      -->
 
-<xsl:template match="p|paragraphs|tabular|video[@youtube]|ol|ul|dl|list|poem" mode="panel-latex-box">
+<xsl:template match="p|paragraphs|tabular|video|ol|ul|dl|list|poem" mode="panel-latex-box">
     <xsl:param name="width" />
     <xsl:variable name="percent" select="substring-before($width,'%') div 100" />
     <xsl:if test="$sbsdebug">
@@ -5910,7 +6150,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:when test="self::paragraphs">
             <xsl:apply-templates select="p|blockquote" />
         </xsl:when>
-        <xsl:when test="self::tabular or self::video[@youtube]">
+        <xsl:when test="self::tabular or self::video">
             <xsl:text>\centering</xsl:text>
             <xsl:apply-templates select="." />
         </xsl:when>
@@ -6132,6 +6372,25 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:with-param name="text" select="latex-image-code|latex-image" />
     </xsl:call-template>
     <xsl:text>}&#xa;</xsl:text>
+</xsl:template>
+
+<!-- EXPERIMENTAL -->
+<!-- use only for testing uses of QR codes          -->
+<!-- this WILL change and/or disappear              -->
+<!-- For LaTeX output only, place within an "image" -->
+<!-- @size - a length LaTeX understands             -->
+<!-- @href - realtive path or URL                   -->
+<xsl:template match="image[qrcode-trial]">
+    <xsl:apply-templates select="qrcode-trial" />
+</xsl:template>
+
+<xsl:template match="qrcode-trial">
+    <xsl:text>{\hypersetup{urlcolor=black}</xsl:text>
+    <xsl:text>\qrcode[height=</xsl:text>
+    <xsl:value-of select="@size" />
+    <xsl:text>]{</xsl:text>
+        <xsl:value-of select="@href" />
+    <xsl:text>}}%&#xa;</xsl:text>
 </xsl:template>
 
 <!-- was once direct-descendant of subdivision, this catches that -->
@@ -7361,29 +7620,71 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 
 <!-- TODO: If requested, add semi- and sesqui- versions of sharp and flat -->
 
+<!-- These "choose" should really be separate match -->
+<!-- templates on title//*, but the use of named    -->
+<!-- templates would require a big re-write, so we  -->
+<!-- have some technical debt here                  -->
+
+<!-- Our macros need protection in titles and typeout commands -->
+
 <!-- Double Sharp -->
 <xsl:template name="doublesharp">
-    <xsl:text>{\doublesharp}</xsl:text>
+    <xsl:choose>
+        <xsl:when test="ancestor::title">
+            <xsl:text>\protect\doublesharp</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:text>{\doublesharp}</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <!-- Sharp -->
 <xsl:template name="sharp">
-    <xsl:text>{\sharp}</xsl:text>
+    <xsl:choose>
+        <xsl:when test="ancestor::title">
+            <xsl:text>\protect\sharp</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:text>{\sharp}</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <!-- Natural -->
 <xsl:template name="natural">
-    <xsl:text>{\natural}</xsl:text>
+    <xsl:choose>
+        <xsl:when test="ancestor::title">
+            <xsl:text>\protect\natural</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:text>{\natural}</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <!-- Flat -->
 <xsl:template name="flat">
-    <xsl:text>{\flat}</xsl:text>
+    <xsl:choose>
+        <xsl:when test="ancestor::title">
+            <xsl:text>\protect\flat</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:text>{\flat}</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <!-- Double Flat -->
 <xsl:template name="doubleflat">
-    <xsl:text>{\doubleflat}</xsl:text>
+    <xsl:choose>
+        <xsl:when test="ancestor::title">
+            <xsl:text>\protect\doubleflat</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:text>{\doubleflat}</xsl:text>
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <!-- Footnotes               -->

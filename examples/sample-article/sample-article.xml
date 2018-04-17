@@ -47,6 +47,7 @@ the xsltproc executable.
 <!-- <mathbook xml:lang="pt-BR"> -->
 <!-- <mathbook xml:lang="fr-FR"> -->
 <!-- <mathbook xml:lang="cs-CZ"> -->
+<!-- <mathbook xml:lang="af-ZA"> -->
 
     <!--
     "docinfo" is like metadata, it is necessary technical
@@ -157,6 +158,12 @@ the xsltproc executable.
                 <cx>008832104071767086392:j6aknlqevbm</cx>
             </google>
         </search>
+
+        <!-- There does not need to be a trailing / on the URL -->
+        <!-- NB This is likely to change, it should be a publisher option -->
+        <html>
+            <baseurl href="http://mathbook.pugetsound.edu/examples/sample-article/html" />
+        </html>
 
         <!-- Images in HTML output may carry a discreet list of links    -->
         <!-- to "archival" versions of images in a variety of formats.   -->
@@ -692,7 +699,7 @@ the xsltproc executable.
                 <subsubsection>
                     <title>Advice</title>
 
-                    <p>Using an <q>integral sign</q> for an antiderivative (aka indefinite integral) would seem to make the Fundamental Theorem a <foreign>fait accompli</foreign>.  So I would suggest not conflating the notation for two very different things until the Fundamental Theorem exposes them as being highly related.</p>
+                    <p>Using an <q>integral sign</q> for an antiderivative (aka indefinite integral) would seem to make the Fundamental Theorem a <foreign xml:lang="fr-FR">fait accompli</foreign>.  So I would suggest not conflating the notation for two very different things until the Fundamental Theorem exposes them as being highly related.</p>
 
                     <example xml:id="example-structured">
                         <title>An Example of Structure</title>
@@ -1017,6 +1024,12 @@ the xsltproc executable.
                 <assemblage>
                     <p>This is a small <c>assemblage</c> with no title, simply to make sure the surrounding box behaves properly, especially for <latex /> output.</p>
                 </assemblage>
+
+                <assemblage>
+                  <title>Assemblages containing <m>\mu \forall \tau \mathbb{H} = \emptyset \kappa</m></title>
+
+                  <p>It is acceptable for an assemblage to contain mathematical content, even in its title.</p>
+                </assemblage>
             </subsection>
 
             <subsection xml:id="subsection-intro-conclude">
@@ -1059,6 +1072,8 @@ the xsltproc executable.
                 <p>Similarly, within a paragraph, you can identify edits between versions as <insert>inserted text that has been added</insert><idx><h>styling words</h><h>insert</h></idx> with <c>&lt;insert&gt;</c> or as <delete>deleted text that has been removed</delete><idx><h>styling words</h><h>delete</h></idx> with <c>&lt;delete&gt;</c>.  Note that these identified edits are slightly different than <stale>stale text that you want to retain, but which is no longer relevant</stale><idx><h>styling words</h><h>stale</h></idx>, which is accomplished with <c>&lt;stale&gt;</c>.  The original request for stale text came from an instructor with an online list of student topics for presentations, and as students claimed topics they were marked as no longer available for other students.</p>
 
                 <p>If you need a <q>fill-in blank</q>, like this<fillin />, it can be obtained with an empty <c>&lt;fillin&gt;</c> element that defaults to roughly a 10-character width.  You can use the <c>&lt;characters&gt;</c> attribute to make the rule longer or shorter, such as a 40-character blank: <fillin characters="40" />.  The character count is approximate, based on typical character widths within a proportional font carrying English language text.  Adjust to suit, or request a language-specific adjustment if it is critical.</p>
+
+                <p>Long after we started this mess, we added <pretext /> tags to mark up tags and attributes.  The elements are: <tag>tag</tag>, <tag>tage</tag>, <tag>attr</tag>.  Examples of how these render are (respectively): <tag>section</tag>, <tage>hash</tage>, <attr>width</attr>.  Perhaps this document will make greater use of these tags.</p>
             </subsection>
         </section>
 
@@ -1553,7 +1568,7 @@ the xsltproc executable.
                     <mrow>c^2\amp\gt a^2 + b^2</mrow>
                 </md></p>
 
-                <p>So as a summary of how to avoid conflicts with XML's reserved characters:<dl>
+                <p>So as a summary of how to avoid conflicts with XML's reserved characters, we have the following.  (The exclamation on the third entry is just a test and does not mean anything special here.)<dl>
                     <li>
                         <title><q>Normal</q> Text</title>
                         <p>Use <c>&lt;ampersand /&gt;</c>, <c>&lt;less /&gt;</c>, <c>&lt;greater /&gt;</c>.</p>
@@ -1562,8 +1577,8 @@ the xsltproc executable.
                         <title>Mathematics</title>
                         <p>Within <c>m</c>, <c>me</c>, <c>men</c>, and <c>mrow</c> elements, use <c>\amp</c>, <c>\lt</c>, <c>\gt</c>.  Or use <c>CDATA</c> to enclose a large chunk of <latex /> with many of these characters.</p>
                     </li>
-                    <li>
-                        <title>Verbatim, Code</title>
+                    <li xml:id="reserved-characters-verbatim">
+                        <title>Verbatim, Code!</title>
                         <p>Within verbatim text (<c>c</c>, <c>cd</c>, and <c>pre</c> elements), Sage code, program listings, and console sessions, use the XML entitites <c>&amp;amp;</c>, <c>&amp;lt;</c>, <c>&amp;gt;</c> to get exactly the characters desired.</p>
                     </li>
                 </dl></p>
@@ -1591,21 +1606,36 @@ the xsltproc executable.
             <subsection>
                 <title>Pseudo-Characters and Constructions</title>
 
-                <p>There are a few other very common abbreviations of Latin phrases that can be achieved in HTML one way, and in <latex /> with a slightly different mechanism.  These are due to <latex />'s treatment of a period (full stop), depending on its surroundings.  So not reserved characters, but just divergent treatment.  Again, outputs here, see the source for inputs.  Using these will lead to the best quality in all your outputs.  See Will Robertson's informative and arcane <url href="http://latex-alive.tumblr.com/post/827168808/correct-punctuation-spaces">blog post</url> on the topic if you want the full story for the treatment of a full stop in <latex />.</p>
+                <p>There are a few  common abbreviations of Latin phrases that can be achieved in HTML one way, and in <latex /> with a slightly different mechanism.  These are due to <latex />'s treatment of a period (full stop), depending on its surroundings.  So not reserved characters, but just divergent treatment.  Using these will lead to the best quality in all your outputs.  See Will Robertson's informative and arcane <url href="http://latex-alive.tumblr.com/post/827168808/correct-punctuation-spaces">blog post</url> on the topic if you want the full story for the treatment of a full stop in <latex />.</p>
 
-                <p><eg /><nbsp /><nbsp />
-                <ie /><nbsp /><nbsp />
-                <etc /><nbsp /><nbsp />
-                <circa /></p>
+                <sidebyside>
+                    <tabular>
+                        <row><cell>Tag</cell><cell>Realization</cell><cell>Meaning</cell></row>
+                        <!--  -->
+                        <row><cell><c>ad</c></cell>    <cell><ad/>    </cell><cell><foreign>anno Domini</foreign>, in the year of the Lord</cell>      </row>
+                        <row><cell><c>am</c></cell>    <cell><am/>    </cell><cell><foreign>ante meridiem</foreign>, before midday</cell>              </row>
+                        <row><cell><c>bc</c></cell>    <cell><bc/>    </cell><cell>English, before Christ</cell>                                       </row>
+                        <row><cell><c>circa</c></cell> <cell><circa/> </cell><cell><foreign>circa</foreign>, about</cell>                              </row>
+                        <row><cell><c>eg</c></cell>    <cell><eg/>    </cell><cell><foreign>exempli gratia</foreign>, for example</cell>               </row>
+                        <row><cell><c>etal</c></cell>  <cell><etal/>  </cell><cell><foreign>et alia</foreign>, and others</cell>                       </row>
+                        <row><cell><c>etc</c></cell>   <cell><etc/>   </cell><cell><foreign>et caetera</foreign>, and the rest</cell>                  </row>
+                        <row><cell><c>ie</c></cell>    <cell><ie/>    </cell><cell><foreign>id est</foreign>, in other words</cell>                    </row>
+                        <row><cell><c>nb</c></cell>    <cell><nb/>    </cell><cell><foreign>nota bene</foreign>, note well</cell>                      </row>
+                        <row><cell><c>pm</c></cell>    <cell><pm/>    </cell><cell><foreign>post meridiem</foreign>, after midday</cell>               </row>
+                        <row><cell><c>ps</c></cell>    <cell><ps/>    </cell><cell><foreign>post scriptum</foreign>, after what has been written</cell></row>
+                        <row><cell><c>vs</c></cell>    <cell><vs/>    </cell><cell><foreign>versus</foreign>, against</cell>                           </row>
+                        <row><cell><c>viz</c></cell>   <cell><viz/>   </cell><cell><foreign>videlicet</foreign>, namely</cell>                         </row>
+                    </tabular>
+                </sidebyside>
 
-
-                <p>There are a few other characters and marks that get special treatment.  Some do not appear on your keyboard, such as the symbol for copright (and similar business or legal marks in common use).  Then there are some characters that do not appear on your keyboard but frequently a keyboard character is used as a substitute.  For example, a fraction bar and a forward slash (<c>solidus</c> and <c>slash</c>, respectively) have slightly different slopes.  Also, compare a <c>tilde</c> and a <c>swungdash</c>.  You can fake a <c>midpoint</c> in <latex /> by going to math mode, but the midpoint is really a text character.  A <c>backtick</c> is a keyboard character that is really a modifier of other characters, <foreign>accent grave</foreign>.  But it might be needed in a text situation, and is a special character for Markdown syntax, used in Jupyter notebooks, for example.  Again, outputs here, see the source for inputs.  Using these uniformly will lead to the best quality in all your outputs, though some of these are very infrequent, or the distinctions are not always that important.</p>
+                <p>There are a few other characters and marks that get special treatment.  Some do not appear on your keyboard, such as the symbol for copright (and similar business or legal marks in common use).  Then there are some characters that do not appear on your keyboard but frequently a keyboard character is used as a substitute.  For example, a fraction bar and a forward slash (<c>solidus</c> and <c>slash</c>, respectively) have slightly different slopes.  Also, compare a <c>tilde</c> and a <c>swungdash</c>.  You can fake a <c>midpoint</c> in <latex /> by going to math mode, but the midpoint is really a text character.  A <c>backtick</c> is a keyboard character that is really a modifier of other characters, grave accent.  But it might be needed in a text situation, and is a special character for Markdown syntax, used in Jupyter notebooks, for example.  Again, outputs here, see the source for inputs.  Using these uniformly will lead to the best quality in all your outputs, though some of these are very infrequent, or the distinctions are not always that important.</p>
 
                 <!-- Carriage returns are unwise, but this is impossible to read otherwise -->
                 <p><copyright /><nbsp /><nbsp />
                 <registered /><nbsp /><nbsp />
                 <trademark /><nbsp /><nbsp />
                 <ellipsis /><nbsp /><nbsp />
+                <backtick /><nbsp /><nbsp />
                 <midpoint /><nbsp /><nbsp />
                 <swungdash /><nbsp /><nbsp />
                 <permille /><nbsp /><nbsp />
@@ -1613,8 +1643,7 @@ the xsltproc executable.
                 <section-mark /><nbsp /><nbsp />
                 <times /><nbsp /><nbsp />
                 <slash /><nbsp /><nbsp />
-                <solidus /><nbsp /><nbsp />
-                <backtick /></p>
+                <solidus /></p>
 
                 <p>We also distinguish between abbreviations (<abbr>vs.</abbr>), acronyms (<acro>SCUBA</acro>) and initialisms (<init>XML</init>).  This is a test of the text version of a multiplication symbol: 2<nbsp /><times /><nbsp />4.</p>
 
@@ -1699,7 +1728,7 @@ the xsltproc executable.
             <subsection>
                 <title>Groupings</title>
 
-                <p>It is possible to make some other groupings like quotations, such as <braces>some <em>emphasized text</em> grouped within braces</braces>, or <brackets>a <pubtitle>Book Title</pubtitle> inside brackets</brackets>, <angles>some <foreign>foreign words</foreign> inside angle brackets</angles>, or <dblbrackets>just a bit of text within double brackets</dblbrackets>.  Some of these are used extensively by scholars who study texts to note various restorations or deletions.</p>
+                <p>It is possible to make some other groupings like quotations, such as <braces>some <em>emphasized text</em> grouped within braces</braces>, or <brackets>a <pubtitle>Book Title</pubtitle> inside brackets</brackets>, an <articletitle>Article Title</articletitle>, <angles>some <foreign>foreign words</foreign> inside angle brackets</angles>, or <dblbrackets>just a bit of text within double brackets</dblbrackets>.  Some of these are used extensively by scholars who study texts to note various restorations or deletions.  Note that the <c>foreign</c> element may have a <c>xml:lang</c> attribute.</p>
             </subsection>
 
             <subsection>
@@ -2530,7 +2559,7 @@ the xsltproc executable.
                 </p>
 
 
-                <p>This section contains nested lists, to demonstrate how they get assigned labels (numbering, symbols).  But we begin with two simple lists, demonstrating an ordered list and an unordered list.  See the end of section for an example of a description list.  Since Jupyter notebooks use markdown syntax, their lists are less flexible.  So some assertions here may be wrong when viewed as a Jupyter notebook.  Note in the source the optional use of a paragraph (<c>p</c>) for the list items.</p>
+                <p>This section contains nested lists, to demonstrate how they get assigned labels (numbering, symbols).  But we begin with two simple lists, demonstrating an ordered list and an unordered list.  See the end of section for an example of a description list.Note in the source the optional use of a paragraph (<c>p</c>) for the list items of the list of colors.</p>
 
                 <p><ol>
                     <li>First.</li>
@@ -2543,7 +2572,7 @@ the xsltproc executable.
                     <li><p>Purple</p></li>
                 </ul></p>
 
-                <p>Next, we have a list with no customization and multiple levels to test the defaults.  <latex /> allows a maximum of four levels of ordered/numbered lists, and a total of six levels if some unordered lists are mixed in.  The second-level defaults (lower-case Latin) are formatted slightly different in <latex /> versus HTML.  The HTML style is not easy to adjust, but you can  specify the <latex /> version to match if it is important.  The default order of the labels in Markdown/Jupyter (Arabic, Latin, latin, roman) is different than for <latex /> and HTML (Arabic, latin, roman, Latin), so cross-references are not correct.  Note that to have nested lists you <em>must</em> structure your list items as paragraphs, since a list may only appear within a <c>p</c> element.<ol>
+                <p>Next, we have a list with no customization and multiple levels to test the defaults.  <latex /> allows a maximum of four levels of ordered/numbered lists, and a total of six levels if some unordered lists are mixed in.  The second-level defaults (lower-case Latin) are formatted slightly different in <latex /> versus HTML.  The HTML style is not easy to adjust, but you can specify the <latex /> version to match if it is important.Note that to have nested lists you <em>must</em> structure your list items as paragraphs, since a list may only appear within a <tag>p</tag> element.<ol>
                     <li><p>Level 1, first.</p></li>
                     <li xml:id="list-two">
                         <p>Level 1, second.<ol>
@@ -2565,7 +2594,7 @@ the xsltproc executable.
                     <li><p>Level 1, third.</p></li>
                 </ol></p>
 
-                <p>Items in ordered lists may be be give an <c>xml:id</c> and then may be the target of an <c>xref</c>.  We test three here, referencing down into the hierarchy above.  Level 1, second: <xref ref="list-two" />.  Level 3, second: <xref ref="list-two-two-two" />.  Level 4, third: <xref ref="list-two-two-two-three" />.</p>
+                <p>Items in ordered lists (only) may be be give an <c>xml:id</c> and then may be the target of an <c>xref</c>.  We test three here, referencing down into the hierarchy above.  Level 1, second: <xref ref="list-two" />.  Level 3, second: <xref ref="list-two-two-two" />.  Level 4, third: <xref ref="list-two-two-two-three" />.  Note that if a list item of an ordered list is contained within a list item of an unordered list, then its number will not be defined.</p>
 
                 <p>And now a four-level deep unordered list with the default labels supplied by MBX (disc, circle, square, disc).  Again, the defalt order for Markdown/Jupyter (disc, square, circle, circle) is different than for <latex /> and HTML (disc, circle, square, disc)<ul>
                     <li><p>Level 1, first.</p></li>
@@ -2622,7 +2651,7 @@ the xsltproc executable.
                     <li><p>Level 1, third.</p></li>
                 </ol></p>
 
-                <p>Now, nested lists with the defaults replaced by custom choices.  First, an ordered list, three deep, upper Roman numerals, then upper-case Latin, then more traditional Arabic numerals on the three elements of the third level.  Note the adornments of the labels will be rendered in LaTeX, but not in HTML, and the label specifications have no effect in a Jupyter notebook.<ol label="*I*">
+                <p>Now, nested lists with the defaults replaced by custom choices.  First, an ordered list, three deep, upper Roman numerals, then upper-case Latin, then more traditional Arabic numerals on the three elements of the third level.  Note the adornments of the labels will be rendered in LaTeX, but not in HTML.<ol label="*I*">
                     <li><p>Level 1, first.</p></li>
                     <li><p>Level 1, second.<ol label="++A">
                             <li><p>Level 2, first.</p></li>
@@ -2656,7 +2685,7 @@ the xsltproc executable.
                         </ul></p>
                     </li>
                     <li><p>Level 1, third.  With a cross-reference to second list item, <xref ref="list-item-second" />.</p></li>
-                    <li><p>Level 1, fourth.  Whose number should not change when knowl just prior is opened.</p></li>
+                    <li><p>Level 1, fourth.  Whose number should not change when the knowl just prior is opened.</p></li>
                 </ol></p>
 
                 <p>The next definition is very poorly worded.  It is meant to test leading off with a list (bad form), for which <latex /> normally begins right after the heading.</p>
@@ -2763,7 +2792,10 @@ the xsltproc executable.
                 <title>Description Lists</title>
 
                 <p>Use <c>dl</c> to make a description list<idx><h>description list</h></idx><idx><h>list</h><h>description</h></idx>. Inside of those tags, use <c>li</c> for each entry. Then, use <c>title</c> to specify the term being described and <c>p</c> to specify the description.</p>
-                <p>A <q>description</q><idx><h>description list</h></idx><idx><h>list</h><h>description</h></idx> list has a short term or phrase that is prominent, followed by a short description.  It is modeled on the lists of similar structure in both <latex /> and HTML.  It makes for a nice medium-weight way to define terms, somewhere in-between the <c>term</c> tag which just makes a term prominent in a sentence, and a <c>definition</c>, which is set off, has a heading, a number, and a title.  This example is from Bob Plantz.<dl>
+                <p>A <q>description</q> list
+                <idx><h>description list</h></idx><idx><h>list</h><h>description</h></idx>
+                has a short term or phrase that is prominent, followed by a short description.  It is modeled on the lists of similar structure in both <latex /> and HTML.  It makes for a nice medium-weight way to define terms, somewhere in-between the <c>term</c> tag which just makes a term prominent in a sentence, and a <c>definition</c>, which is set off, has a heading, a number, and a title.  Do not try to manage the separation between the title and the description by employing punctuation (but you can include a question-mark or exclamation-point if necessary).  For example, do not include a colon to the end of the title.  This example is from Bob Plantz.
+                <dl>
                     <li>
                         <title>Central Processing Unit (CPU)</title>
                         <p>Controls most of the activities of the computer, performs the arithmetic and logical operations, and contains a small amount of very fast memory.</p>
@@ -2809,7 +2841,7 @@ the xsltproc executable.
                 <title>Named Lists</title>
                 <idx>named list</idx><idx><h>list</h><h>named</h></idx>
 
-                <p>A list can be wrapped with a <c>&lt;list&gt;</c> element, so that it earns a number, can be given a title and have an introduction and conclusion.  Cross-references to individual list items get a bit absurd as they are prefixed with the number of the list and then the number of the item, so conceivably you could get a number like <c>4.5.3:2.a.ii</c>.</p>
+                <p>A list can be wrapped with a <tag>list</tag> element, so that it earns a number, can be given a title and have an introduction and conclusion.  Cross-references to individual list items get a bit involved as they are prefixed with the number of the list and then the number of the item, so conceivably you could get a number like <c>4.5.3:2.a.ii</c>.  The colon is used to indicate the transition from the number of the list within divisions and the numbers coming from the list hierarchy, since it has two small dots.</p>
 
                 <list xml:id="list-colors-rainbow">
                     <caption>Colors of the Rainbow</caption>
@@ -2832,6 +2864,59 @@ the xsltproc executable.
                         <p>So some people use the acronym <acro>ROY-G-BIV</acro> to remember this sequence.</p>
                     </conclusion>
                 </list>
+
+
+                 <p>This next list is used for testing cross-references to it.  See <xref ref="section-cross-referencing" text="type-global" />.</p>
+
+                <list xml:id="list-to-reference">
+                    <caption>A named list of targets</caption>
+                    <introduction>
+                        <p>This is the introduction to this named list, which references an item within, via the hybrid <attr>text</attr> attribute:  <xref ref="target-item" text="type-hybrid" />.</p>
+                    </introduction>
+                    <ol label="A">
+                        <li>
+                            <p>
+                                <ol label="i">
+                                    <li>A and i</li>
+                                    <li>A and ii</li>
+                                    <li>A and iii</li>
+                                </ol>
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <ol label="a">
+                                    <li>B and a</li>
+                                    <li>B and b</li>
+                                    <li xml:id="target-item">B and c (target of some cross-references)</li>
+                                </ol>
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <ul label="disc">
+                                    <li>The next three cross-references point to a list item, just above.  It is interesting because the list is named, hence numbered.  The global reference uses the full number, while the local reference uses the number from within the list.  The hybrid reference recognizes that the target is within the same named list, so the number can be shorter.  An identical hybrid cross-reference appears within the <tag>introduction</tag> to this list, an immediately following, but outside the <tag>list</tag>.</li>
+                                    <li>Cross-reference within named list (<c>global</c>): <xref ref="target-item" text="type-global" /></li>
+                                    <li>Cross-reference within named list (<c>hybrid</c>): <xref ref="target-item" text="type-hybrid" /></li>
+                                    <li>Cross-reference within named list (<c>local</c>): <xref ref="target-item" text="type-local" /></li>
+                                    <li>
+                                        <p>
+                                            <ol label="1">
+                                                <li>C and bullet and 1</li>
+                                                <li xml:id="target-no-number">C and bullet and 2</li>
+                                                <li>C and bullet and 3</li>
+                                            </ol>
+                                    </p>
+                                    </li>
+                                    <li>C and bullet</li>
+                                    <li>C and bullet</li>
+                                </ul>
+                            </p>
+                        </li>
+                    </ol>
+                </list>
+
+                <p>This is a paragraph just outside the preceding named list, which references an item within, via the hybrid <attr>text</attr> attribute:  <xref ref="target-item" text="type-hybrid" />.</p>
 
                 <p><idx><h>list</h></idx>This is a paragraph with three lists contained within it.  For HTML output we have to <q>inside-out</q> the lists.<ol>
                     <li>A one item ordered list.</li>
@@ -2881,7 +2966,6 @@ the xsltproc executable.
                     </note>
                 </biblio>
             </references>
-
         </section>
 
         <section>
@@ -3586,29 +3670,249 @@ the xsltproc executable.
 
         </section>
 
-
-        <section xml:id="section-interactive">
-            <title>Embedded Interactive Elements</title>
-            <idx>interactive elements</idx>
-            <idx>embedded interactive elements</idx>
+        <section xml:id="section-interactive-open">
+            <title>Open Interactive Elements</title>
+            <idx><h>interactive elements</h><h>open</h></idx>
+            <idx><h>embedded interactive elements</h><h>open</h></idx>
 
             <introduction>
-                <p>When outputting Web page versions, it is possible to embed a variety of dynamic interactive elements.  In a <latex />/PDF version, these will necessarily need to be replaced by some static substitute, such as a screenshot.  See Section<nbsp /><xref ref="section-sage-cells" /> for the specifics of embedding instances of the Sage Cell Server, which is more elaborate, and not entirely similar.</p>
+                <!-- First paragraph duplicated in next section -->
+                <p>When outputting Web page versions, it is possible to embed a variety of dynamic interactive elements.  In a <latex />/PDF version, these will necessarily need to be replaced by some static substitute, such as a screenshot.  See <xref ref="section-sage-cells" text="type-global" /> for the specifics of embedding instances of the Sage Cell Server, which is more elaborate, and not entirely similar.</p>
 
-                <p>(2018-02-04) Almost everything in this section is under active development and not stable yet.  Feel free to experiment and make suggestions and requests.</p>
+                <p>Interactives in this section are generally unencumbered from copyright or licensing restrictions.  See <xref ref="section-interactive-free" text="type-global" /> for more interactives that are not as open.</p>
+
+                <p>(2018-03-05) Almost everything in this section is under active development and not stable yet.  Feel free to experiment and make suggestions and requests.  This page takes a while to completely load, so be patient.</p>
             </introduction>
 
             <subsection>
-                <title>Geogebra Materials</title>
-                <idx>Geogebra materials</idx>
+                <title>HTML5 Canvas</title>
+
+                <p><init>HTML5</init> introduced the <tag>canvas</tag> element, which can be thought of a blank slate, a place to draw or write on.  So <pretext /> has the <tag>slate</tag> element for a similar purpose.  Generally, but not exclusively, <init>HTML5</init> writes on a <tag>canvas</tag> using the Javascript language.  We demonstrate this approach to interactive diagrams in this subsection.</p>
+
+                <p>The following examples are from David Austin's excellent <url href="http://merganser.math.gvsu.edu/david/linear.algebra/ula/index.html"><pubtitle>Understanding Linear Algebra</pubtitle></url> textbook, which can be found at <cd>
+                    <cline>merganser.math.gvsu.edu/david/linear.algebra/ula/index.html</cline>
+                </cd>David's contribution of examples, and assistance designing the <pretext /> elements is greatly appreciated.  Alright, let's learn some linear algebra.  Yes, there are some learning opportunities in this subsection.</p>
+
+                <figure xml:id="figure-simple-eigenvector">
+                    <caption>A simple eigenvector demonstration</caption>
+
+                    <interactive xml:id="interactive-simple-eigenvector" platform="html5" width="60%" source="code/austin/figures.js code/austin/simple-ev.js" preview="images/simple-eigenvector-preview.jpg">
+                        <slate xml:id="eigenvector" language="javascript" />
+                        <instructions>
+                            <p>Let <m>\vec{x}</m> be represented by the red arrow, and <m>A\vec{x}</m> by the grey arrow, for some particular <m>2\times 2</m> matrix <m>A</m>.  Drag the <em>tip</em> of the red arrow to see the grey arrow change.</p>
+                        </instructions>
+                    </interactive>
+                </figure>
+
+                <exercise>
+                    <statement>
+                        <p>The interactive in <xref ref="figure-simple-eigenvector" text="type-global" /> shows a vector <m>\vec{x}</m> in red, and the matrix-vector product <m>A\vec{x}</m> in grey, for a particular <m>2\times 2</m> matrix <m>A</m>.  The four entries of the matrix <m>A</m> are coded into the interactive.  Can you deduce <m>A</m> simply by using the interactive?  Which theorem is the key?</p>
+                    </statement>
+                </exercise>
+
+                <figure xml:id="figure-eigenvectors">
+                    <caption>Eigenvector demonstration</caption>
+
+                    <interactive xml:id="interactive-eigenvectors" platform="html5" width="90%" aspect="4:5" source="code/austin/figures.js code/austin/eigenvectors.js" preview="images/eigenvectors-preview.jpg">
+                        <slate xml:id="sliders"      aspect="4:1" language="javascript" />
+                        <slate xml:id="eigenvectors" aspect="4:4" language="javascript" />
+                        <instructions>
+                            <p>Let <m>\vec{x}</m> be represented by the red arrow, and <m>A\vec{x}</m> by the grey arrow, for a <m>2\times 2</m> matrix <m>A</m>.  Drag the <em>tip</em> of the red arrow to see the grey arrow change.  Or drag the blue sliders to change the numerical values of the four entries of the <m>2\times 2</m> matrix <m>A</m>.  You will not see the grey vector until you change the matrix using one of the two sliders on the left.  Why is that?  What are the eigenvectors of the initial matrix?</p>
+                        </instructions>
+                    </interactive>
+                </figure>
+
+                <p>The next example has ten <tag>slate</tag> elements communicating with each other, and arranged with the layout features of a <tag>sidebyside</tag> (see <xref ref="section-side-by-side" text="type-global" />).</p>
+
+                <figure xml:id="figure-animation">
+                    <caption>Affine Transformations</caption>
+
+                    <!-- The "10" in the "12:10" should really be a "9".  I suspect -->
+                    <!-- there is some inline element that induces scroll bars      -->
+                    <interactive xml:id="interactive-animation" platform="html5" width="100%" aspect="12:10" source="code/austin/animation.js" preview="images/animation-preview.jpg">
+                        <sbsgroup>
+                            <sidebyside>
+                                <slate xml:id="a" language="javascript" aspect="4:1" />
+                                <slate xml:id="b" language="javascript" aspect="4:1" />
+                                <slate xml:id="c" language="javascript" aspect="4:1" />
+                            </sidebyside>
+                            <sidebyside>
+                                <slate xml:id="d" language="javascript" aspect="4:1" />
+                                <slate xml:id="e" language="javascript" aspect="4:1" />
+                                <slate xml:id="f" language="javascript" aspect="4:1" />
+                            </sidebyside>
+                            <sidebyside>
+                                <slate xml:id="left"  language="javascript" aspect="6:6" />
+                                <slate xml:id="right" language="javascript" aspect="6:6" />
+                            </sidebyside>
+                            <sidebyside width="25%" margins="25% 25%">
+                                <slate language="html" aspect="3:1">
+                                    <button type="button" id="compose">Compose</button>
+                                </slate>
+                                <slate language="html" aspect="3:1">
+                                    <button type="button" id="reset">Reset</button>
+                                </slate>
+                            </sidebyside>
+                        </sbsgroup>
+                        <instructions>
+                            <p>Parameters <m>a</m>, <m>b</m>, <m>d</m>, and <m>e</m>, form a <m>2\times 2</m> matrix <m>A</m>, while <m>c</m> and <m>f</m> form a vector <m>\vec{b}</m>.  The two views of Woody shows the effect of the mapping <me>\vec{x}\mapsto A\vec{x} + \vec{b}</me>.</p>
+                        </instructions>
+                    </interactive>
+                </figure>
+
+            </subsection>
+
+            <subsection>
+                <title>JSXGraph</title>
+                <idx>JSXGraph</idx>
+
+                <p><url href="http://jsxgraph.uni-bayreuth.de/wp/index.html">JSXGraph</url> is a <q>cross-browser JavaScript library for interactive geometry, function plotting, charting, and data visualization in the web browser.</q>  Now a <tag>slate</tag> will be what JSXGraph calls a <term>board</term>.  Again, you use Javascript to write onto a <tag>slate</tag>, but have some powerful shortcuts available from the JSXGraph library.  For this reason, <pretext /> calls JSXGraph a <q>language</q>, similar in may respects to how Sage is a language, but is really a Python library.  So realize that the syntax for using JSXGraph is that of Javascript.</p>
+
+                <p>Place Javascript inside a file that is specified with the <attr>source</attr> attribute of the <tag>interactive</tag> element.  Then just be certain that <attr>xml:id</attr> of the <tag>interactive</tag> element is passed as the <init>HTML</init> <c>id</c> in an (early) call to JSXGraph's <c>initBoard()</c> method.</p>
+
+                <p>The plot below is the curve <m>r=a+b\theta</m> in polar coordinates, for <m>0\leq\theta\leq 8\pi</m>.  It may be manipulated with the sliders to control the shape of the curve.  Point <m>A</m> is contrained to the curve, but may be dragged to a new location. At <m>A</m> the tangent line and normal line are plotted as dashed red lines.  Use the controls in the lower left to adjust the viewing window.  This <url href="http://jsxgraph.uni-bayreuth.de/wiki/index.php/Archimedean_spiral">example</url> is taken from the JSXGraph <url href="http://jsxgraph.uni-bayreuth.de/wiki/index.php/Category:Examples">example wiki</url>.  The code could be written in 7 lines.  Width is 80<percent /> and aspect ratio is 4:3.</p>
+
+                <figure>
+                    <caption>The Archimedian Spiral <m>r = a + b\theta</m>, <m>0\leq\theta\leq 8\pi</m></caption>
+                    <idx>Archimedian Spiral</idx>
+
+                    <interactive xml:id="interactive-archimedian-spiral" platform="jsxgraph" width="80%" aspect="4:3" source="code/jsxgraph/archimedian.js">
+                        <slate xml:id="jsxgraph-archimedian-spiral" language="jsxgraph" aspect="4:3"/>
+                        <instructions>
+                            <p>Drag the sliders to change the parameters <m>a</m> and <m>b</m>.  Controls in the lower-right will adjust the viewing window.</p>
+                        </instructions>
+                    </interactive>
+                </figure>
+
+                <p>Here is a more elaborate example, from the <url href="http://jsxgraph.uni-bayreuth.de/showcase/">JSXGraph Showcase</url>, titled <url href="http://jsxgraph.uni-bayreuth.de/showcase/infinity.html">Infinity</url>.</p>
+
+                <p>There are two active sliders to control the shape and shading of the graphic, and hovering the mouse near one of the edges will highlight the entirety of one of the 30 quadrangles.  Finally, each of the four red corners may be dragged to a new location.  Code is 47 lines.  Width is 60<percent /> and aspect ratio is the default, 1:1, <ie /> a square.</p>
+
+                <figure>
+                    <caption>Infinity, from the JSXGraph Showcase</caption>
+
+                    <interactive xml:id="interactive-infinity" platform="jsxgraph" width="60%" source="code/jsxgraph/infinity.js">
+                        <slate xml:id="jsxgraph-infinity" language="jsxgraph"/>
+                        <instructions>
+                            <p>Drag the sliders to change the pattern, and drag any of the four red corners to change the overall shape.</p>
+                        </instructions>
+                    </interactive>
+                </figure>
+
+                <p>Here are the two new examples.  They have been included in a <c>sidebyside</c> layout element with equal widths (see <xref ref="section-side-by-side" text="type-global" />) so they can be placed horizontally across the page.  They are not wrapped as figures, so cannot be cross-referenced.  These are again from the <url href="http://jsxgraph.uni-bayreuth.de/wiki/index.php/Category:Examples">example wiki</url>, the left being Fermat's Spiral and the right being a demonstration of B-splines.</p>
+
+                <sidebyside widths="40% 40%">
+                    <interactive xml:id="interactive-fermats-spiral" platform="jsxgraph" source="code/jsxgraph/fermats-spiral.js">
+                        <slate xml:id="jsxgraph-fermats-spiral" language="jsxgraph" />
+                        <instructions>
+                            <p>Drag the slider to change the curve.</p>
+                        </instructions>
+                    </interactive>
+
+                    <interactive xml:id="interactive-bspline" platform="jsxgraph" source="code/jsxgraph/bspline.js">
+                        <slate xml:id="jsxgraph-bspline" language="jsxgraph" />
+                        <instructions>
+                            <p>Any of the 8 red control points may be moved anywhere.</p>
+                        </instructions>
+                    </interactive>
+                </sidebyside>
+
+                <p>Finally, a piecewise function you can control, with traces of the domain values and range values in two other JSXGraph boards.  Boards and <init>HTML</init> buttons have been laid out using the <c>sidebyside</c> layout element.</p>
+
+                <figure>
+                    <caption>Piecewise Function</caption>
+
+                    <!-- Aspect ratio should be 20:7, the ":8" is to avoid extra scroll bars -->
+                    <interactive xml:id="interactive-piecewise" platform="jsxgraph" aspect="20:8" source="code/jsxgraph/piecewise.js">
+                        <sbsgroup>
+                            <sidebyside width="30%" margins="0%">
+                                <slate xml:id="box_p3"  language="jsxgraph" aspect="6:6" />
+                                <slate xml:id="box2_p3" language="jsxgraph" aspect="6:6" />
+                                <slate xml:id="box3_p3" language="jsxgraph" aspect="6:6" />
+                            </sidebyside>
+                            <!-- buttons should have aspect 6:1, if we could set it -->
+                            <sidebyside widths="30% 30%" margins="20%">
+                                <slate language="html">
+                                    <input type="button" value="Animate" onkeypress="animate_p3(s_p3,75,100);" onclick="animate_p3(s_p3,75,100);" style="font-size:16px; width:100%"/>
+                                </slate>
+                                <slate language="html">
+                                    <input type="button" value="Clear Traces" onkeypress="clearTraces_p3();" onclick="clearTraces_p3();" style="font-size:16px; width:100%"/>
+                                </slate>
+                            </sidebyside>
+                        </sbsgroup>
+                        <instructions>
+                            <p>The slider of the left panel will trace out the piecewise function.  Simultaneously, the domain will be traced in the middle panel, and the range in the right panel.</p>
+                        </instructions>
+                    </interactive>
+                </figure>
+
+                <p>Generally, we load an interactive into an HTML <c>iframe</c> to sandbox (isolate) it from other interactives.  We does this for your own protection.  So, for example, one interactive cannot talk to another.  If two <tag>slate</tag> need to communicate, then they are related, and should be placed into a single <tag>interactive</tag>, allowed to layout themselves, or grouped within a <tag>sidebyside</tag> allowing finer control.  Even if we have this under control, you might still enjoy reading <url href="http://mikecavaliere.com/your-js-is-a-mess-javascript-namespacing/">Your JS is a Mess</url> at <c>mikecavaliere.com/your-js-is-a-mess-javascript-namespacing/</c>.</p>
+            </subsection>
+
+            <subsection>
+                <title>CalcPlot3D</title>
+                <idx>CalcPlot3D</idx>
+
+                <p>CalcPlot3D is a Javascript application for creating, visualizing, and understanding plots of 3D surfaces.  So it would be an ideal companion to a book on multivariate calculus, but should be useful in other courses of study.</p>
+
+                <p>To use it, find find the <url href="http://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/">online app version</url> at<cd>http://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/</cd>Create a plot and adjust the image to a viewpoint and scale you like.  Then, click the menu icon in the upper-left and choose <c>File</c>.  From here you can save a <init>PNG</init> image for the static version, but you also want to select <c>Encode View in URL</c>.  Now your browser address bar is filled with a query string (<em>all</em> the stuff <em>after</em> the question-mark) that has all the information necessary to reproduce your plot (and view).  Copy everything after the first question-mark to the <c>interactive/code</c> element.  Be sure to replace any ampersands by <c>&amp;amp;</c> (see the Author's Guide for more about certain characters in <init>URL</init>s).  Examine the source for the examples below to see how they are authored.</p>
+
+                <figure>
+                    <caption>Intersection of two planes (minimal embedding)</caption>
+                    <interactive platform="calcplot3d" variant="minimal" width="80%">
+                        <code language="url">type=implicit;equation=2x-y+z~0;cubes=16;visible=true;xmin=-2;xmax=2;ymin=-2;ymax=2;zmin=-2;zmax=2;alpha=-1;format=constant;constcol=rgb(61,133,198)&amp;type=parametric;parametric=2;x=-(u+v)/2;y=(u-v)/2;z=v;visible=true;umin=-3;umax=3;usteps=30;vmin=-2;vmax=2;vsteps=15;alpha=193;format=constant;constcol=rgb(255,161,114)&amp;type=text;text=x%20%2B%20y%20%2B%20z%20~%200;visible=true;point=(.5,-2.5,2.1);color=rgb(0,0,0);font=Times%20New%20Roman;fontsize=14pt;bold=false;italic=false;fontmath=true;align=Upper-right&amp;type=text;text=2x%20-%20y%20%2B%20z%20~%200;visible=true;point=(2,2.2,-1.25);color=rgb(0,0,0);font=Times%20New%20Roman;fontsize=14pt;bold=false;italic=false;fontmath=true;align=Upper-right&amp;type=window;hsrmode=0;anaglyph=-1;center=7.006292692220367,5.09036960455127,4.999999999999999,1;focus=0,0,0,1;up=-0.3290568564833397,-0.23907380036690282,0.9135454576426009,1;transparent=true;alpha=140;edgeson=false;faceson=true;showbox=false;showaxes=true;showticks=true;perspective=true;centerxpercent=0.5;centerypercent=0.5;rotationsteps=30;autospin=true;xygrid=false;yzgrid=false;xzgrid=false;gridsonbox=true;gridplanes=false;gridcolor=rgb(128,128,128);xmin=-2;xmax=2;ymin=-2;ymax=2;zmin=-2;zmax=2;xscale=1;yscale=1;zscale=1;zcmin=-4;zcmax=4;zoom=0.655294;xscalefactor=1;yscalefactor=1;zscalefactor=1</code>
+                    </interactive>
+                </figure>
+
+                <figure>
+                    <caption>Probability wavefunction with contours (includes controls)</caption>
+                    <interactive platform="calcplot3d" variant="controls" width="95%" aspect="1:2">
+                        <code language="url">type=jaxlabel;position=middle;math=%255Cpsi_%257Bn_x%252Cn_y%257D(x%252Cy);textonly=false&amp;type=z;z=sin(api*x)sin(bpi*y);visible=true;umin=0;umax=1;vmin=0;vmax=1;grid=50;format=normal;alpha=200;constcol=rgb(255,0,0);view=0;contourcolor=rgb(255,0,0);contourplot=true;showcontourplot=true;firstvalue=-1;stepsize=0.2;numlevels=11;xnum=75;ynum=75;show2d=false;hidesurface=false;hidelabels=false;showprojections=false;surfacecontours=true;projectioncolor=rgba(51,153,0,1);showxygrid=false;showxygridonbox=false&amp;type=slider;slider=a;value=1;steps=2;pmin=1;pmax=3;repeat=true;bounce=true;waittime=40;careful=true;noanimate=true;name=n_x&amp;type=slider;slider=b;value=1;steps=2;pmin=1;pmax=3;repeat=true;bounce=true;waittime=40;careful=true;noanimate=true;name=n_y&amp;type=text;text=0;visible=true;point=(0,0,0);color=rgb(0,0,0);font=Times%20New%20Roman;fontsize=15pt;bold=true;italic=false;fontmath=true;align=Center-left&amp;type=text;text=L;visible=true;point=(1,-0.025,0);color=rgb(0,0,0);font=Times%20New%20Roman;fontsize=14pt;bold=true;italic=false;fontmath=true;align=Center&amp;type=text;text=L;visible=true;point=(-0.05,1,0);color=rgb(0,0,0);font=Times%20New%20Roman;fontsize=14pt;bold=true;italic=false;fontmath=true;align=Center&amp;type=text;text=x;visible=true;point=(0.5,-0.07,0);color=rgb(0,0,0);font=Times%20New%20Roman;fontsize=14pt;bold=true;italic=false;fontmath=true;align=Center&amp;type=text;text=y;visible=true;point=(-0.08,0.5,0);color=rgb(0,0,0);font=Times%20New%20Roman;fontsize=14pt;bold=true;italic=false;fontmath=true;align=Center&amp;type=window;hsrmode=3;anaglyph=-1;center=-7.447051206708178,-2.790794355991455,3.71998429905919,1;focus=0.5,0.5,0.5,1;up=0.39804763218685024,0.14521777837291014,0.9057979241281567,1;transparent=true;alpha=140;twoviews=false;unlinkviews=false;axisextension=0;xaxislabel=%20;yaxislabel=%20;zaxislabel=%20;edgeson=false;faceson=true;showbox=false;showaxes=false;showticks=false;perspective=true;centerxpercent=0.5;centerypercent=0.4;rotationsteps=30;autospin=true;xygrid=false;yzgrid=false;xzgrid=false;gridsonbox=false;gridplanes=true;gridcolor=rgb(128,128,128);xmin=0;xmax=1;ymin=0;ymax=1;zmin=0;zmax=1;xscale=1;yscale=1;zscale=1;zcmin=-4;zcmax=4;zoom=3.543529;xscalefactor=1;yscalefactor=1;zscalefactor=0.5;hidexysliders=true;hidetracevalue=true
+                        </code>
+                    </interactive>
+                </figure>
+
+                <figure>
+                    <caption>Plot of <m>f(x,y)=\dfrac{1}{y-x^2}</m> on <m>[-2,2]\times[-2,2] (full application)</m></caption>
+                    <interactive platform="calcplot3d" variant="application" width="95%" aspect="10:13">
+                        <code language="url">type=z;z=1/(y-x^2);visible=true;umin=-2;umax=2;vmin=-2;vmax=2;grid=30;format=normal;alpha=-1;constcol=rgb(255,0,0);contourcolor=red&amp;type=window;hsrmode=3;anaglyph=-1;center=5.529712854135209,7.349875454071844,3.9244880634856956,1;focus=0,0,0,1;up=-0.26875302682986874,-0.2884991397174344,0.9189886054528014,1;transparent=true;alpha=140;edgeson=true;faceson=true;showbox=true;showaxes=true;showticks=true;perspective=true;centerxpercent=0.5;centerypercent=0.5;rotationsteps=30;autospin=true;xygrid=false;yzgrid=false;xzgrid=false;gridsonbox=true;gridplanes=false;gridcolor=rgb(128,128,128);xmin=-2;xmax=2;ymin=-2;ymax=2;zmin=-4;zmax=4;xscale=1;yscale=1;zscale=1;zcmin=-4;zcmax=4;zoom=0.468667;xscalefactor=1;yscalefactor=1;zscalefactor=1</code>
+                        <static>
+                            <image source="images/calcplot3d.png" width="45%"/>
+                        </static>
+                    </interactive>
+                </figure>
+
+            </subsection>
+        </section>
+
+        <section xml:id="section-interactive-free">
+            <title>Free Interactive Elements</title>
+            <idx><h>interactive elements</h><h>free</h></idx>
+            <idx><h>embedded interactive elements</h><h>free</h></idx>
+
+            <introduction>
+                <!-- First paragraph duplicated in previous section -->
+                <p>When outputting Web page versions, it is possible to embed a variety of dynamic interactive elements.  In a <latex />/PDF version, these will necessarily need to be replaced by some static substitute, such as a screenshot.  See <xref ref="section-sage-cells" text="type-global" /> for the specifics of embedding instances of the Sage Cell Server, which is more elaborate, and not entirely similar.</p>
+
+                <p>Interactives in this section can be used without paying any fees.  However, their use is generally encumbered by copyright and/or licensing restrictions, and may limit the license you can use on your own work.  So carefully study copyrights, licenses, and terms of use.  See <xref ref="section-interactive-open" text="type-global" /> for more interactives that are free as in <q>freedom</q> or <foreign xml:lang="fr-FR">liberté</foreign>.</p>
+
+                <p>(2018-03-05) Almost everything in this section is under active development and not stable yet.  Feel free to experiment and make suggestions and requests.  This page takes a while to completely load, so be patient.</p>
+            </introduction>
+
+            <subsection>
+                <title>GeoGebra (Cloud)</title>
+                <idx><h>Geogebra</h><h>cloud</h></idx>
+                <idx><h>Geogebra</h><h>material</h></idx>
 
                 <p>A Geogebra <term>material</term> is something you might use in a class.  It could also be called an interactive demonstration.  Go browsing at <url href="https://www.geogebra.org/materials/">www.geogebra.org/materials</url> and find something appropriate for your project.  Or make an account and create your own.</p>
 
                 <p>Once you find a material that looks instructive, it will be at a <init>URL</init> such as<cd>https://www.geogebra.org/m/KGn2d4Qd</cd> and you want to pick off the identifier on the end, in this case <c>KGn2d4Qd</c>.  Then author<cd>&lt;interactive geogebra="KGn2d4Qd" /&gt;</cd>  At this writing (2018-02-04) you will want to place this inside a <c>figure</c>, with a caption, as we do right now with material <c>KGn2d4Qd</c>.</p>
 
+                <p>The shape of the material will be fixed, so guess (or measure with an on-screen ruler), the aspect ratio and use that in the <tag>interactive</tag> element.</p>
+
                 <figure>
                     <caption>Right Triangle Paradox</caption>
-                    <interactive geogebra="KGn2d4Qd">
+                    <interactive geogebra="KGn2d4Qd" width="70%" aspect="9:5">
                         <static>
                             <image source="images/right-triangle-paradox.png" />
                         </static>
@@ -3619,7 +3923,45 @@ the xsltproc executable.
             </subsection>
 
             <subsection>
-                <title>Desmos Graphs</title>
+                <title>Geogebra (Source)</title>
+
+                <p>Better might be designing your own material, retaining your copyright, and using one of Geogebra's <q>Apps</q> to embed the material in your document.  (But note, use of the App comes with licensing restrictions.)  <pretext /> will handle the technical details for you.<ol>
+                    <li>Use Geogebra to make a material.  Maybe you need to install a desktop program that allows you to do this.  Then export, or otherwise discover the <q>base64-encoded</q> version which may be identified by <c>ggb</c>.  See the source of this page for examples of what this looks like.</li>
+                    <li>Mimic the source of the examples below.</li>
+                    <li>Long-run it will be better to park these strings in files (in a <c>code</c> subdirectory?) and <tag>xi:include</tag> them with the <attr>parse</attr> attribute set to <c>text</c>.  But we do not want to impede newcomer's quickstart with that problematic switch.</li>
+                    <li>This is preliminary and subject to change.  Do not get carried away yet.  Please report problems or request features.</li>
+                </ol></p>
+
+                <p>The sliders on the next applet seem to be at fixed locations.  Make it too skinny and you will never see them, rendering the material useless.  However the window will pan (drag with a mouse) and zoom (scroll wheel of a mouse), so you can adjust that way.</p>
+
+                <figure>
+                    <caption>GeoGebra: astroids (from Dave Rosoff)</caption>
+                    <interactive xml:id="geogebra-astroid" platform="geogebra" width="100%" aspect="4:3" source="code/rosoff/astroid.ggb">
+                    </interactive>
+                </figure>
+
+                <p>Now the controls are in the upper-left corner, so we can more easily make the window a little smaller.  Pan and zoom to put the action where you can see it better.</p>
+
+                <figure>
+                    <caption>GeoGebra: cycloids (from Dave Rosoff)</caption>
+                    <interactive xml:id="geogebra-cycloid" platform="geogebra" width="75%" aspect="3:4" source="code/rosoff/epi-hypocycloids-default.ggb">
+                    </interactive>
+                </figure>
+
+                <p>You will need to zoom out a bit, and then pan over some, to see all the pieces of the next GeoGebra material.</p>
+
+                <figure>
+                    <caption>GeoGebra: a constructive <q>proof</q> that SAS congruence holds in Euclidean geometry (from Tevian Dray)</caption>
+                    <interactive xml:id="geogebra-SAS" platform="geogebra" width="100%" aspect="1:1" source="code/dray/SAS.ggb">
+                        <instructions>
+                            <p>Drag some of the points and some of the circles to change them, and watch the remainder react.</p>
+                        </instructions>
+                    </interactive>
+                </figure>
+            </subsection>
+
+            <subsection>
+                <title>Desmos Graphs (Cloud)</title>
                 <idx>Desmos graphs</idx>
 
                 <p><term>Desmos</term> provides interactive graphing applications.  The following example was created by Ann Cary and made available via the <q>Share</q> function of Desmos.  You can make your own Desmos graph, choose the <q>Share</q> icon, and the <q>Embed</q> option, to get a <init>URL</init> such as <cd>https://www.desmos.com/calculator/ttox1bvxku</cd>  You want to pick off the identifier on the end, in this case <c>ttox1bvxku</c>, then author<cd>&lt;interactive desmos="ttox1bvxku" /&gt;</cd> as we have done here.</p>
@@ -3639,357 +3981,26 @@ the xsltproc executable.
             </subsection>
 
             <subsection>
-                <title>CalcPlot3D</title>
-                <idx>CalcPlot3D</idx>
+                <title>Wolfram CDF (Cloud)</title>
+                <idx>Wolfram CDF</idx>
 
-                <p>CalcPlot3D is a Javascript application for creating, visualizing, and understanding plots of 3D surfaces.  So it would be an ideal companion to a book on multivariate calculus, but should be useful in other course of study.</p>
+                <p>You can embed interactive demonstrations created in Wolfram's <term>Computable Document Format</term> so that they will be played with the Wolfram CDF Player<trademark />.  Once you create and save a demonstration, you want to determine the UUID that is the identifier of your demonstration.  For example, <xref ref="wolfram-cdf-cellular-automata" text="type-global" /> is identified by <c>9fa2acff-c809-4b7f-a73b-c59ace36affc</c>.  This identifier is enough to create the <pretext /> to embed the demonstration.  See <url href="https://reference.wolfram.com/language/howto/DeployInteractiveContentInTheWolframCloud.html" /> for information about creating your demonstration.</p>
 
-                <p>To use it, find find the <a href="http://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/">online app version</a> at<cd>http://www.monroecc.edu/faculty/paulseeburger/calcnsf/CalcPlot3D/</cd>Create a plot and adjust the image to a viewpoint and scale you like.  Then, click the menu icon in the upper-left and choose <c>File</c>.  From here you can save a <init>PNG</init> iamge for the static version, but you also want to select <c>Encode View in URL</c>.  Now your browser address bar with a query string that has all the information about your plot so it can reproduced.  Copy everything after the first question-mark to <c>interactive/code</c> element.  Be sure to replace any ampersands by <c>&amp;amp;</c>.  Examine the source to see how this example was authored.</p>
+                <p><url href="http://www.wolfram.com/cdf/adopting-cdf/deploying-cdf/web-delivery-cloud.html" /> explains hosting CDF files at the Wolfram Cloud, and is the source of <xref ref="wolfram-cdf-cellular-automata" text="type-global" />.  You can learn about powering your CDF with Wolfram Cloud Credits at <url href="https://www.wolfram.com/cloud-credits/" />.  CDF is a public format, and the FreeCDF<trademark /> license is a variant of a Creative Commons BY-SA license, see <url href="http://www.wolfram.com/cdf/adopting-cdf/licensing-options.html" />.</p>
 
-                <figure>
-                    <caption>Plot of <m>f(x,y)=\dfrac{1}{y-x^2}</m> on <m>[-2,2]\times[-2,2]</m></caption>
-                    <interactive calcplot3d="url">
-                        <code language="url">type=z;z=1/(y-x^2);visible=true;umin=-2;umax=2;vmin=-2;vmax=2;grid=30;format=normal;alpha=-1;constcol=rgb(255,0,0);contourcolor=red&amp;type=window;hsrmode=3;anaglyph=-1;center=5.529712854135209,7.349875454071844,3.9244880634856956,1;focus=0,0,0,1;up=-0.26875302682986874,-0.2884991397174344,0.9189886054528014,1;transparent=true;alpha=140;edgeson=true;faceson=true;showbox=true;showaxes=true;showticks=true;perspective=true;centerxpercent=0.5;centerypercent=0.5;rotationsteps=30;autospin=true;xygrid=false;yzgrid=false;xzgrid=false;gridsonbox=true;gridplanes=false;gridcolor=rgb(128,128,128);xmin=-2;xmax=2;ymin=-2;ymax=2;zmin=-4;zmax=4;xscale=1;yscale=1;zscale=1;zcmin=-4;zcmax=4;zoom=0.468667;xscalefactor=1;yscalefactor=1;zscalefactor=1</code>
-                        <static>
-                            <image source="images/calcplot3d.png" width="45%"/>
-                        </static>
-                    </interactive>
-                </figure>
-            </subsection>
+                <p>The first example here (<xref ref="wolfram-cdf-sine-curve" text="type-global" />) was developed by Itai Seggev, a Senior Kernel Developer at Wolfram.</p>
 
+                <p>(2018-04-02) These behave as expected in Chrome, but perhaps not in Firefox.  Testing welcome.</p>
 
-            <subsection>
-                <title>JSXGraph</title>
-                <idx>JSXGraph</idx>
-
-                <p>The plot below is the curve <m>r=a+b\theta</m> in polar coordinates, for <m>0\leq\theta\leq 8\pi</m>.  It may be manipulated with the sliders to control the shape of the curve.  Point <m>A</m> is contrained to the curve, but may be dragged to a new location. At <m>A</m> the tangent line and normal line are plotted as dashed red lines.  Use the controls in the lower left to adjust the viewing window.  This <url href="http://jsxgraph.uni-bayreuth.de/wiki/index.php/Archimedean_spiral">example</url> is taken from the JSXGraph <url href="http://jsxgraph.uni-bayreuth.de/wiki/index.php/Category:Examples">example wiki</url>.  Width is 75<percent /> and aspect ratio is 4:3.</p>
-
-                <figure>
-                    <caption>The Archimedian Spiral <m>r = a + b\theta</m>, <m>0\leq\theta\leq 8\pi</m></caption>
-                    <idx>Archimedian Spiral</idx>
-                    <jsxgraph xml:id="jsxgraph-archimedian-spiral" width="75%" aspect="4:3">
-                        <!-- http://jsxgraph.uni-bayreuth.de/wiki/index.php/Archimedean_spiral -->
-                        <input>
-                        var board = JXG.JSXGraph.initBoard('jsxgraph-archimedian-spiral', {boundingbox: [-10, 10, 10, -10]});
-                        var a = board.create('slider', [[1,8],[5,8],[0,1,4]],{name:'a'});
-                        var b = board.create('slider', [[1,9],[5,9],[0,0.25,4]],{name:'b'});
-
-                        var c = board.create('curve', [function(phi){return a.Value()+b.Value()*phi; }, [0, 0],0, 8*Math.PI],
-                                     {curveType:'polar', strokewidth:4});
-
-                        var g = board.create('glider', [c]);
-                        var t = board.create('tangent', [g], {dash:2,strokeColor:'#a612a9'});
-                        var n = board.create('normal', [g], {dash:2,strokeColor:'#a612a9'});
-                        </input>
-                    </jsxgraph>
+                <figure xml:id="wolfram-cdf-sine-curve">
+                    <caption>Variable Sine Curve</caption>
+                    <interactive wolfram-cdf="fe1be5c3-d105-43d0-bf4b-9f2eb1028b84" />
                 </figure>
 
-                <p><url href="http://jsxgraph.uni-bayreuth.de/wp/index.html">JSXGraph</url> is a <q>cross-browser JavaScript library for interactive geometry, function plotting, charting, and data visualization in the web browser.</q>  Place Javascript inside an <c>input</c> element inside a <c>jsxgraph</c> element.  You will want an <c>xml:id</c> on the <c>jsxgraph</c> element, since it is what will be used as the HTML <c>id</c> on the <c>div</c> that will hold the demonstration, and will typically be used in an early call to the <c>initBoard()</c> method.</p>
-
-                <p>Here is a more elaborate example, from the <url href="http://jsxgraph.uni-bayreuth.de/showcase/">JSXGraph Showcase</url>, titled <url href="http://jsxgraph.uni-bayreuth.de/showcase/infinity.html">Infinity</url>.  Notice that the code here contains a problematic less-than character for a comparison in a loop.  We could replace it by the <c>&amp;lt;</c> XML escape sequence, but we have instead chosen the expedient of using a <c>CDATA</c> construction to wrap the entire hunk of code (see the source for exact syntax).  This might be the best solution if the code contains many HTML strings that need to be protected from the XML parser.</p>
-
-                <p>There are two active sliders to control the shape and shading of the graphic, and hovering the mouse near one of the edges will highlight the entirety of one of the 30 quadrangles.  Finally, each of the four red corners may be dragged to a new location.  Width is 60<percent /> and aspect ratio is the default, 1:1, <ie /> a square.</p>
-
-                <figure>
-                    <caption>Infinity, from the JSXGraph Showcase</caption>
-                    <jsxgraph xml:id="jsxgraph-infinity" width="60%">
-                        <!-- http://jsxgraph.uni-bayreuth.de/showcase/infinity.html -->
-                        <input><![CDATA[
-                        JXG.Options.renderer = 'canvas';
-                        var board = JXG.JSXGraph.initBoard('jsxgraph-infinity', {
-                                boundingbox: [-9, 8, 9, -10],
-                                keepaspectreatio: true,
-                                axis: false,
-                                grid: false,
-                                shownavigation: false
-                            });
-
-                        // construction
-                        board.suspendUpdate();
-                        var S = board.create('slider', [[-5,-6],[5,-6],[0,0.85,1]], {
-                            name:'Whirl'
-                        });
-                        var hue = board.create('slider', [[-5,-7],[5,-7],[0,20.5,36]], {
-                            name:'Colors'
-                        });
-
-                        var points = new Array();
-                        points[0] = board.create('point',[5, 5], {name:' '});
-                        points[1] = board.create('point',[-5, 5], {name:' '});
-                        points[2] = board.create('point',[-5, -5], {name:' '});
-                        points[3] = board.create('point',[5, -5], {name:' '});
-
-                        function quadrangle(pt, n) {
-                            var col;
-                            var arr = new Array();
-                            for(var i = 0; i < 4; i++) {
-                                arr[i] = board.create('point',
-                                    [function(t) {
-                                        return function () {var x = pt[t].X();
-                                                var x1 = pt[(t+1)%4].X();
-                                                var s = S.Value();
-                                                return x+(x1-x)*s;
-                                         }}(i),
-                                    function(t) {
-                                        return function () {var y = pt[t].Y();
-                                                var y1 = pt[(t+1)%4].Y();
-                                                var s = S.Value();
-                                                return y+(y1-y)*s;
-                                         }}(i)
-                                    ],
-                                {size:1, name: "", withLabel: false, visible: false});
-                            }
-                            col =  function(){return JXG.hsv2rgb(hue.Value()*n,0.7,0.9);};
-                            board.create('polygon',pt, {fillColor:col});
-                            if(n>0)
-                                quadrangle(arr, --n);
-                        }
-                        quadrangle(points,30);
-
-                        board.unsuspendUpdate();
-                        ]]>
-                        </input>
-                    </jsxgraph>
+                <figure xml:id="wolfram-cdf-cellular-automata">
+                    <caption>Cellular Automata</caption>
+                    <interactive wolfram-cdf="9fa2acff-c809-4b7f-a73b-c59ace36affc" />
                 </figure>
-
-
-                <p>Here are the two new examples, but the first has been given an extreme aspect ratio, and both are smaller overall.  They have been included in a <c>sidebyside</c> layout element (see <xref ref="section-side-by-side" text="type-global" />) so they can be placed horizontally across the page.  (Note: placement in a <c>sidebyside</c> is not yet reflected in the <pretext /> schema.)  These are again from the <url href="http://jsxgraph.uni-bayreuth.de/wiki/index.php/Category:Examples">example wiki</url>, the left being Fermat's Spiral and the right being a demonstration of B-splines.</p>
-
-                <sidebyside widths="35% 55%">
-                    <jsxgraph xml:id="jsxgraph-fermats-spiral" aspect="5:8">
-                        <!-- https://jsxgraph.uni-bayreuth.de/wiki/index.php/Fermat%27s_spiral -->
-                        <input>
-                        var board = JXG.JSXGraph.initBoard('jsxgraph-fermats-spiral', {boundingbox: [-10, 10, 10, -10]});
-                        var aa = board.create('slider', [[1,9],[5,9],[0,1,4]],{name:'a'});
-                        var c1 = board.create('curve', [function(phi){return aa.Value()*Math.sqrt(phi); }, [0, 0],0, 8*Math.PI],
-                                     {curveType:'polar', strokewidth:4});        
-                        var c2 = board.create('curve', [function(phi){return -aa.Value()*Math.sqrt(phi); }, [0, 0],0, 8*Math.PI],
-                                     {curveType:'polar', strokewidth:4});
-                        </input>
-                    </jsxgraph>
-                    <jsxgraph xml:id="jsxgraph-bspline">
-                        <!-- https://jsxgraph.uni-bayreuth.de/wiki/index.php/B-splines -->
-                        <input><![CDATA[
-                        var brd = JXG.JSXGraph.initBoard('jsxgraph-bspline',
-                        {boundingbox:[-4,4,4,-4],keepaspectratio:true,axis:true});
-
-                        var p = [], col = 'red'; 
-                        p.push(brd.create('point',[2,1],{strokeColor:col,fillColor:col})); 
-                        p.push(brd.create('point',[0.75,2.5],{strokeColor:col,fillColor:col})); 
-                        p.push(brd.create('point',[-0.3,0.3],{strokeColor:col,fillColor:col})); 
-                        p.push(brd.create('point',[-3,1],{strokeColor:col,fillColor:col}));      
-                        p.push(brd.create('point',[-0.75,-2.5],{strokeColor:col,fillColor:col}));
-                        p.push(brd.create('point',[1.5,-2.8],{strokeColor:col,fillColor:col}));  
-                        p.push(brd.create('point',[2,-0.5],{strokeColor:col,fillColor:col})); 
-
-                        var c = brd.create('curve', JXG.Math.Numerics.bspline(p,4), 
-                                       {strokecolor:'blue', strokeOpacity:0.6, strokeWidth:5}); 
-
-                        var addSegment = function() {
-                           brd.suspendUpdate();
-                           p.push(brd.create('point',[Math.random()*8-4,Math.random()*8-4],
-                                   {strokeColor:col,fillColor:col})); 
-                           brd.unsuspendUpdate();
-                        };
-
-                        var removeSegment = function() {
-                           brd.suspendUpdate();
-
-                           if (p.length>2) {
-                               brd.removeObject(p[p.length-1]);  // remove the last point from the list of objects
-                               p.splice(p.length-1,1);           // remove the last point from the point array.
-                           }
-                           brd.unsuspendUpdate();
-                        };
-                        ]]>
-                        </input>
-                    </jsxgraph>
-                </sidebyside>
-
-
-                <p>Now, a piecewise function you can control, with traces of the domain values and range values in two separate JSXGraph boards, laid out using the <c>sidebyside</c> layout element.</p>
-
-                <figure>
-                    <caption>Piecewise Function</caption>
-                    <jsxgraph xml:id="box_p3" width="40%">
-
-                        <controls>
-                            <input type="button" value="Animate On/Off" onkeypress="animate_p3(s_p3,75,100);" onclick="animate_p3(s_p3,75,100);" style="font-size:16px;"/>
-                            <input type="button" value="Clear Traces" onkeypress="clearTraces_p3();" onclick="clearTraces_p3();" style="font-size:16px;"/>
-                        </controls>
-                    </jsxgraph>
-                </figure>
-
-                <sidebyside widths="40% 40%" margins="auto">
-                    <figure>
-                        <caption>Domain</caption>
-                        <jsxgraph xml:id="box2_p3" />
-                    </figure>
-
-                    <figure>
-                        <caption>Range</caption>
-                        <jsxgraph xml:id="box3_p3">
-                            <input><![CDATA[
-                            var board_p3 = JXG.JSXGraph.initBoard('box_p3', {boundingbox: [-6, 8, 4, -8], axis: true,grid:true,showCopyright:false,showNavigation:false});
-                            var board2_p3 = JXG.JSXGraph.initBoard('box2_p3', {boundingbox: [-6, 8, 4, -8],axis:true,grid:true,showCopyright:false,showNavigation:false});
-                            var board3_p3 = JXG.JSXGraph.initBoard('box3_p3', {boundingbox: [-6, 8, 4, -8],axis:true,grid:true,showCopyright:false,showNavigation:false});
-                            board_p3.renderer.container.style.backgroundColor = '#ffcc99';          // background color board
-                            board2_p3.renderer.container.style.backgroundColor = '#ffcc99';
-                            board3_p3.renderer.container.style.backgroundColor = '#ffcc99';
-                            var xax1_p3 = board_p3.create('axis', [[0,0], [0,1]]);
-                            var yax1_p3 = board_p3.create('axis', [[0,0], [1,0]]);
-                            var xax2_p3 = board2_p3.create('axis', [[0,0], [0,1]]);
-                            var yax2_p3 = board2_p3.create('axis',[[0,0],[1,0]]);
-                            var xax3_p3 = board3_p3.create('axis',[[0,0], [0,1]]);
-                            var yax3_p3 = board3_p3.create('axis',[[0,0],[1,0]]);
-                            board_p3.create('ticks',[xax1_p3,[-6,-5,-4,-3,-2,-1,0,1,2,3,4]]);
-                            board_p3.create('ticks',[yax1_p3,[-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8]]);
-                            board2_p3.create('axis', [[0,0], [0,1]]);
-                            board2_p3.create('ticks',[xax2_p3,[-6,-5,-4,-3,-2,-1,0,1,2,3,4]]);
-                            board2_p3.create('ticks',[yax2_p3,[-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8]]);
-                            board3_p3.create('axis',[[0,0],[0,1]]);
-                            board3_p3.create('ticks',[xax3_p3,[-6,-5,-4,-3,-2,-1,0,1,2,3,4]]);
-                            board3_p3.create('ticks',[yax3_p3,[-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8]]);
-
-                            var f_p3 = function(x) {
-                                if (x >=-4 && x < 1) {
-                                    return -(x+2)*(x+2) + 2;
-                                }
-                                else if (x >= 1 && x <= 3) {
-                                    return x*x-x;
-                                }
-                                else {return -1000;
-                                }
-                            };
-
-                            var dfun_p3 = function(x) {
-                                if (x>=-4 && x<0.7) {
-                                    return x;
-                                }
-                                else if (x> 1.3 && x <= 3) {
-                                    return x;
-                                }
-                                else {return -1000;
-                                }
-                            };
-
-                            graph_p3=board_p3.create('functiongraph',[f_p3,-4,3],{strokeColor:'#000000'});
-                            var ep1_p3=board_p3.create('point',[-4,-2],{strokeColor:'#000000',fillColor:'#000000',name:''});
-                            var ep2_p3=board_p3.create('point',[1,-7],{strokeColor:'#000000',fillColor:'#FFFFFF',name:''});
-                            var ep3_p3=board_p3.create('point',[1,0],{strokeColor:'#000000',fillColor:'#FFFFFF',name:''});
-                            var ep4_p3=board_p3.create('point',[3,6],{strokeColor:'#000000',fillColor:'#000000',name:''});
-                            ep1_p3.setAttribute({fixed:true});
-                            ep2_p3.setAttribute({fixed:true});
-                            ep3_p3.setAttribute({fixed:true});
-                            ep4_p3.setAttribute({fixed:true});
-
-                            var s_p3 = board_p3.create('slider',[[-4.5,-7],[-1,-7],[-4,-4,3]]);
-                            var tracepoint_p3=board_p3.create('point',[function() {return dfun_p3(s_p3.Value());},function() {return f_p3(s_p3.Value());}],{name:''});
-                            // domain:
-                            var b2p1_p3 = board2_p3.create('point', [function(){return tracepoint_p3.X()},0], 
-                                        {fixed: true, trace: true, strokeColor: '#ff0000', name: 'D'});
-                            // cosine:
-                            var b2p2_p3 = board3_p3.create('point', [
-                                        0, function(){return tracepoint_p3.Y();}], 
-                                        {fixed: true, trace: true, strokeColor: '#0000ff', fillColor:'#0000ff',name: 'R'});
-                            // Dependencies (only necessary if b2p1 or b2p2 is deleted)
-
-                            board_p3.addChild(board2_p3);
-                            board_p3.addChild(board3_p3);
-
-                            function clearTraces_p3() {
-                            JXG.JSXGraph.freeBoard(board_p3);
-                            JXG.JSXGraph.freeBoard(board2_p3);
-                            JXG.JSXGraph.freeBoard(board3_p3);
-                            board_p3 = JXG.JSXGraph.initBoard('box_p3', {boundingbox: [-6, 8, 4, -8],axis: true,grid:true,showCopyright:false,showNavigation:false});
-                            board2_p3 = JXG.JSXGraph.initBoard('box2_p3', {boundingbox: [-6, 8, 4, -8],axis:true,grid:true,showCopyright:false,showNavigation:false});
-                            board3_p3 = JXG.JSXGraph.initBoard('box3_p3', {boundingbox: [-6, 8, 4, -8],axis:true,grid:true,showCopyright:false,showNavigation:false});
-                            xax1_p3 = board_p3.create('axis', [[0,0], [0,1]]);
-                            yax1_p3 = board_p3.create('axis', [[0,0], [1,0]]);
-                            xax2_p3 = board2_p3.create('axis', [[0,0], [0,1]]);
-                            yax2_p3 = board2_p3.create('axis',[[0,0],[1,0]]);
-                            xax3_p3 = board3_p3.create('axis',[[0,0], [0,1]]);
-                            yax3_p3 = board3_p3.create('axis',[[0,0],[1,0]]);
-                            board_p3.create('ticks',[xax1_p3,[-6,-5,-4,-3,-2,-1,0,1,2,3,4]]);
-                            board_p3.create('ticks',[yax1_p3,[-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8]]);
-                            board2_p3.create('axis', [[0,0], [0,1]]);
-                            board2_p3.create('ticks',[xax2_p3,[-6,-5,-4,-3,-2,-1,0,1,2,3,4]]);
-                            board2_p3.create('ticks',[yax2_p3,[-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8]]);
-                            board3_p3.create('axis',[[0,0],[0,1]]);
-                            board3_p3.create('ticks',[xax3_p3,[-6,-5,-4,-3,-2,-1,0,1,2,3,4]]);
-                            board3_p3.create('ticks',[yax3_p3,[-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8]]);
-
-                            f_p3 = function(x) {
-                                if (x >=-4 && x < 1) {
-                                    return -(x+2)*(x+2) + 2;
-                                }
-                                else if (x >= 1 && x <= 3) {
-                                    return x*x-x;
-                                }
-                                else {return -1000;
-                                }
-                            };
-
-                            dfun_p3 = function(x) {
-                                if (x>=-4 && x<0.7) {
-                                    return x;
-                                }
-                                else if (x> 1.3 && x <= 3) {
-                                    return x;
-                                }
-                                else {return -1000;
-                                }
-                            };
-
-                            graph_p3=board_p3.create('functiongraph',[f_p3,-4,3],{strokeColor:'#000000'});
-                            ep1_p3=board_p3.create('point',[-4,-2],{strokeColor:'#000000',fillColor:'#000000',name:''});
-                            ep2_p3=board_p3.create('point',[1,-7],{strokeColor:'#000000',fillColor:'#FFFFFF',name:''});
-                            ep3_p3=board_p3.create('point',[1,0],{strokeColor:'#000000',fillColor:'#FFFFFF',name:''});
-                            ep4_p3=board_p3.create('point',[3,6],{strokeColor:'#000000',fillColor:'#000000',name:''});
-                            ep1_p3.setAttribute({fixed:true});
-                            ep2_p3.setAttribute({fixed:true});
-                            ep3_p3.setAttribute({fixed:true});
-                            ep4_p3.setAttribute({fixed:true});
-                            s_p3 = board_p3.create('slider',[[-4.5,-7],[-1,-7],[-4,-4,3]]);
-                            tracepoint_p3=board_p3.create('point',[function() {return dfun_p3(s_p3.Value());},function() {return f_p3(s_p3.Value());}],{name:''});// domain:
-                            b2p1_p3 = board2_p3.create('point', [function(){return tracepoint_p3.X()},0], 
-                                         {fixed: true, trace: true, strokeColor: '#ff0000', name: 'D'});
-                            // cosine:
-                            b2p2_p3 = board3_p3.create('point', [
-                                         0, function(){return tracepoint_p3.Y();}], 
-                                         {fixed: true, trace: true, strokeColor: '#0000ff', fillColor:'#0000ff',name: 'R'});
-                            // Dependencies (only necessary if b2p1 or b2p2 is deleted)
-
-                            board_p3.addChild(board2_p3);
-                            board_p3.addChild(board3_p3);
-                            }
-                            // Animation
-                            var animated = false;
-                            function animate_p3(point, direction, count) {
-                               if(animated) {
-                                  point.stopAnimation();
-                                  animated = false;
-                               } else {
-                                  point.startAnimation(direction, count);
-                                  animated = true;
-                               }
-                            }
-                            // Generic Hide/Show
-                            function toggle(id) {
-                                    var state = document.getElementById(id).style.display;
-                                        if (state == 'block') {
-                                            document.getElementById(id).style.display = 'none';
-                                        } else {
-                                            document.getElementById(id).style.display = 'block';
-                                        }
-                                    }
-                            ]]>
-                            </input>
-                        </jsxgraph>
-                    </figure>
-                </sidebyside>
-
-                <p>Be careful about the Javascript code when there are several on the same page, as duplicate variables may affect one another's performance adversely.</p>
             </subsection>
         </section>
 
@@ -3998,33 +4009,54 @@ the xsltproc executable.
 
             <p>First, a gratuitous reference to Exercise<nbsp /><xref ref="exercises-cosine-derivative" /> about the derivative of a cosine.</p>
 
-            <p>Embedded videos can make sense for a web version of your document. This is a video promoting the University of Puget Sound to potential new students.  Support is limited to HTML5-capable browsers.  The file format can be MP4, Ogg, or WebM, though this may vary depending upon the browser.  The example below is an old promotional video from the University of Puget Sound, in WebM format.  The <c>source</c> attribute should <em>not</em> include an extension, since the three possibilities above will be searched for preferentially (you need only provide one, but more will increase the chances every browser will find a compatible format).</p>
+            <p>You can specify a video by a filename if you host it as part of your document, or a <init>URL</init> giving a location on the Internet.  There are a few extra features for YouTube videos, which are near the bottom of this page, so look there first if that meets your needs.</p>
+
+            <p>Embedded videos can make sense for a web version of your document. This is a video promoting the University of Puget Sound to potential new students, in WebM format.  Support is limited to HTML5-capable browsers.  The file format can be MP4, Ogg, or WebM, though this may vary depending upon the browser.  Use a <tag>video</tag> element, within either a <tag>figure</tag> (numbered, captioned) or a <tag>sidebyside</tag> for more precise control.   The <attr>source</attr> attribute in this first example <em>does not</em> include an extension, and so three possibilities above will be searched for preferentially (you need only provide the video in one format, but providing additional versions will increase the chances every browser will find a compatible format).</p>
 
             <figure>
                 <caption>University of Puget Sound Promotional Video</caption>
-                <video source="images/ups-visitor-guide-360" width="80%"/>
+                <video source="images/ups-visitor-guide-360" width="80%" preview="images/ups-promo-frame-one.jpg" />
             </figure>
 
-            <p>YouTube<idx><h>YouTube videos</h></idx><idx><h>videos</h><h>YouTube</h></idx> videos may be embedded with only knowledge of the <q>ID</q>.  This a string of eleven seemingly random characters that show up in the URL when you watch a video.  For the Led Zeppelin performance below, the ID is <c>hAzdgU_kpGo</c>, which you might normally watch directly from the URL <url href="https://www.youtube.com/watch?v=hAzdgU_kpGo" />.  Screen real estate is determined by specifying an optional <c>@width</c> attribute as a percentage, and aspect ratio is preserved on the assumption of HD video (16:9).</p>
-
-            <p>Enhancements will include other aspect ratios.</p>
-
-            <p>These may be placed <q>standalone</q> in a <c>&lt;sidebyside&gt;</c>, but are designed mostly on the assumption that they are wrapped in a <c>figure</c> with a <c>title</c> (which is distinct from a <c>caption</c>).</p>
+            <p>You can replace the <q>preview</q> image of a video with one of your own making.  <init>HTML</init> refers to this as the <term>poster</term>, presumably because it advertises the video.  The image you make should be of the same quality as the video, and with the same aspect-ratio, and is presumably one of the frames of the video.  So a screenshot is the likely avenue.  (Maybe we will have advice on how to do this easily, or see <url href="https://github.com/rbeezer/mathbook/issues/853" />.)  On the <tag>video</tag> tag, include a <attr>preview</attr> attribute which is the name of an image file, including a relative path.  (JPEG or PNG formats are best.  JPEG may be smaller for video screenshots, while PNG is lossless and so may work better for diagrams.)</p>
 
             <figure>
-                <title>Kashmir (Live), Led Zeppelin</title>
-                <caption>Kashmir (Live), Led Zeppelin. O2 Arena, London. December 10, 2007. (8:55)</caption>
-                <idx><h>Led Zeppelin video</h></idx>
-
-                <video youtube="hAzdgU_kpGo" width="70%" xml:id="led-zeppelin-kashmir" />
+                <caption>University of Puget Sound Promotional Video</caption>
+                <video source="images/ups-visitor-guide-360" width="80%" preview="images/ups-promo-preview.jpg" />
             </figure>
+
+            <p>If you find the posters distracting or objectionable, you can cover them up by requesting a generic poster with the attribute-value pair: <c>preview = "generic"</c>.</p>
+
+            <figure>
+                <caption>University of Puget Sound Promotional Video</caption>
+                <video source="images/ups-visitor-guide-360" width="80%" preview="generic" />
+            </figure>
+
+            <p>You can use a very similar construction to point to a video hosted somewhere on the Internet, just use a complete <init>URL</init> for the <tag>source</tag> attribute.  Note that if the URL has a query string (parameters following a question-mark), then any ampersands (<ampersand />) will need to be escaped, so as to not confuse the <init>XML</init> processor (<ie /> use <c>&amp;amp</c>).  Also, the question-mark character needs to <em>not</em> be <init>URL</init>-encoded (<c>%3F</c>), so presumably ed it to be the character.  Here are two examples, the second one uses the <attr>start</attr> and <attr>stop</attr> attributes to limit the video to just the time between the 16-second and 30-second locations.</p>
+
+            <figure>
+                <caption>Sintel (Trailer @480p), <url href="https://durian.blender.org/" /></caption>
+                <video xml:id="video-sintel" source="https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4" width="100%" preview="images/sintel-trailer.jpg" />
+            </figure>
+
+            <!-- http://camendesign.com/code/video_for_everybody/test.html -->
+
+            <figure>
+                <caption>Big Buck Bunny from <q>Video for Everybody</q> Test Page at <url href="http://camendesign.com/code/video_for_everybody/test.htm"><c>camendesign.com/code/video_for_everybody/test.htm</c></url></caption>
+                <video source="http://clips.vorwaerts-gmbh.de/big_buck_bunny.webm" start="16" end="30" width="70%" preview="images/big-buck-bunny-frame-one.jpg" />
+            </figure>
+
+            <!-- A Coursera URL that expires via digital signature scheme:
+            https://d18ky98rnyall9.cloudfront.net/u5_p4_1_%20chisq_gof.77c96ac0ad8211e498e5e34296ce5455/full/360p/index.webm?Expires=1522800000&Signature=DJKrmAOfuGF4HMmWmQ2nCHnOdoeFzZd7qJzp1cfwOjQa-J~1kGNzwllMxFmGi8UXxt3wTXrhdhTQVcFQNk5nPzAi64mjJkMVu0m~QyKISqzjkFBZJm1NCnkNcbSyOk6WRDj6mjlrxEDaUSD6hHmD04ehumORG3G55Sp5OGEhYnU_&Key-Pair-Id=APKAJLTNE6QMUY6HBC5A -->
+
+            <p>YouTube<idx><h>YouTube videos</h></idx><idx><h>videos</h><h>YouTube</h></idx> videos may be embedded with only knowledge of the <q>ID</q>.  This a string of eleven seemingly random characters that show up in the URL when you watch a video.  For the Led Zeppelin performance below, the ID is <c>hAzdgU_kpGo</c>, which you might normally watch directly from the URL <url href="https://www.youtube.com/watch?v=hAzdgU_kpGo" />.  Screen real estate is determined by specifying an optional <c>@width</c> attribute as a percentage, and aspect ratio is preserved on the assumption of HD video (16:9).  (Enhancements will include other aspect ratios.)</p>
 
             <p>If you have ever owned a drone, you sympathize with this guy.  Way funnier than a cat video.</p>
 
             <figure>
                 <title>My first day with my drone</title>
                 <caption>First Drone Flight (1:28)</caption>
-                <video youtube="VsHMjWORFvI" />
+                <video xml:id="drone-flight-full" youtube="VsHMjWORFvI" />
             </figure>
 
             <p>If you are only interested in a piece of the action, you can limit the video with <c>start</c> and <c>end</c> attributes in seconds.  You might make those times clear in the caption for readers getting the link out of a PDF.  Some videos may not respect these parameters.</p>
@@ -4032,7 +4064,27 @@ the xsltproc executable.
             <figure>
                 <title>My first day with my drone (Splashdown)</title>
                 <caption>First Drone Flight (Splashdown, 0:54 to 1:12)</caption>
-                <video youtube="VsHMjWORFvI" start="54" end="72" />
+                <video xml:id="drone-flight-clip" youtube="VsHMjWORFvI" start="54" end="72" />
+            </figure>
+
+            <p>Videos may be placed <q>standalone</q> in a <c>&lt;sidebyside&gt;</c>, but are designed mostly on the assumption that they are wrapped in a <c>figure</c> with a <c>title</c> (which is distinct from a <c>caption</c>).  This video comes with a deafult poster featuring Robert Plant.  We've replaced it with Jimmy Page.</p>
+
+            <figure>
+                <title>Kashmir (Live), Led Zeppelin</title>
+                <caption>Kashmir (Live), Led Zeppelin. O2 Arena, London. December 10, 2007. (8:55)</caption>
+                <idx><h>Led Zeppelin video</h></idx>
+
+                <video xml:id="led-zeppelin-kashmir" youtube="hAzdgU_kpGo" width="70%" preview="images/jimmy-page.jpg" />
+            </figure>
+
+            <p>And if you don't want to be reminded of Plant, Page, Bonham, or Jones, you can cover them up.</p>
+
+            <figure>
+                <title>Kashmir (Live), Led Zeppelin</title>
+                <caption>Kashmir (Live), Led Zeppelin. O2 Arena, London. December 10, 2007. (8:55)</caption>
+                <idx><h>Led Zeppelin video</h></idx>
+
+                <video xml:id="led-zeppelin-kashmir-generic" youtube="hAzdgU_kpGo" width="50%" preview="generic" />
             </figure>
 
             <p>We can pack two videos side-by-side, with a lot of horizontal control, using two panels in the <c>sidebyside</c> element.  We have simply chose not to provide a caption (overall, or separately) as an illustration.  The sizes are purposely a bit odd.  See <xref ref="section-side-by-side" text="type-global" /> for much more on side-by-side panels.  These videos come from the <q>Topic</q> and <q>VEVO</q> areas of YouTube (respectively) and both have start/end times.</p>
@@ -4044,7 +4096,7 @@ the xsltproc executable.
                 <video xml:id="bareilles-love-song" youtube="qi7Yh16dA0w" start="60" end="120" />
             </sidebyside>
 
-            <p>These next two videos are evenly spaced, one from YouTube, one from a source file hosted by the author.  Now with separate captions, but identical margins (through very different choices of layout parameters).</p>
+            <p>These next two videos are evenly spaced, one from YouTube, one from a source file hosted by the author.  Now with separate captions, but identical margins (through very different choices of layout parameters than in the preceding pair of videos).</p>
 
             <sidebyside margins="10%" widths="35% 35%">
                 <!-- drone flight again-->
@@ -4055,7 +4107,7 @@ the xsltproc executable.
                 <!-- UPS promo -->
                 <figure>
                     <caption>UPS Promo</caption>
-                    <video xml:id="ups-promo-sbs" source="images/ups-visitor-guide-360" />
+                    <video xml:id="ups-promo-sbs" source="images/ups-visitor-guide-360" preview="images/ups-promo-frame-one.jpg"/>
                 </figure>
             </sidebyside>
 
@@ -4106,15 +4158,17 @@ the xsltproc executable.
                 <sidebyside margins="0%" width="30%">
                     <figure>
                         <caption>Embedded Only</caption>
-                        <video xml:id="ups-promo-1" source="images/ups-visitor-guide-360" play-at="embed" />
+                        <video xml:id="ups-promo-1" source="images/ups-visitor-guide-360" play-at="embed" preview="images/ups-promo-frame-one.jpg"/>
                     </figure>
+                    <!-- A @preview is effective on next, and might become       -->
+                    <!-- necessary as part of a deprecation of the popout option -->
                     <figure>
                         <caption>Pop-Out Only, w/ Start/End</caption>
                         <video xml:id="ups-promo-2" source="images/ups-visitor-guide-360" start="15" end="21" play-at="popout" />
                     </figure>
                     <figure>
                         <caption>User Selection</caption>
-                        <video xml:id="ups-promo-3" source="images/ups-visitor-guide-360" play-at="select" />
+                        <video xml:id="ups-promo-3" source="images/ups-visitor-guide-360" play-at="select" preview="images/ups-promo-frame-one.jpg"/>
                     </figure>
                 </sidebyside>
             </figure>
@@ -4404,13 +4458,19 @@ the xsltproc executable.
                 <li><p>A group of two exercises, with introduction, conclusion: <xref ref="exercisegroup-two-problems" text="type-global" /></p></li>
                 <li><p>Solution: An autonamed portion of an exercise: <xref ref="solution-antiderivative" text="type-global" /></p></li>
                 <li><p>Parts of a complicated exercise: <xref ref="exercise-complicated-second-hint" text="type-global" /> <xref ref="exercise-complicated-first-answer" text="type-global" /></p></li>
-                <li><p>An item buried in nested ordered lists (local reference): <xref ref="list-two-two-two-three" text="type-global"/></p></li>
-                <li><p>A subsidary part of an exercise (fully-qualified reference): <xref ref="exercise-one-two-one" /></p></li>
+                <li><p>A subsidary part of an exercise: <xref ref="exercise-one-two-one" /></p></li>
+                <li><p>An item buried in nested ordered lists: <xref ref="list-two-two-two-three" text="type-global"/></p></li>
                 <li><p>List item as knowls in HTML, including nested lists: <xref ref="list-two" />, <xref ref="list-two-two-two" text="type-global" /></p></li>
                 <li><p>A titled list: <xref ref="list-colors-rainbow" /></p></li>
                 <li><p>List item inside a named list, second color in rainbow list: <xref ref="rainbow-orange" text="type-global" /></p></li>
+                <li><p>Second color in rainbow list, but now as a local reference: <xref ref="rainbow-orange" text="type-local" /></p></li>
+
+                <li><p>An item in ordered list, but contained in an unordered list, hence without a number, so ambiguous: <xref ref="target-no-number" text="type-global"/></p></li>
+                <li><p>Same item in ordered list, but contained in an unordered list, now with a cross-reference by <c>title</c> with a content override: <xref ref="target-no-number" text="title">No Number List Item</xref></p></li>
+                <li><p>Several examples of hybrid cross-references to list items within a named list can be found in, and adjacent to, <xref ref="list-to-reference" text="type-global" />.</p></li>
                 <li><p>An assemblage, which never has a number.  A cross-reference now requires content in the <c>xref</c> element, with <c>text='title'</c>: <xref ref="assemblage-basics" text="title">text to xref an assemblage</xref></p></li>
-                <li><p>A cross-reference to a list item in a description list, which has a title, but never a number: <xref ref="reserved-characters-mathematics" text="title" />.  Note that you need to include the attribute <c>autoname="number"</c> even if that is obvious from the situation.  This requirement may be relaxed in a future refactoring of the cross-reference system.</p></li>
+                <li><p>A cross-reference to a list item in a description list, which has a title, but never a number: <xref ref="reserved-characters-mathematics" text="title" />.  Note that you need to include the attribute <c>text="title"</c> even if that is obvious from the situation.  This requirement may be relaxed in a future refactoring of the cross-reference system.</p></li>
+                <li><p>A very similar cross-reference to the previous one, but testing how final punctuation of titles is handled: <xref ref="reserved-characters-verbatim" text="title" />.</p></li>
                 <li><p>A cross-reference to a <q>paragraphs</q> subdivision, which never has a number (so comments above about description list items and titles applies here too): <xref ref="hierarchy-structure" text="title" /></p></li>
                 <li><p>A case within the proof of <xref ref="claim-with-cases" text="type-global" />: <xref ref="inductive-step" text="title" /></p></li>
                 <li><p>A cross-reference to a description list item with a title containing math: <xref ref="description-list-math-title" text="title" /></p></li>
@@ -4455,6 +4515,9 @@ the xsltproc executable.
                 <!-- <li><p>: <xref ref="" /></p></li> -->
             </ul></p>
 
+
+
+
             <p>The <c>url</c><idx>url</idx> element may be used to link to a data file, either externally, or internally, if you want to make such an object available to a reader.  A good example use case is a spreadsheet that might be part of an exercise, or contain data relevant to some discussion.  First let us suppose the data resides somewhere on the Internet, then just use the complete address.  Here is one from Microsoft: <url href="http://go.microsoft.com/fwlink/?LinkID=521962">Sample Excel Spreadsheet</url>.</p>
 
             <p>For a link like the previous one, you might want to provide advice appropriate for your audience about using a context menu to download a file, or how to configure helper/viewer applications.</p>
@@ -4474,7 +4537,7 @@ the xsltproc executable.
             <paragraphs>
                 <title>Unicode Characters for HTML Output</title>
 
-                <p>First, we discuss HTML output.  If you include Unicode<idx>Unicode</idx> characters in your <pretext /> source, they should survive just fine <foreign>en route</foreign> to a web browser or e-reader.  Here are the caveats for HTML output:<ul>
+                <p>First, we discuss HTML output.  If you include Unicode<idx>Unicode</idx> characters in your <pretext /> source, they should survive just fine <foreign xml:lang="fr-FR">en route</foreign> to a web browser or e-reader.  Here are the caveats for HTML output:<ul>
                     <li><p>So that you can continue to get the best results with print and PDF output, use available empty elements for special characters, even if targeting HTML output, before resorting to a Unicode character.  For example, use <c>&lt;times /&gt;</c> for a small <q>multiplication sign</q> in text before resorting to the Unicode character <c>U+00D7</c>.</p></li>
 
                     <li><p>How you actually enter Unicode characters into your source file is dependent on your editor and operating system, and is therefore outside the scope of our documentation.  You can cut/paste characters and text from the source of our examples for initial testing and experimentation.</p></li>
@@ -6584,7 +6647,7 @@ the xsltproc executable.
 
             <sidebyside  margins="5%" widths="40% 45%">
                 <!-- Hosted -->
-                <video source="images/ups-visitor-guide-360" width="80%"/>
+                <video source="images/ups-visitor-guide-360" width="80%" preview="images/ups-promo-frame-one.jpg"/>
                 <!-- Airborne Toxic Event -->
                 <video xml:id="airborne-midnight-1" youtube="UYPoMjR6-Ao" />
             </sidebyside>
@@ -6847,7 +6910,7 @@ the xsltproc executable.
 
                 <p><q>Names</q><idx>name</idx> for various parts of a document are determined exactly once for each language, ensuring consistency and saving you the bother of always typing them in.</p>
 
-                <p>However, you may want to have <q>Conundrum</q>s<idx><h>conundrum</h><h>repurposed from proposition</h></idx> in your document and you have no use for any <q>Proposition</q>s.  So you can repurpose the <c>proposition</c> tag to render a different name.  Or you might have a Lab Manual and want to rename <c>subsection</c> as <q>Activity</q>.  See the <c>docinfo</c> portion of this sample article to see how this is done, in concert with the example below.</p>
+                <p>However, you may want to have <q>Conundrum</q>s<idx><h>conundrum</h><h>repurposed from proposition</h></idx> in your document and you have no use for any <q>Proposition</q>s.  So you can repurpose the <c>proposition</c> tag to render a different name.  Or you might have a Lab Manual and want to rename <c>subsection</c> as <q>Activity</q>.  See the <c>docinfo</c> portion of this sample article to see how this is done, in concert with the example below.  Note that you may provide versions for different languages, and that the <attr>lang</attr> attribute here is just slightly different than the general <attr>@xml:lang</attr> attribute.</p>
 
                 <proposition xml:id="proposition-as-conundrum">
                     <statement>

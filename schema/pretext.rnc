@@ -590,7 +590,6 @@
                     SideBySide |
                     SideBySideGroup |
                     Video |
-                    JSXGraph |
                     MuseScore
                 )
             }
@@ -799,13 +798,6 @@
         }
         
         
-        JSXGraph = 
-            element jsxgraph {
-                UniqueID,
-                attribute width {text}?,
-                attribute aspect {text}?,
-                element input {text}
-            }
         MuseScore = 
             element score {
                 attribute musescoreuser {text},
@@ -821,7 +813,7 @@
                 attribute start {xsd:integer}?,
                 attribute end {xsd:integer}?,
                 attribute play-at {"embed" | "popout" | "select"}?,
-                attribute preview {"default" | "generic" }?,
+                attribute preview {"default" | "generic" | text}?,
                 (AttributesSourceFile | AttributesYouTube)
             }
         AttributesSourceFile =
@@ -1302,14 +1294,24 @@
             element em {TextLong} |
             element term {TextLong} |
             element alert {TextLong} |
-            element foreign {TextLong} |
-            element pubtitle {TextLong}
+            element pubtitle {TextLong} |
+            element articletitle {TextLong} |
+            element foreign {
+              XMLLang?,
+              TextLong
+            }
         
             
         Group |= 
             element delete {TextLong} |
             element insert {TextLong} |
             element stale {TextLong}
+        
+            
+        Group |=
+            element tag {text} |
+            element tage {text} |
+            element attr {text}
         
             
         Group |=
@@ -1333,10 +1335,19 @@
             element latex {empty} |
             element pretext {empty} |
             element webwork {empty} |
-            element eg {empty} |
-            element ie {empty} |
+            element ad {empty} |
+            element am {empty} |
+            element bc {empty} |
             element circa {empty} |
-            element etc {empty}
+            element eg {empty} |
+            element etal {empty} |
+            element etc {empty} |
+            element ie {empty} |
+            element nb {empty} |
+            element pm {empty} |
+            element ps {empty} |
+            element vs {empty} |
+            element viz {empty}
         
         
         UnitSpecification =
@@ -1396,6 +1407,7 @@
         Character |= 
             element ellipsis {empty} |
             element asterisk {empty} |
+            element backtick {empty} |
             element slash {empty} |
             element midpoint {empty} |
             element swungdash {empty} |
