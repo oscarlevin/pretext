@@ -103,7 +103,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   <xsl:variable name="filename">
       <text>sections/</text>
       <!-- <xsl:apply-templates select="." mode="long-name" /> -->
-      <xsl:call-template name="safe-long-name"/>
+      <xsl:call-template name="type-and-number"/>
       <text>.tex</text>
   </xsl:variable>
   <xsl:text>\input{</xsl:text>
@@ -124,13 +124,15 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 </xsl:template>
 
 
-<xsl:template name="safe-long-name">
+
+<!-- Produce nice filenames: -->
+<xsl:template name="type-and-number">
   <xsl:variable name="filename">
-    <xsl:apply-templates select="." mode="long-name"/>
+    <xsl:apply-templates select="." mode="type-name" />
+    <xsl:text>_</xsl:text>
+    <xsl:apply-templates select="." mode="number" />
   </xsl:variable>
-  <xsl:variable name="nospaces" select="translate($filename, ' ', '_')"/>
-  <xsl:variable name="noqms" select="translate($nospaces, '?', '')"/>
-  <xsl:value-of select="translate($noqms, '.', '-')"/>
+  <xsl:value-of select="translate($filename, '.', '-')"/>
 </xsl:template>
 
 
@@ -385,7 +387,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   <xsl:variable name="filename">
       <text>sections/</text>
       <!-- <xsl:apply-templates select="." mode="long-name" /> -->
-      <xsl:call-template name="safe-long-name"/>
+      <xsl:call-template name="type-and-number"/>
       <text>.tex</text>
   </xsl:variable>
   <exsl:document href="{$filename}" method="text" >
@@ -437,17 +439,17 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Slides: -->
 <xsl:template name="slides-preamble">
   <!-- <xsl:call-template name="preamble-common"/> -->
-  <xsl:call-template name="beamer-preamble-full"/>
+  <xsl:call-template name="beamer-preamble"/>
 </xsl:template>
 
 <!-- Worksheets: -->
 <xsl:template name="worksheets-preamble">
-  <xsl:call-template name="preamble-common"/>
+  <xsl:call-template name="latex-preamble"/>
 </xsl:template>
 
 <!-- Notes: -->
 <xsl:template name="notes-preamble">
-  <xsl:call-template name="preamble-common"/>
+  <xsl:call-template name="latex-preamble"/>
 </xsl:template>
 
 
@@ -1970,7 +1972,8 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-<!-- Preamble template -->
+<!-- Beamer Preamble template -->
+<!-- TODO: integrate with common preamble, or not if others work fine with common latex-preamble -->
 <!-- There is likely lots to fix here -->
 <!-- Currently exactly the same as latex preable, except: -->
 <!--    remove all geometry stuff -->
@@ -1978,7 +1981,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!--    Removed newtheorems (included in beamer) -->
 <!--    Removed index code (we never have an index) -->
 <!-- It would be nice to either really clean this up or put it all in a new file -->
-<xsl:template name="beamer-preamble-full">
+<xsl:template name="beamer-preamble">
   <xsl:text>%% Preamble:&#xa;</xsl:text>
 
   <xsl:text>%% Custom Preamble Entries, early (use latex.preamble.early)&#xa;</xsl:text>
