@@ -91,15 +91,15 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
   </xsl:variable>
   <xsl:text>\input{</xsl:text>
   <xsl:value-of select="$filename" />
-  <xsl:text>}&#xa;</xsl:text>
+  <xsl:text>}&#xa;&#xa;</xsl:text>
   <!-- <xsl:text>\subsection*{</xsl:text>
   <xsl:apply-templates select="." mode="long-name" />
   <xsl:text>}&#xa;</xsl:text>
   <xsl:apply-templates select="*" mode="slides"/> -->
   <xsl:call-template name="activities-subfiles"/>
-  <xsl:call-template name="start-activity" />
+  <!-- <xsl:call-template name="start-activity" />
   <xsl:apply-templates select="."/>
-  <xsl:call-template name="end-activity" />
+  <xsl:call-template name="end-activity" /> -->
 </xsl:template>
 
 
@@ -127,10 +127,18 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!--   which include section numbers to easily identify them -->
 <xsl:template name="start-activity">
     <!-- <xsl:text>\begin{frame}[allowframebreaks, plain]&#xa; &#xa;</xsl:text> -->
+    <!-- <xsl:variable name="cptj-value">
+      <xsl:apply-templates select="." mode="number"/>
+    </xsl:variable> -->
+    <xsl:text>\setcounter{cpjt}{</xsl:text>
+      <xsl:apply-templates select="." mode="serial-number"/>
+    <xsl:text>}&#xa;\addtocounter{cpjt}{-1}&#xa;</xsl:text>
 </xsl:template>
 
 <xsl:template name="end-activity">
     <!-- <xsl:text>\end{frame}&#xa; &#xa;</xsl:text> -->
+    <xsl:text>&#xa;\clearpage</xsl:text>
+    
 </xsl:template>
 
 
@@ -143,11 +151,11 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- To generate single file which includes everything: -->
 <xsl:template name="activities-main-file">
   <exsl:document href="activities.tex" method="text" >
-    <xsl:text>\documentclass{article}&#xa;&#xa;</xsl:text>
+    <xsl:text>\documentclass{book}&#xa;&#xa;</xsl:text>
     <xsl:text>\input{activities-preamble.tex}&#xa;</xsl:text>
     <!-- <xsl:text>% Include a file allowing course customizations &#xa;</xsl:text> -->
     <!-- <xsl:text>\@input{../customize.tex}&#xa;</xsl:text> -->
-    <xsl:text>\begin{document}&#xa;</xsl:text>
+    <xsl:text>\begin{document}&#xa;&#xa;</xsl:text>
     <xsl:apply-templates select="*" mode="activities"/>
     <xsl:text>\end{document}&#xa;</xsl:text>
   </exsl:document>
@@ -175,7 +183,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
       <text>.tex</text>
   </xsl:variable>
   <exsl:document href="{$filename}" method="text" >
-    <xsl:text>\documentclass[12pt]{article}&#xa;&#xa;</xsl:text>
+    <xsl:text>\documentclass{book}&#xa;&#xa;</xsl:text>
     <xsl:text>\input{../activities-preamble.tex}&#xa;</xsl:text>
     <!-- <xsl:text>% Include a file allowing course customizations &#xa;</xsl:text> -->
     <!-- <xsl:text>\@input{../../customize.tex}&#xa;</xsl:text> -->
@@ -184,7 +192,9 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:apply-templates select="." mode="long-name" />
     <xsl:text>}&#xa;</xsl:text> -->
     <!-- <xsl:apply-templates select="*" mode="activities"/> -->
-    <xsl:apply-templates select="." />
+    <xsl:call-template name="start-activity" />
+    <xsl:apply-templates select="."/>
+    <xsl:call-template name="end-activity" />
     <xsl:text>\end{document}&#xa;</xsl:text>
   </exsl:document>
 </xsl:template>
@@ -209,6 +219,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
+
 <!-- ########################################### -->
 <!-- End of main sheet.  Below is only preambles -->
 <!-- ########################################### -->
@@ -218,12 +229,14 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Activities: -->
 <xsl:template name="activities-preamble">
   <!-- Hack to avoid error when compiling article -->
-  <xsl:text>\newcommand*{\chaptername}{Chapter}</xsl:text>
+  <!-- <xsl:text>\newcommand*{\chaptername}{Chapter}</xsl:text>
+  <xsl:text>\newcounter{chapter}</xsl:text> -->
   <!-- Preamble pulled from mathbook-latex.xsl -->
   <xsl:call-template name="latex-preamble"/>
   <xsl:text>% Include docmute package to include files that can themselves compile. &#xa;</xsl:text>
   <xsl:text>\usepackage{docmute}&#xa;</xsl:text>
   <xsl:text>\usepackage{import}&#xa;</xsl:text>
+  <xsl:text>\pagestyle{empty}&#xa;</xsl:text>
 </xsl:template>
 
 <!-- Notes: -->
