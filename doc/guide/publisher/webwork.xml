@@ -8,7 +8,7 @@
 <!-- See the file COPYING for copying conditions.             -->
 
 <chapter xml:id="webwork-publisher">
-  <title><webwork /> Exercises</title>
+  <title><webwork/> Exercises</title>
   <idx>
     <h><webwork/></h>
     <h><webwork/> exercises</h>
@@ -18,7 +18,7 @@
   <introduction>
     <p>
       With a <webwork/> server
-      (version 2.14 or higher, or <url href="https://webwork-ptx.aimath.org"><c>webwork-ptx.aimath.org</c></url>)
+      (version 2.14 or higher, or <url href="https://webwork-ptx.aimath.org" visual="webwork-ptx.aimath.org"/>)
       and a little setup work, you can embed <webwork/> exercises in your <pretext/> project.
       HTML output can have interactive problem cells or print problems in <q>static</q> form.
       PDF output will print static versions.
@@ -26,16 +26,68 @@
       for use in the <q>traditional</q> way.
     </p>
     <p>
-      See the <pretext/> Authoring Guide for how to include or create <webwork/> problems in your source.
+      See <xref ref="webwork-author"/> for how to include or create <webwork/> problems in your source.
     </p>
   </introduction>
 
-  <section xml:id="webwork-configuration">
+  <section xml:id="webwork-server-configuration">
+    <title>Configuring a <webwork/> Server for <pretext/></title>
+    <p>
+      To make use of <webwork/> in your <pretext/> project, you need a <webwork/> server.
+      If someone is providing a <webwork/> server for you, like the AIM server
+      at <url href="https://webwork-ptx.aimath.org" visual="webwork-ptx.aimath.org"/>,
+      then we assume they have already configured that server for use with <pretext/>,
+      and you may skip this section and move on to <xref ref="webwork-processing">Section</xref>.
+    </p>
+    <p>
+      If you are configuring your own <webwork/> server to use with <pretext/>,
+      we assume a mild familiarity with administrating a <webwork/> server.
+      The version of <webwork/> needs to be 2.14 or later for use with <pretext/>.
+    </p>
+    <p>
+      The only thing you need to do at this level is set the web server to use certain headers on content that is fetched.
+      These headers tell a web browser that you are authorizing it to display content from this web server
+      as embedded content inside pages from another web server (in particular, where you are hosting you <pretext/> book).
+    </p>
+    <p>
+      In <c>webwork2/conf/</c> there should be the apache configuration file <c>webwork-apache2.4-config</c>.
+      This file needs to include the lines:
+    </p>
+    <pre>
+      <![CDATA[
+      <IfModule mod_headers.c>
+          <Location /webwork2/html2xml>
+              Header set Access-Control-Allow-Origin "*"
+          </Location>
+          <Location /webwork2_files>
+              Header set Access-Control-Allow-Origin "*"
+          </Location>
+      </IfModule>
+      ]]>
+    </pre>
+    <p>
+      Note there is the distribution file <c>webwork-apache2.4-config.dist</c>,
+      which has these lines (or similar lines) commented out.
+    </p>
+    <p>
+      If you are certain that your <pretext/> book will only be hosted at one site,
+      (or if you are supporting multiple books, that they will only be hosted at one site)
+      then you should consider replacing the <c>*</c>s above with that site (for example <c>https://mybook.myschool.edu</c>).
+      This will mildly defend against unauthorized use of your <webwork/> server.
+      It will make it so that if there are HTML pages at some other domain and they embed <webwork/> problems
+      that rely on your <webwork/> server, then web browsers will refuse to load the embedded content.
+    </p>
+    <p>
+      You may also need to enable headers by executing something like <c>sudo a2enmod headers</c> from the command line.
+    </p>
+  </section>
+
+  <section xml:id="webwork-course-configuration">
     <title>Configuring a <webwork/> Course for <pretext/></title>
     <p>
-      To make use of <webwork/> in your <pretext/> project, you need to use a <webwork/> server.
-      If someone else is providing a <webwork/> server for you, like the AIM <webwork/> server
-      at <url href="https://webwork-ptx.aimath.org"><c>webwork-ptx.aimath.org</c></url>,
+      To make use of <webwork/> in your <pretext/> project, you need a host <webwork/> course.
+      If someone is providing a <webwork/> server for you, like the AIM server
+      at <url href="https://webwork-ptx.aimath.org" visual="webwork-ptx.aimath.org"/>,
       then we assume they have already configured a course for use with <pretext/>,
       and you may skip this section and move on to <xref ref="webwork-processing">Section</xref>.
     </p>
@@ -43,6 +95,8 @@
       If you are configuring your own <webwork/> server to use with <pretext/>,
       we assume a mild familiarity with administrating a <webwork/> server.
       The version of <webwork/> needs to be 2.14 or later for use with <pretext/>.
+    </p>
+    <p>
       Using the <c>admin</c> course, create a course named <c>anonymous</c>.
       (You could name it something else, but we assume the name is <c>anonymous</c> in this guide.)
       In the course's Course Configuration menu, set all permissions to <c>admin</c>
@@ -99,14 +153,40 @@
     </p>
   </section>
 
+  <section xml:id="webwork-pg-macros">
+    <title>PG Macros from the <pretext/> Source</title>
+    <p>
+      The project's <webwork/> exercises may rely on PG macros that are written into the project's source.
+      For example, the exercises might have TikZ images that rely on <tag>docinfo/latex-image-preamble</tag>
+      with <attr>syntax</attr> set to <c>PGtikz</c>.
+    </p>
+    <p>
+      For this, a PG macro library file must be built and placed in the host course's <c>templates/macros/</c>
+      folder <em>before</em> attempting to process the <webwork/> exercises. To build this macro library, run:
+      <cd>
+        pretext -c pg-macros aota.ptx
+      </cd>
+      <c>aota.ptx</c> in the example is the root file for your <pretext/> project.
+      You could also specify a location to place the resulting macro library file:
+      <cd>
+        pretext -c pg-macros -d some/file/path aota.ptx
+      </cd>
+    </p>
+    <p>
+      Once you have the macro library file, upload it to the host <webwork/> course's <c>templates/macros</c> folder.
+      If your project relies on the AIM <webwork/> server and you need to supply a macro library file
+      to a host course on that server, post to <email>pretex-support@googlegroups.com</email> and we can help with that.
+    </p>
+  </section>
+
   <section xml:id="webwork-processing">
     <title>Processing <webwork/> Exercises</title>
 
-    <subsection xml:id="extraction-and-merging">
-      <title>Extraction and Merging</title>
+    <subsection xml:id="webwork-representations">
+      <title>Extraction and Processing</title>
       <p>
-        A <pretext/> project must first have its <webwork/> content extracted into an auxiliary XML file before anything else can be done.
-        We do this with the <c>mbx</c> script which uses Python and the Python <c>requests</c> module.
+        Before anything else can be done, a <pretext/> project with <webwork/> problems must first have its <webwork/> content extracted and processed into multiple representations, which are then collected into an auxiliary XML file.
+        We do this with the <c>pretext/pretext</c> script which uses Python and the Python <c>requests</c> module.
         It is not uncommon for your computer to not have <c>requests</c> installed,
         so you should check if it is there and install it if need be.
         You can check if it is installed from the command line with:
@@ -124,34 +204,40 @@
         to install it.)
       </p>
       <p>
-        Once you know that you have the <c>requests</c> package installed,
-        use the <c>mbx</c> script to extract <pretext/> content from the <webwork/> server into a <em>folder</em>,
-        which you might call <c>webwork-extraction/</c> as in this example:
+        Processing <webwork/> problems is best accomplished if you are using directory management.
+        With a publication file, declare the external and generated directories as describe in
+        <xref ref="processing-directory-management"/>.
+        Then use the <c>pretext</c> script to extract <pretext/> content from the <webwork/> server.
+        It will be placed in a <c>webwork</c> subfolder of your generated folder.
+        For example:
       </p>
-      <sidebyside>
-        <console>
-          <prompt>$ </prompt>
-          <input>mbx -c webwork -s &lt;server&gt; -d webwork-extraction &lt;xml&gt;</input>
-        </console>
-      </sidebyside>
+      <console>
+        <prompt>$ </prompt>
+        <input>pretext -c webwork -p &lt;publisher&gt; -s &lt;server&gt; aota.ptx</input>
+      </console>
+      <p>
+        <c>aota.ptx</c> in the example is the root file for your <pretext/> project.
+      </p>
       <warning>
         <title>File Paths</title>
         <p>
           In the previous example and those that follow, you should specify paths as needed.
-          For example, the <c>mbx</c> script is typically at <c>~/mathbook/script/mbx</c>.
-          And the <c>-d</c> option is specifying a directory to place the auxiliary file,
-          and if you literally use <c>-d webwork-extraction</c> instead of a full path,
-          the expectation is that <c>webwork-extraction</c> is a folder in your current working folder.
+          For example, the <c>pretext</c> script is typically at <c>~/mathbook/pretext/pretext</c>.
+          And the <c>-p</c> option is specifying a publication file.
         </p>
       </warning>
       <p>
         <c>-c webwork</c> means you are processing the <webwork/> components.
       </p>
       <p>
+        <c>-p</c> specifies the publication file, as described in <xref ref="publication-file-reference"/>.
+      </p>
+      <p>
         <c>-s</c> specifies the <webwork/> server.
-        The <webwork /> server needs to be version 2.14 or later, specified with its protocol and domain,
+        The <webwork/> server needs to be version 2.14 or later, specified with its protocol and domain,
         like <c>https://webwork-ptx.aimath.org</c>.
-        (If you do not have a server, you may use <c>https://webwork-ptx.aimath.org</c>.)
+        It is <em>important</em> to get the protocol correct for your server (<c>http</c> versus <c>https</c>).
+        If you do not have a server, you may use <c>https://webwork-ptx.aimath.org</c>.
       </p>
       <p>
         If any of your hosting course, user for that course, password for the site, or password for the course user are not <q>anonymous</q>,
@@ -159,151 +245,137 @@
         <cd>-s "(https://webwork-ptx.aimath.org,courseID,userID,site_password,course_password)"</cd>
         The <c>site_password</c> is probably <q>anonymous</q>,
         but could be something different. Only server administrators can set this.
-      </p>
-      <p>
-        <c>-d</c> specifies a path to the folder where the auxiliary files will be stored.
-        That folder is named <c>webwork-extraction</c> in the example.
-        Any image files that the <webwork/> server generates will be stored inside this folder.
-        An auxiliary XML <em>file</em> called <c>webwork-extraction.xml</c> will be created in this folder.
-        (Note that you can name the folder whatever you like,
-        but the auxiliary file that is created will always be named <c>webwork-extraction.xml</c>.)
-      </p>
-      <p>
-        What is called <q><c>&lt;xml&gt;</c></q> in the example should be the root file for your <pretext/> project.
-      </p>
-      <p>
-        The second phase of processing is to merge the extracted content with your original source tree.
-        Use <c>xsltproc</c> with <c>pretext-merge.xsl</c> to do this as in this example:
-      </p>
-      <sidebyside>
-        <console>
-          <prompt>$ </prompt>
-          <input>xsltproc --stringparam webwork.extraction webwork-extraction.xml pretext-merge.xsl &lt;xml&gt; > merge.ptx</input>
-        </console>
-      </sidebyside>
-      <p>
-        The string parameter <c>webwork.extraction</c> must identify the auxiliary XML file created in the previous step.
-        Rather than literally typing <q><c>webwork-extraction.xml</c></q>, you likely need the full path to that file.
-      </p>
-      <p>
-        What is called <q><c>&lt;xml&gt;</c></q> in the example should be the root file for your <pretext/> project.
-      </p>
-      <p>
-        Store the merged XML tree in some file. The example stored it in <c>merge.ptx</c>. You may want to provide a path.
+        Again, it is <em>important</em> to get the protocol correct for your server (<c>http</c> versus <c>https</c>).
       </p>
     </subsection>
 
-    <subsection>
+    <subsection xml:id="webwork-html-output">
       <title>HTML output</title>
 
       <p>
-        When you execute <c>xsltproc</c><idx><c>xsltproc</c></idx> using <c>mathbook-html.xsl</c>,
-        apply it to the merged file described above, not your original source. For example:
+        We assume you are using managed directories, and have <webwork/> representations file as above.
+        Now you may use <c>pretext/pretext</c> to build HTML. For example:
       </p>
-      <sidebyside>
-        <console>
-          <prompt>$ </prompt>
-          <input>xsltproc mathbook-html.xsl merge.ptx</input>
-        </console>
-      </sidebyside>
+      <console>
+        <prompt>$ </prompt>
+        <input>pretext -c all -f html -p &lt;publisher&gt; -d &lt;destination&gt; aota.ptx</input>
+      </console>
       <p>
-        You may need to specify paths to <c>mathbook-html.xsl</c> and <c>merge.ptx</c>.
+        <c>-p</c> specifies the publication file, as described in <xref ref="publication-file-reference"/>.
       </p>
       <p>
-        There are several string parameters you may pass to <c>xsltproc</c>.
+        <c>-d</c> specifies a folder to place all of the HTML output.
+        If unspecified, this will be the current working directory.
       </p>
-      <sidebyside>
-        <tabular valign="top">
-          <col />
-          <col width="60%" />
-          <row bottom="major">
-            <cell>stringparam</cell>
-            <cell>options</cell>
-          </row>
-          <row bottom="minor">
-            <cell><c>webwork.inline.static</c></cell>
-            <cell>
-              <p>
-                <c>'no'</c> (default) means inline exercises render as interactive.
-              </p>
-              <p>
-                <c>'yes'</c> means inline exercises render as static.
-              </p>
-              <p>
-                <c>'preview'</c> (planned) means inline exercises render as static until you click to activate them.
-              </p>
-            </cell>
-          </row>
-          <row bottom="minor">
-            <cell><c>webwork.divisional.static</c></cell>
-            <cell>
-              <p>
-                <c>'no'</c> means divisional exercises render as interactive.
-              </p>
-              <p>
-                <c>'yes'</c> (default) means divisional exercises render as static.
-              </p>
-              <p>
-                <c>'preview'</c> (planned) means divisional exercises render as static until you click to activate them.
-              </p>
-            </cell>
-          </row>
-          <row bottom="minor">
-            <cell><c>html.knowl.exercise.inline</c></cell>
-            <cell>
-              <p>
-                <c>'no'</c> means inline exercises appear on page load.
-              </p>
-              <p>
-                <c>'yes'</c> (default) means inline exercises are hidden in knowls.
-              </p>
-            </cell>
-          </row>
-          <row bottom="minor">
-            <cell><c>html.knowl.exercise.sectional</c></cell>
-            <cell>
-              <p>
-                <c>'no'</c> (default) means divisional exercises appear on page load.
-              </p>
-              <p>
-                <c>'yes'</c> means divisional exercises are hidden in knowls.
-              </p>
-            </cell>
-          </row>
-        </tabular>
-      </sidebyside>
       <p>
-        If your <webwork/> extraction included image files from the <webwork/> server
-        and you are rendering the corresponding problems as static,
-        then you need to copy the images files (from where your extracted auxiliary XML file was placed) over to where your HTML output assumes images files are located.
+        There are several string parameters you may pass to <c>pretext</c> using
+        <c>-x stringparam option stringparam option ...</c>. If you use <c>-x</c> with <c>pretext</c>,
+        make sure at least one other switch (<c>-p</c> for example) follows the use of <c>-x</c>.
       </p>
+      <tabular valign="top">
+        <col />
+        <col width="60%" />
+        <row bottom="major">
+          <cell>stringparam</cell>
+          <cell>options</cell>
+        </row>
+        <row bottom="minor">
+          <cell><c>webwork.inline.static</c></cell>
+          <cell>
+            <p>
+              <c>'no'</c> (default) means inline exercises render as interactive.
+            </p>
+            <p>
+              <c>'yes'</c> means inline exercises render as static.
+            </p>
+            <p>
+              <c>'preview'</c> (planned) means inline exercises render as static until you click to activate them.
+            </p>
+          </cell>
+        </row>
+        <row bottom="minor">
+          <cell><c>webwork.divisional.static</c></cell>
+          <cell>
+            <p>
+              <c>'no'</c> means divisional exercises render as interactive.
+            </p>
+            <p>
+              <c>'yes'</c> (default) means divisional exercises render as static.
+            </p>
+            <p>
+              <c>'preview'</c> (planned) means divisional exercises render as static until you click to activate them.
+            </p>
+          </cell>
+        </row>
+        <row bottom="minor">
+          <cell><c>html.knowl.exercise.inline</c></cell>
+          <cell>
+            <p>
+              <c>'no'</c> means inline exercises appear on page load.
+            </p>
+            <p>
+              <c>'yes'</c> (default) means inline exercises are hidden in knowls.
+            </p>
+          </cell>
+        </row>
+        <row bottom="minor">
+          <cell><c>html.knowl.exercise.sectional</c></cell>
+          <cell>
+            <p>
+              <c>'no'</c> (default) means divisional exercises appear on page load.
+            </p>
+            <p>
+              <c>'yes'</c> means divisional exercises are hidden in knowls.
+            </p>
+          </cell>
+        </row>
+      </tabular>
     </subsection>
 
     <subsection xml:id="webwork-latex-output">
       <title><latex/> output</title>
 
       <p>
-        When you execute <c>xsltproc</c><idx><c>xsltproc</c></idx> using <c>mathbook-latex.xsl</c>,
-        apply it to the merged file described above, not your original source. For example:
+        We assume you are using managed directories, and have <webwork/> representations file as above.
+        Now you may use <c>pretext/pretext</c> to build a <latex/> PDF. For example:
       </p>
-      <sidebyside>
-        <console>
-          <prompt>$ </prompt>
-          <input>xsltproc -o mybook.tex mathbook-latex.xsl merge.ptx</input>
-        </console>
-      </sidebyside>
+      <console>
+        <prompt>$ </prompt>
+        <input>pretext -c all -f pdf -p &lt;publisher&gt; -d &lt;destination&gt; aota.ptx</input>
+      </console>
       <p>
-        You may need to specify paths to <c>mathbook-latex.xsl</c> and <c>merge.ptx</c>.
+        <c>-p</c> specifies the publication file, as described in <xref ref="publication-file-reference"/>.
       </p>
       <p>
-        One string parameter you can pass to <c>xsltproc</c> is <c>latex.fillin.style</c>,
-        which can take values <c>'underline'</c> (the default) or <c>'box'</c>.
+        <c>-d</c> specifies a folder to place the PDF output.
+        If unspecified, this will be the current working directory.
       </p>
       <p>
-        If your <webwork/> extraction included image files from the <webwork/> server,
-        then you need to copy the images files (from where your extracted auxiliary XML file was placed)
-        over to where your TeX output assumes images files are located.
+        There is one string parameter you may pass to <c>pretext</c> using <c>-x</c>.
+        If you use <c>-x</c> with <c>pretext</c>,
+        make sure at least one other switch (<c>-p</c> for example) follows the use of <c>-x</c>.
       </p>
+      <tabular valign="top">
+        <col />
+        <col width="60%" />
+        <row bottom="major">
+          <cell>stringparam</cell>
+          <cell>options</cell>
+        </row>
+        <row bottom="minor">
+          <cell><c>latex.fillin.style</c></cell>
+          <cell>
+            <p>
+              <c>'underline'</c> (default) means that where there would be an answer blank,
+              it is rendered as an underline.
+            </p>
+            <p>
+              <c>'box'</c> means that where there would be an answer blank,
+              it is rendered as a box outline.
+            </p>
+          </cell>
+        </row>
+      </tabular>
     </subsection>
 
     <subsection>
@@ -311,7 +383,7 @@
 
       <p>
         All of the <tag>webwork</tag> that you have written into your project can be <q>harvested</q>
-        and put into their own <c>.pg</c> files by the <c>mbx</c> script.
+        and put into their own <c>.pg</c> files by the <c>pretext</c> script.
         These files are created with a folder structure that follows the chunking scheme you specify.
         This process also creates set definition files (<c>.def</c>) for each chunk (say, for each section):
         one for inline exercises (checkpoints) and one for divisional exercises.
@@ -320,23 +392,17 @@
         This archiving process creates set header <c>.pg</c> files for each set definition.
       </p>
       <p>
-        As with other <webwork/> processing, you must use the extraction and merge process first
-        that is described in <xref ref="extraction-and-merging">Subsection</xref>.
-        Then use <c>xsltproc</c> with <c>pretext-ww-problem-sets.xsl</c>.
         For example:
       </p>
-      <sidebyside>
-        <console>
-          <prompt>$ </prompt>
-          <input>xsltproc --stringparam chunk.level 2 pretext-ww-problem-sets.xsl merge.ptx</input>
-        </console>
-      </sidebyside>
+      <console>
+        <prompt>$ </prompt>
+        <input>xsltproc -stringparam publisher &lt;publisher&gt; pretext-ww-problem-sets.xsl aota.ptx</input>
+      </console>
       <p>
-        You may need to specify paths to <c>pretext-ww-problem-sets.xsl</c> and <c>merge.ptx</c>.
+        You may need to specify paths to these files.
       </p>
       <p>
-        With a book, <c>--stringparam chunk.level 2</c> means that each problem set corresponds to a section from the book.
-        Level 1: chapter. Level 3: subsection. With an article there are no chapters, and Level 1 corresponds to sections.
+        With a book, you can break up your problem set into multiple files according to a chosen depth of the hierarchy.  See <xref ref="common-chunking-options"/> for details on how to specify this.
       </p>
       <p>
         This creates a folder named after your book title,
@@ -361,7 +427,7 @@
           <p>
             Anything that is the numbered target of a cross-reference, such as a figure,
             may not be inside a <webwork/> exercise.
-            The exericse may go on to have a life of its own independent of its parent <pretext/> project,
+            The exercise may go on to have a life of its own independent of its parent <pretext/> project,
             and then such a number makes no sense.
           </p>
         </li>

@@ -26,9 +26,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     xmlns:date="http://exslt.org/dates-and-times"
     extension-element-prefixes="exsl date"
 >
-<xsl:import href="./mathbook-latex.xsl" />
+<xsl:import href="./pretext-latex.xsl" />
 
-<xsl:output method="text" indent="no" encodeing="UTF-8"/>
+<xsl:output method="text" indent="no" encoding="UTF-8"/>
 
 <xsl:template match="/">
     <xsl:call-template name="banner-warning">
@@ -48,6 +48,11 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 <xsl:template name="preamble">
   <xsl:text>\documentclass[11pt, compress]{beamer}&#xa;</xsl:text>
+  <xsl:if test="$latex.preamble.early != ''">
+    <xsl:text>%% Custom Preamble Entries, early (use latex.preamble.early)&#xa;</xsl:text>
+    <xsl:value-of select="$latex.preamble.early" />
+    <xsl:text>&#xa;</xsl:text>
+  </xsl:if>
   <xsl:text>\usepackage{amsmath}&#xa;</xsl:text>
 
   <xsl:text>\usetheme{Boadilla}&#xa;</xsl:text>
@@ -232,7 +237,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:if test="$document-root//console">
             <xsl:text>%% Console session with prompt, input, output&#xa;</xsl:text>
             <xsl:text>%% listings allows for escape sequences to enable LateX,&#xa;</xsl:text>
-            <xsl:text>%% so we bold the input commands via teh following macro&#xa;</xsl:text>
+            <xsl:text>%% so we bold the input commands via the following macro&#xa;</xsl:text>
             <xsl:text>\newcommand{\consoleinput}[1]{\textbf{#1}}&#xa;</xsl:text>
             <!-- https://tex.stackexchange.com/questions/299401/bold-just-one-line-inside-of-lstlisting/299406 -->
             <!-- Syntax highlighting is not so great for "language=bash" -->
@@ -311,7 +316,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\NewTColorBox{sbspanel}{mO{top}}{sbspanelstyle,width=#1\linewidth,valign=#2}&#xa;</xsl:text>
   </xsl:if>
 
-  <xsl:if test="//tabular">
+  <xsl:if test="$document-root//tabular">
     <xsl:text>%% For improved tables&#xa;</xsl:text>
     <xsl:text>\usepackage{array}&#xa;</xsl:text>
     <xsl:text>%% Some extra height on each row is desirable, especially with horizontal rules&#xa;</xsl:text>
@@ -397,7 +402,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
   </xsl:if>
   <!-- http://tex.stackexchange.com/questions/23711/strikethrough-text -->
   <!-- http://tex.stackexchange.com/questions/287599/thickness-for-sout-strikethrough-command-from-ulem-package -->
-  <xsl:if test="$document-root//insert or $document-root//delete or $document-root//stale">
+  <xsl:if test="$document-root//insert|$document-root//delete|$document-root//stale">
     <xsl:text>%% Edits (insert, delete), stale (irrelevant, obsolete)&#xa;</xsl:text>
     <xsl:text>%% Package: underlines and strikethroughs, no change to \emph{}&#xa;</xsl:text>
     <xsl:text>\usepackage[normalem]{ulem}&#xa;</xsl:text>
@@ -434,6 +439,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
       <xsl:text>\newcommand{\stale}[1]{\renewcommand{\ULthickness}{\stalethick}\sout{#1}}&#xa;</xsl:text>
     </xsl:if>
   </xsl:if>
+  <!-- 2020-05-28: this "if" was edited in xsl/pretext-latex and is no longer in-sync -->
   <xsl:if test="$document-root//fillin">
     <xsl:text>%% Used for fillin answer blank&#xa;</xsl:text>
     <xsl:text>%% Argument is length in em&#xa;</xsl:text>
@@ -452,7 +458,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:text>}&#xa;</xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message terminate="yes">MBX:ERROR: invalid value <xsl:value-of select="$latex.fillin.style" />
+        <xsl:message terminate="yes">PTX:ERROR: invalid value <xsl:value-of select="$latex.fillin.style" />
  for latex.fillin.style stringparam. Should be 'underline' or 'box'.</xsl:message>
       </xsl:otherwise>
     </xsl:choose>
@@ -469,7 +475,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\ifxetex\sisetup{math-micro=\text{µ},text-micro=µ}\fi</xsl:text>
     <xsl:text>\ifluatex\sisetup{math-micro=\text{µ},text-micro=µ}\fi</xsl:text>
     <xsl:text>%% Common non-SI units&#xa;</xsl:text>
-    <xsl:for-each select="document('mathbook-units.xsl')//base[@siunitx]">
+    <xsl:for-each select="document('pretext-units.xsl')//base[@siunitx]">
       <xsl:text>\DeclareSIUnit\</xsl:text>
       <xsl:value-of select="@full" />
       <xsl:text>{</xsl:text>
@@ -497,14 +503,16 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\newcommand{\lititle}[1]{{\slshape#1}}&#xa;</xsl:text>
   </xsl:if>
   <xsl:text>%% End: Semantic Macros&#xa;</xsl:text>
-
+  <xsl:if test="$latex.preamble.late != ''">
+    <xsl:text>%% Custom Preamble Entries, late (use latex.preamble.late)&#xa;</xsl:text>
+    <xsl:value-of select="$latex.preamble.late" />
+    <xsl:text>&#xa;</xsl:text>
+  </xsl:if>
 
   <xsl:apply-templates select="/pretext/docinfo/macros"/>
-  <xsl:if test="$docinfo/latex-image-preamble">
+  <xsl:if test="$latex-image-preamble">
     <xsl:text>%% Graphics Preamble Entries&#xa;</xsl:text>
-    <xsl:call-template name="sanitize-text">
-      <xsl:with-param name="text" select="$docinfo/latex-image-preamble" />
-    </xsl:call-template>
+    <xsl:value-of select="$latex-image-preamble"/>
   </xsl:if>
   <xsl:text>&#xa;&#xa;%%%% End of PreTeXt generated preamble %%%%% &#xa;&#xa;</xsl:text>
 </xsl:template>
@@ -644,7 +652,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
   <xsl:text>\end{tcbraster} &#xa;</xsl:text>
 </xsl:template> -->
 
-<xsl:template match="proof">
+<xsl:template match="&PROOF-LIKE;">
   <xsl:text>\begin{proof}</xsl:text>
   <xsl:apply-templates/>
   <xsl:text>\end{proof}</xsl:text>
@@ -712,7 +720,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:text>}</xsl:text>
     <xsl:apply-templates select="statement"/>
 <xsl:text>\end{theorem}&#xa;</xsl:text>
-<xsl:apply-templates select="proof"/>
+<xsl:apply-templates select="&PROOF-LIKE;"/>
 </xsl:template>
 
 </xsl:stylesheet>

@@ -15,11 +15,13 @@
     </images>
 
     <macros>
+      \newcommand{\order}[1]{\left\lvert#1\right\rvert}
     </macros>
 
     <latex-image-preamble>
       \usepackage{tikz}
       \usepackage{pgfplots}
+      \usetikzlibrary{positioning} % for worksheet
       \usepackage{pstricks}
       \usepackage{phaistos}
       \usepackage{xcolor}
@@ -31,7 +33,6 @@
 
     <html>
       <favicon/>
-      <baseurl href="https://pretextbook.org/examples/pretext-showcase/html" />
     </html>
 
     <rename element="fact" xml:lang="en-US">Self Evident Fact</rename>
@@ -68,18 +69,18 @@
     <xi:include href="mathematics.ptx" />
     <xi:include href="environments.ptx" />
     <xi:include href="latex-image.ptx" />
+    <xi:include href="exercises.ptx" />
+    <xi:include href="worksheets.ptx" />
     <xi:include href="webwork.ptx" />
 
     <backmatter>
       <index>
         <title>Index</title>
 
-        <introduction>
           <p>
             Entries are alphabetized word-by-word, not letter-by-letter.
             Topics indexed are <pretext/> features, not any actual content.
           </p>
-        </introduction>
 
         <index-list />
       </index>

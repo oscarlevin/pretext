@@ -11,7 +11,7 @@
     <title>Starting</title>
 
     <introduction>
-        <p>Welcome to the Author's Guide for <pretext />.  You are likely eager to get started, but familiarizing yourself with this chapter should save you a lot of time in the long run.  We will try to keep it short and at the end of early chapters we will guide you on where to go next.  Not everything we say here will make sense on your first reading, so come back after your first few trial runs.  When you are ready to seek further help, or ask questions, please read the <xref ref="welcome" text="title"/> in <xref ref="welcome"/>.</p>
+        <p>Welcome to <q>the Guide</q> for <pretext />.  You are likely eager to get started, but familiarizing yourself with this chapter should save you a lot of time in the long run.  We will try to keep it short and at the end of early chapters we will guide you on where to go next.  Not everything we say here will make sense on your first reading, so come back after your first few trial runs.  When you are ready to seek further help, or ask questions, please read the <xref ref="welcome" text="title"/> in <xref ref="welcome"/>.</p>
     </introduction>
 
     <section xml:id="philosophy">
@@ -21,7 +21,8 @@
 
         <p>You are also freed from the technical details of presenting your ideas in the plethora of new formats available as a consequence of the advances in computers (including tablets and smartphones) and networks (global and wireless).  Your output <q>just works</q> and the software keeps up with technical advances and the introduction of new formats, while you concentrate on the content of your book (or article, or report, or proposal, or<nbsp /><ellipsis />).</p>
 
-        <p>If you have never used a markup language, it can be unfamiliar at first.  Even if you have used a markup language before (such as HTML or basic <latex />) you will need to make a few adjustments.  Most word-processors are WYSIWYG (<q>what you see is what you get</q>).  That approach is likely very helpful if you are designing the front page of a newspaper, but not if you are writing about the life-cycle of a salamander.  In the old days, programs like <url href="https://en.wikipedia.org/wiki/Troff"><c>troff</c></url> and its predecessor, <url href="https://en.wikipedia.org/wiki/TYPSET_and_RUNOFF"><c>RUNOFF</c></url> (1964), implemented simple markup languages to allow early computers to do limited text-formatting.  Sometimes the old ways are the best ways.</p>
+        <p>If you have never used a markup language, it can be unfamiliar at first.  Even if you have used a markup language before (such as HTML or basic <latex />) you will need to make a few adjustments.  Most word-processors are WYSIWYG (<q>what you see is what you get</q>).  That approach is likely very helpful if you are designing the front page of a newspaper, but not if you are writing about the life-cycle of a salamander.  In the old days, programs like
+        <url href="https://en.wikipedia.org/wiki/Troff" visual="en.wikipedia.org/wiki/Troff"><c>troff</c></url> and its predecessor, <url href="https://en.wikipedia.org/wiki/TYPSET_and_RUNOFF" visual="en.wikipedia.org/wiki/TYPSET_and_RUNOFF"><c>RUNOFF</c></url> (1964), implemented simple markup languages to allow early computers to do limited text-formatting.  Sometimes the old ways are the best ways.</p>
 
         <p><pretext /> is what is called an <term>XML application</term><idx>XML application</idx><idx><h>XML application</h><seealso>XML vocabulary</seealso></idx> or an <term>XML vocabulary</term><idx>XML vocabulary</idx><idx><h>XML vocabulary</h><seealso>XML application</seealso></idx> (I prefer the latter). Authoring in XML might seem cumbersome at first, but you will eventually appreciate the long-run economies, so keep an open mind.  And if you are already familiar with XML, realize we have been very careful to design this vocabulary with human authors foremost in our mind.</p>
 
@@ -68,7 +69,7 @@
         <paragraphs>
             <title>File Format</title>
 
-            <p>Your source should be plain <term>ASCII files</term><idx>ASCII file</idx> which you will create with a text editor.  In other words, do not create your source with Word, LibreOffice, WordPerfect, AbiWord, Pages or similar programs.  Popular text editors include vi, emacs, Notepad, Notepad++, Atom, TextWrangler, and BBEdit.  I have had a very good experience with Sublime Text, which is cross-platform (Windows, OS X, Linux), and can be used for free, though it has a very liberal license and is well worth the cost.  Sometimes these editors are known as a <term>programmer's editor</term><idx>programmer's editor</idx> (though we will be doing no programming).  Support for writing HTML sometimes translates directly to good support for XML.</p>
+            <p>Your source should be plain <term>ASCII files</term><idx>ASCII file</idx> which you will create with a text editor.  In other words, do not create your source with Word, LibreOffice, WordPerfect, AbiWord, Pages or similar programs.  Popular text editors include vi, emacs, Notepad, Notepad++, Atom, Visual Studio Code, TextWrangler, and BBEdit.  I have had a very good experience with Sublime Text, which is cross-platform (Windows, OS X, Linux), and can be used for free, though it has a very liberal license and is well worth the cost.  Sometimes these editors are known as a <term>programmer's editor</term><idx>programmer's editor</idx> (though we will be doing no programming).  Support for writing HTML sometimes translates directly to good support for XML.</p>
 
             <p>There are <term>XML editors</term><idx>XML editor</idx>, which I have generally found too complex for authoring in <pretext />.  They do have some advantages and XML Copy Editor is one that I have found that is possibly useful.</p>
 
@@ -112,10 +113,42 @@
         </paragraphs>
     </section>
 
+    <section xml:id="start-source-to-output">
+        <title>Converting Your Source to Output</title>
+
+        <p>
+            Once you have content created in <pretext /> files (i.e., XML files), you will want to convert these files into a output format such as HTML, to be viewed in a web browser, or a PDF.  Detailed instructions for doing this, including a plethora of options, will be discussed in <xref ref="processing"/>; here we will give a very brief overview to illustrate the basic ideas.
+        </p>
+
+        <p>
+            Once you have your computer set up correctly, converting <pretext /> <init>XML</init> into a full <init>HTML</init> website can be as simple as typing <c>pretext build html</c> in a terminal, or even hitting <c>Ctrl+B</c> in Visual Studio Code.  Behind-the-scenes, these commands use <term>XSL</term> 1.0 (<term>eXtensiible Stylesheet Language</term>) to <em>transform</em> the XML source using a number of XSL stylesheets that come with <pretext />.
+        </p>
+
+        <p>
+            There are other methods of combining the supplied XSL stylesheets with your XML source, including <c>xsltproc</c>, a command line program that is usually installed by default on Linux systems and MacOS.  For many years, this was the preferred method of converting <pretext /> documents, by entering a command such as:
+        </p>
+
+        <console>
+            <input>xsltproc -xinclude ../mathbook/xsl/pretext-html.xsl source/main.ptx</input>
+        </console>
+
+        <p>
+            This workflow is still supported, and for authors who would like more control over their projects, this might still be the best option.  Documentation for how to use <c>xsltproc</c> with <pretext /> can be found in <xref ref="xsltproc"/>.
+        </p>
+
+        <p>
+            Some features of <pretext />, such as the inclusion of images described in source, or including <webwork /> exercises, requires the use of an additional Python script, also shipped with <pretext />.  Instructions for using this script can be found in <xref ref="pretext-script"/>.
+        </p>
+
+        <p>
+            For the majority of authors who are starting out with <pretext />, a simpler workflow is available: the PreTeXt-CLI (CLI is <em>Command Line Interface</em>).  This is a Python program that implements the most common conversion tasks that previously required <c>xsltproc</c> and the pretext script.
+        </p>
+    </section>
+
     <section xml:id="start-next">
         <title>Where Next?</title>
 
-        <p>If you are impatient (sometimes a good quality!), then <xref ref="quickstart-example"/> should be next, where we show you how to construct and process a short example and then expand it slightly with several additions.</p>
+        <p>If you are impatient (sometimes a good quality!), then <xref ref="quickstart-example"/> should be next, where we walk through the steps to construct and convert a couple short examples and then expand them slightly with several additions.</p>
 
         <p>If you would like a general, high-level overview of features skip ahead to <xref ref="overview"/>.</p>
 

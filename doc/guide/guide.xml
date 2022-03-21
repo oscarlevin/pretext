@@ -32,7 +32,6 @@
             <xi:include href="author/topics.xml"/>
             <xi:include href="author/processing.xml"/>
             <xi:include href="author/schema.xml"/>
-            <xi:include href="author/mbx-script.xml"/>
             <xi:include href="author/webwork.xml"/>
             <xi:include href="author/advice.xml"/>
             <!-- keep the Author's FAQ last within part -->
@@ -53,6 +52,7 @@
             <xi:include href="publisher/online-html.xml"/>
             <xi:include href="publisher/pdf-print.xml"/>
             <xi:include href="publisher/epub.xml"/>
+            <xi:include href="publisher/runestone.xml"/>
             <xi:include href="publisher/slides.xml"/>
             <xi:include href="publisher/jupyter-notebook.xml"/>
             <xi:include href="publisher/instructor-version.xml"/>
@@ -62,8 +62,8 @@
             <xi:include href="publisher/latex-fonts.xml"/>
             <xi:include href="publisher/latex-styling.xml"/>
             <xi:include href="publisher/cover-design.xml"/>
-            <xi:include href="publisher/publisher-file.xml"/>
             <xi:include href="publisher/print-on-demand.xml"/>
+            <xi:include href="publisher/publication-file.xml"/>
             <!-- keep the Publisher's FAQ last within part -->
             <xi:include href="publisher/publisher-faq.xml"/>
         </part>
@@ -71,6 +71,10 @@
         <part xml:id="part-developer">
             <title>Developer's Guide</title>
 
+            <xi:include href="developer/xsltproc.xml"/>
+            <xi:include href="developer/pretext-script.xml"/>
+            <xi:include href="developer/coding.xml"/>
+            <xi:include href="developer/debugging.xml"/>
             <xi:include href="developer/git.xml"/>
         </part>
 

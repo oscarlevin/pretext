@@ -34,6 +34,15 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Deprecations that can be fixed with a transformation -->
 <!-- In reverse chronological order, with dates           -->
 
+<!-- 2020-03-13  webwork setup obsolete -->
+<xsl:template match="webwork/setup">
+    <xsl:apply-templates select="@* | node()" />
+    <xsl:call-template name="deprecation-fix-report">
+        <xsl:with-param name="date">2020-03-13</xsl:with-param>
+        <xsl:with-param name="message">Removing &lt;setup&gt; wrapper from a &lt;webwork&gt;, preserving contents (&lt;pg-code&gt;?)</xsl:with-param>
+    </xsl:call-template>
+</xsl:template>
+
 <!-- 2019-06-28  deprecate captioned lists to be titled lists -->
 <xsl:template match="list[title]/caption">
     <xsl:comment>
@@ -253,17 +262,6 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:call-template name="deprecation-fix-report">
         <xsl:with-param name="date">2018-02-05</xsl:with-param>
         <xsl:with-param name="message">Replacing &lt;booktitle&gt; by &lt;pubtitle&gt;</xsl:with-param>
-    </xsl:call-template>
-</xsl:template>
-
-<!-- 2017-12-22  latex-image-code to simply latex-image -->
-<xsl:template match="latex-image-code">
-    <latex-image>
-        <xsl:apply-templates select="@* | node()" />
-    </latex-image>
-    <xsl:call-template name="deprecation-fix-report">
-        <xsl:with-param name="date">2017-12-22</xsl:with-param>
-        <xsl:with-param name="message">Replacing &lt;latex-image-code&gt; by &lt;latex-image&gt;</xsl:with-param>
     </xsl:call-template>
 </xsl:template>
 
@@ -536,40 +534,6 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:call-template name="deprecation-fix-report">
         <xsl:with-param name="date">2015-03-13</xsl:with-param>
         <xsl:with-param name="message">Replacing &lt;paragraph&gt; by &lt;paragraphs&gt;</xsl:with-param>
-    </xsl:call-template>
-</xsl:template>
-
-<!-- 2015-02-20: tikz element generalized to latex-image-code  -->
-<xsl:template match="image/tikz">
-    <latex-image-code>
-        <xsl:copy>
-            <xsl:apply-templates select="node()" />
-        </xsl:copy>
-    </latex-image-code>
-    <!--  -->
-    <xsl:call-template name="deprecation-fix-report">
-        <xsl:with-param name="date">2015-02-20</xsl:with-param>
-        <xsl:with-param name="message">Replacing &lt;tikz&gt; by &lt;latex-image-code&gt;</xsl:with-param>
-    </xsl:call-template>
-</xsl:template>
-
-<!-- 2015-02-08: graphics languages are source for images,  -->
-<!-- so need a wrapper and their  xml:id  should move -->
-<xsl:template match="tikz[not(parent::image)]|asymptote[not(parent::image)]|sageplot[not(parent::image)]">
-    <image>
-        <xsl:if test="@xml:id">
-            <xsl:attribute name="xml:id">
-                <xsl:value-of select="@xml:id" />
-            </xsl:attribute>
-        </xsl:if>
-        <xsl:copy>
-            <xsl:apply-templates select="node()" />
-        </xsl:copy>
-    </image>
-    <!--  -->
-    <xsl:call-template name="deprecation-fix-report">
-        <xsl:with-param name="date">2015-02-08</xsl:with-param>
-        <xsl:with-param name="message">&lt;tikz&gt;, &lt;asymptote&gt;, or &lt;sageplot&gt; element is being wrapped inside an &lt;image&gt; element, and any @xml:id attribute is being moved to the wrapper.  Rerun this conversion to obsolete the &lt;tikz&gt; element</xsl:with-param>
     </xsl:call-template>
 </xsl:template>
 

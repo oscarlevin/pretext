@@ -33,13 +33,15 @@
     extension-element-prefixes="exsl date"
 >
 
-<!-- Apply this style sheet to merged XML (see pretext-merge.xsl and       -->
-<!-- webwork-extraction.xsl) to produce a folder tree of .pg problem files -->
-<!-- with set defintion and set header files. Compress into a .tgz and     -->
-<!-- upload into a WeBWorK course (perhaps in the templates/local folder); -->
-<!-- or into a server's libraries folder and set up site-wide access.      -->
+<!-- Apply this style sheet to to produce a folder tree of PG problem files -->
+<!-- with set defintion and set header files. Compress into a .tgz and      -->
+<!-- upload into a WeBWorK course (perhaps in the templates/local folder);  -->
+<!-- or into a server's libraries folder and set up site-wide access.       -->
 
-<xsl:import href="./mathbook-common.xsl" />
+<!-- Standard conversion groundwork -->
+<xsl:import href="./publisher-variables.xsl"/>
+<xsl:import href="./pretext-assembly.xsl"/>
+<xsl:import href="./pretext-common.xsl"/>
 
 <!-- Intend output to be a PG/PGML problem or a "def" file -->
 <xsl:output method="text" />
@@ -51,8 +53,8 @@
 <!-- We default to one massive def file -->
 <xsl:variable name="chunk-level">
     <xsl:choose>
-        <xsl:when test="$chunk.level != ''">
-            <xsl:value-of select="$chunk.level" />
+        <xsl:when test="$chunk-level-entered != ''">
+            <xsl:value-of select="$chunk-level-entered" />
         </xsl:when>
         <xsl:otherwise>
             <xsl:text>0</xsl:text>
@@ -67,11 +69,11 @@
 <!-- First, create the problem files in directories                           -->
 <!-- Organized in directories as in the document tree, cut off at chunk level -->
 <!-- Then chunk the document to write reasonable problem definition files     -->
-<xsl:template match="/mathbook|/pretext">
-    <xsl:apply-templates select="." mode="generic-warnings" />
+<xsl:template match="/">
+    <xsl:apply-templates select="$original" mode="generic-warnings"/>
     <!-- Handle <webwork-reps> element carefully -->
     <xsl:apply-templates select="$document-root//exercise/webwork-reps" />
-    <xsl:apply-templates mode="chunking" />
+    <xsl:apply-templates select="$document-root" mode="chunking"/>
 </xsl:template>
 
 <!-- ################## -->
@@ -130,6 +132,13 @@
     <xsl:value-of select="pg/@source" />
 </xsl:template>
 
+<!-- For copied problems move to the problem that was copied -->
+<xsl:template match="webwork-reps[pg/@copied-from]" mode="filename">
+    <xsl:variable name="copied-from" select="pg/@copied-from"/>
+    <xsl:apply-templates select="$document-root//webwork-reps[@ww-id=$copied-from]" mode="filename"/>
+</xsl:template>
+
+
 <!-- ################## -->
 <!-- Problem Extraction -->
 <!-- ################## -->
@@ -149,6 +158,10 @@
 <!-- OPL problems don't produce PG source files, -->
 <!-- as they live on the server already          -->
 <xsl:template match="webwork-reps[pg/@source]" />
+
+<!-- Don't make PG file for copies -->
+<xsl:template match="webwork-reps[pg/@copied-from]" />
+
 
 <!-- ################## -->
 <!-- Chunking Def Files-->
@@ -287,7 +300,7 @@
 </xsl:template>
 
 <!-- Header file content -->
-<!-- Gives some information about where in the MBX project the set came from -->
+<!-- Gives some information about where in the PTX project the set came from -->
 <!-- Some info changes with WW variables, such as due date -->
 <xsl:template match="*" mode="header-content">
     <!-- Inneficient: indented text in variable, then strip indentation -->
@@ -329,10 +342,10 @@
                   "\noindent \bigskip ",
             HTML=>"&lt;span style='font-variant: small-caps; font-size:large;'&gt;WeBWorK Assignment ".protect_underbar($setNumber)." is due: $formattedDueDate. &lt;/span&gt;$PAR",
         ));
-        </xsl:text><xsl:choose><xsl:when test="//frontmatter/colophon/website"><xsl:text>
+        </xsl:text><xsl:choose><xsl:when test="$document-root//frontmatter/colophon/website"><xsl:text>
         TEXT(MODES(
             TeX =>"\noindent This assignment contains exercises from </xsl:text><xsl:apply-templates select="." mode="type-name" /><xsl:text> </xsl:text><xsl:apply-templates select="." mode="number" /><xsl:text> of </xsl:text><xsl:apply-templates select="$document-root"  mode="title-simple" /><xsl:text>.",
-            HTML=>"This assignment contains exercises from ".htmlLink(qq!</xsl:text><xsl:apply-templates select="//frontmatter/colophon/website/address" /><xsl:text>/</xsl:text><xsl:apply-templates select="." mode="visible-id" /><xsl:text>.html!,"</xsl:text><xsl:apply-templates select="." mode="type-name" /><xsl:text> </xsl:text><xsl:apply-templates select="." mode="number" /><xsl:text>")." of </xsl:text><xsl:apply-templates select="$document-root"  mode="title-simple" /><xsl:text>."
+            HTML=>"This assignment contains exercises from ".htmlLink(qq!</xsl:text><xsl:apply-templates select="$document-root//frontmatter/colophon/website/address" /><xsl:text>/</xsl:text><xsl:apply-templates select="." mode="visible-id" /><xsl:text>.html!,"</xsl:text><xsl:apply-templates select="." mode="type-name" /><xsl:text> </xsl:text><xsl:apply-templates select="." mode="number" /><xsl:text>")." of </xsl:text><xsl:apply-templates select="$document-root"  mode="title-simple" /><xsl:text>."
         ));
         </xsl:text></xsl:when><xsl:otherwise><xsl:text>
         TEXT("This assignment contains exercises from </xsl:text><xsl:apply-templates select="." mode="type-name" /><xsl:text> </xsl:text><xsl:apply-templates select="." mode="number" /><xsl:text> of </xsl:text><xsl:apply-templates select="$document-root"  mode="title-simple" /><xsl:text>.");

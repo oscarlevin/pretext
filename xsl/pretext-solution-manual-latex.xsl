@@ -34,12 +34,14 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     extension-element-prefixes="exsl date str"
 >
 
-<xsl:import href="./mathbook-latex.xsl" />
+<!-- This import will include the assembly phase, which is -->
+<!-- necessary as support for a private solutions file     -->
+<xsl:import href="./pretext-latex.xsl" />
 
 <!-- Intend output for rendering by pdflatex -->
 <xsl:output method="text" />
 
-<!-- These variables are interpreted in mathbook-common.xsl and  -->
+<!-- These variables are interpreted in pretext-common.xsl and  -->
 <!-- so may be used/set in a custom XSL stylesheet for a         -->
 <!-- project's solution manual.                                  -->
 <!--                                                             -->
@@ -65,7 +67,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- project.solution                                            -->
 <!--                                                             -->
 <!-- The second set of variables are internal, and are derived   -->
-<!-- from the above via careful routines in mathbook-common.xsl. -->
+<!-- from the above via careful routines in pretext-common.xsl. -->
 <!--                                                             -->
 <!-- b-has-inline-statement                                      -->
 <!-- b-has-inline-hint                                           -->
@@ -99,7 +101,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- We have a switch for just this situation, to force -->
 <!-- (overrule) the auto-detetion of the necessity for  -->
 <!-- LaTeX styles for the solutions to exercises.       -->
-<!-- See  mathbook-latex.xsl  for more explanation.     -->
+<!-- See  pretext-latex.xsl  for more explanation.     -->
 <xsl:variable name="b-needs-solution-styles" select="true()"/>
 
 <!-- We hardcode the numbers of 2D displays so they are correct where  -->
@@ -119,6 +121,8 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:template match="chapter[1]|article/section[1]">
     <xsl:apply-templates select="$document-root" mode="solutions-generator">
         <xsl:with-param name="purpose" select="'solutionmanual'" />
+        <xsl:with-param name="admit" select="'all'" />
+        <xsl:with-param name="scope" select="$document-root"/>
         <xsl:with-param name="b-inline-statement"     select="$b-has-inline-statement" />
         <xsl:with-param name="b-inline-hint"          select="$b-has-inline-hint"  />
         <xsl:with-param name="b-inline-answer"        select="$b-has-inline-answer"  />
@@ -142,60 +146,61 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     </xsl:apply-templates>
 </xsl:template>
 
-<!-- Hard-code numbers into titles -->
-<xsl:template match="part|chapter|section|subsection|subsubsection|exercises" mode="division-in-solutions">
-    <xsl:param name="scope" />
-    <xsl:param name="content" />
+<!-- Not really "duplicate" here in solutions manual, but conforms to -common -->
+<xsl:template match="*" mode="duplicate-heading">
+    <xsl:param name="heading-stack" select="."/>
 
-    <xsl:variable name="the-number">
-        <xsl:apply-templates select="." mode="number" />
-    </xsl:variable>
-    <xsl:variable name="original-title">
-        <!-- no trailing space if no number -->
-        <xsl:if test="not($the-number = '')">
-            <xsl:value-of select="$the-number" />
-            <xsl:text> </xsl:text>
-        </xsl:if>
-        <xsl:apply-templates select="." mode="title-full" />
-    </xsl:variable>
-    <xsl:variable name="moving-title">
-        <!-- no trailing space if no number -->
-        <xsl:if test="not($the-number = '')">
-            <xsl:value-of select="$the-number" />
-            <xsl:text> </xsl:text>
-        </xsl:if>
-        <xsl:apply-templates select="." mode="title-simple" />
-    </xsl:variable>
+    <!-- Iterate through heading-stack, opening divisions -->
+    <!-- and creating toc entry.                          -->
+    <!-- Number is hard-coded into title                  -->
+    <xsl:for-each select="$heading-stack">
+        <xsl:variable name="the-number">
+            <xsl:apply-templates select="." mode="number" />
+        </xsl:variable>
+        <xsl:variable name="original-title">
+            <!-- no trailing space if no number -->
+            <xsl:if test="not($the-number = '')">
+                <xsl:value-of select="$the-number" />
+                <xsl:text> </xsl:text>
+            </xsl:if>
+            <xsl:apply-templates select="." mode="title-full" />
+        </xsl:variable>
+        <xsl:variable name="moving-title">
+            <!-- no trailing space if no number -->
+            <xsl:if test="not($the-number = '')">
+                <xsl:value-of select="$the-number" />
+                <xsl:text> </xsl:text>
+            </xsl:if>
+            <xsl:apply-templates select="." mode="title-simple" />
+        </xsl:variable>
 
-    <!-- LaTeX heading with hard-coded number -->
-    <xsl:text>\</xsl:text>
-    <xsl:apply-templates select="." mode="division-name" />
-    <xsl:text>*{</xsl:text>
-    <xsl:value-of select="$original-title"/>
-    <xsl:text>}&#xa;</xsl:text>
-    <!-- An entry for the ToC, since we hard-code numbers -->
-    <!-- These mainmatter divisions should always have a number -->
-    <xsl:text>\addcontentsline{toc}{</xsl:text>
-    <xsl:apply-templates select="." mode="division-name" />
-    <xsl:text>}{</xsl:text>
-    <xsl:value-of select="$moving-title"/>
-    <xsl:text>}&#xa;</xsl:text>
-    <!-- Explicit marks, since divisions are the starred form -->
-    <xsl:choose>
-        <xsl:when test="self::chapter">
-            <xsl:text>\chaptermark{</xsl:text>
-            <xsl:value-of select="$moving-title"/>
-            <xsl:text>}&#xa;</xsl:text>
-        </xsl:when>
-        <!-- "section", "exercises", "worksheet", at section-level, etc. -->
-        <xsl:when test="parent::chapter">
-            <xsl:text>\sectionmark{</xsl:text>
-            <xsl:value-of select="$moving-title"/>
-            <xsl:text>}&#xa;</xsl:text>
-        </xsl:when>
-    </xsl:choose>
-
-    <xsl:copy-of select="$content" />
+        <xsl:text>\</xsl:text>
+        <xsl:apply-templates select="." mode="division-name" />
+        <xsl:text>*{</xsl:text>
+        <xsl:value-of select="$original-title"/>
+        <xsl:text>}&#xa;</xsl:text>
+        <!-- An entry for the ToC, since we hard-code numbers -->
+        <!-- These mainmatter divisions should always have a number -->
+        <xsl:text>\addcontentsline{toc}{</xsl:text>
+        <xsl:apply-templates select="." mode="division-name" />
+        <xsl:text>}{</xsl:text>
+        <xsl:value-of select="$moving-title"/>
+        <xsl:text>}&#xa;</xsl:text>
+        <!-- Explicit marks, since divisions are the starred form -->
+        <xsl:choose>
+            <xsl:when test="self::chapter">
+                <xsl:text>\chaptermark{</xsl:text>
+                <xsl:value-of select="$moving-title"/>
+                <xsl:text>}&#xa;</xsl:text>
+            </xsl:when>
+            <!-- "section", "exercises", "worksheet", at section-level, etc. -->
+            <xsl:when test="parent::chapter">
+                <xsl:text>\sectionmark{</xsl:text>
+                <xsl:value-of select="$moving-title"/>
+                <xsl:text>}&#xa;</xsl:text>
+            </xsl:when>
+        </xsl:choose>
+    </xsl:for-each>
 </xsl:template>
 
 <!-- Page headers + Chapter/Section XYZ Title      -->
@@ -230,5 +235,22 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 
 <!-- Exercise numbers are always hard-coded at birth, given -->
 <!-- complications of numbering, placement, duplication     -->
+
+<!-- Since divisions have hard-coded numbers, a \label{}   -->
+<!-- on an equation will be inaccurate.  These versions of -->
+<!-- the templates for hard-coded equation numbers are     -->
+<!-- from the HTML conversion.                             -->
+
+<xsl:template match="men|mrow" mode="tag">
+    <xsl:text>\tag{</xsl:text>
+    <xsl:apply-templates select="." mode="number" />
+    <xsl:text>}</xsl:text>
+</xsl:template>
+
+<xsl:template match="mrow[@tag]" mode="tag">
+    <xsl:text>\tag{</xsl:text>
+    <xsl:apply-templates select="@tag" mode="tag-symbol" />
+    <xsl:text>}</xsl:text>
+</xsl:template>
 
 </xsl:stylesheet>

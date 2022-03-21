@@ -65,14 +65,14 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:param name="base-url" select="'http://abstract.ups.edu/aata/'"/>
 <!-- <xsl:param name="base-url" select="'http://set-base-url/'"/> -->
 
-<!-- Necessary variables, typically set in  mathbook-html.xsl -->
+<!-- Necessary variables, typically set in  pretext-html.xsl -->
 <!-- $chunk-level will eventually be referenced by templates  -->
 <!-- for the containing filename used to construct a URL      -->
 <!-- Since we are describing HTML output, we want filenames   -->
 <!-- describing those files                                   -->
 <xsl:variable name="file-extension" select="'.html'"/>
 <xsl:variable name="chunk-level">
-    <xsl:value-of select="$chunk.level"/>
+    <xsl:value-of select="$chunk-level-entered"/>
 </xsl:variable>
 
 <!-- Entry Template               -->
@@ -139,11 +139,11 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:apply-templates select="." mode="containing-filename"/>
 </xsl:template>
 
-<!-- Necessary, override any definition in "pretext-tex.xsl" -->
-<xsl:template name="begin-inline-math">
+<!-- Necessary, override any definition in "pretext-text.xsl" -->
+<xsl:template name="inline-math-wrapper">
+    <xsl:param name="math"/>
     <xsl:text>\(</xsl:text>
-</xsl:template>
-<xsl:template name="end-inline-math">
+    <xsl:value-of select="$math"/>
     <xsl:text>\)</xsl:text>
 </xsl:template>
 

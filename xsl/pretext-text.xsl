@@ -34,15 +34,16 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:stylesheet
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
     xmlns:xml="http://www.w3.org/XML/1998/namespace"
-    xmlns:b64="https://github.com/ilyakharlamov/xslt_base64"
     xmlns:exsl="http://exslt.org/common"
     xmlns:date="http://exslt.org/dates-and-times"
     xmlns:str="http://exslt.org/strings"
-    exclude-result-prefixes="b64"
     extension-element-prefixes="exsl date str"
 >
 
-<xsl:import href="./mathbook-common.xsl" />
+<!-- Standard conversion groundwork -->
+<xsl:import href="./publisher-variables.xsl"/>
+<xsl:import href="./pretext-assembly.xsl"/>
+<xsl:import href="./pretext-common.xsl"/>
 
 <!-- This is a conversion to "plain" text.  Upon initiation it is mainly -->
 <!-- meant as a foundation for various simple conversions to things like -->
@@ -50,7 +51,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- conversion.  But obviously, there are many PreTeXt constructions    -->
 <!-- which cannot be realized in text.                                   -->
 <!--                                                                     -->
-<!-- Goal is to make it so *no* conversion imports "mathbook-common.xsl" -->
+<!-- Goal is to make it so *no* conversion imports "pretext-common.xsl" -->
 <!-- since some foundational conversion (such as this one) can be the    -->
 <!-- basis of the conversion and will import the foundationa one instead.-->
 <!--                                                                     -->
@@ -170,11 +171,10 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Until we think of something better, we just -->
 <!-- bracket raw LaTeX that appears inline       -->
 <!-- This can be overridden, if necessary        -->
-<xsl:template name="begin-inline-math">
+<xsl:template name="inline-math-wrapper">
+    <xsl:param name="math"/>
     <xsl:text>[</xsl:text>
-</xsl:template>
-
-<xsl:template name="end-inline-math">
+    <xsl:value-of select="$math"/>
     <xsl:text>]</xsl:text>
 </xsl:template>
 
@@ -258,10 +258,10 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:choose>
         <xsl:when test="statement">
             <xsl:apply-templates select="statement"/>
-            <xsl:apply-templates select="proof"/>
+            <xsl:apply-templates select="&PROOF-LIKE;"/>
         </xsl:when>
         <xsl:otherwise>
-            <xsl:apply-templates select="*[self::proof]"/>
+            <xsl:apply-templates/>
         </xsl:otherwise>
     </xsl:choose>
 </xsl:template>
@@ -274,7 +274,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 </xsl:template>
 
 <!-- THEOREM-LIKE only -->
-<xsl:template match="proof">
+<xsl:template match="&PROOF-LIKE;">
     <xsl:apply-templates select="." mode="type-name"/>
     <xsl:text>.&#xa;</xsl:text>
     <!-- structured -->
