@@ -807,7 +807,7 @@
                 element sharp {empty}
             Music =
                 element doublesharp {empty} |
-                Sharp |
+                MusicSharp |
                 element natural {empty} |
                 MusicFlat |
                 element doubleflat {empty} |
@@ -833,8 +833,8 @@
                     attribute parentheses {"yes"|"no"}?,
                     element alteration {
                         (TextSimple |
-                        Sharp |
-                        Flat)*
+                        MusicSharp |
+                        MusicFlat)*
                     }*
                 }
                 </code>
