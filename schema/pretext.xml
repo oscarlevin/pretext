@@ -1922,6 +1922,10 @@
             <code>
             Image = ImageRaster | ImageCode
             ImageDescription = element description {(Paragraph | Tabular)+}
+            ImageShortDescription = element shortdescription {text}
+            ImageShortDescriptionCode = element shortdescription {
+                (text | WWVariable)+
+            }
             ImageRaster =
                 element image {
                     UniqueID?,
@@ -1937,7 +1941,7 @@
                       (
                         attribute decorative {"no"}?,
                         (
-                          element shortdescription {text}? &amp;
+                          ImageShortDescription? &amp;
                           ImageDescription?
                         )
                       )
@@ -1962,7 +1966,7 @@
                       (
                         attribute decorative {"no"}?,
                         (
-                          element shortdescription {(text | WWVariable)+}? &amp;
+                          ImageShortDescriptionCode ? &amp;
                           ImageDescription? &amp;
                           (
                             CodeLatexImage |
@@ -1995,7 +1999,7 @@
                       (
                         attribute decorative {"no"}?,
                         (
-                          element shortdescription {(text | WWVariable)+}? &amp;
+                          ImageShortDescriptionCode? &amp;
                           ImageDescription? &amp;
                           WWLatexImage?
                         )
@@ -2255,6 +2259,12 @@
         <fragment xml:id="exercise">
             <title>Exercises</title>
             <code>
+            ExerciseOrderedList =
+                element ol {
+                    attribute cols {text}?,
+                    attribute marker {text}?,
+                    ExerciseListItem+
+                }
             ExerciseListItem = element li {
                 MetaDataTarget,
                 (TextParagraph | BlockText+)
@@ -2262,11 +2272,7 @@
             ExerciseBody =
                 (
                     BlockStatement |
-                    element ol {
-                        attribute cols {text}?,
-                        attribute marker {text}?,
-                        ExerciseListItem+
-                    }
+                    ExerciseOrderedList
                 )+
             StatementExercise =
                 element statement { ExerciseBody }
