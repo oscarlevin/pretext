@@ -4826,7 +4826,8 @@ def get_publisher_variable(xml_source, pub_file, params, variable):
             if len(parts) == 1:
                 pairs[parts[0]] = ''
             else:
-                pairs[parts[0]] = parts[1]
+                # value could have spaces, so rejoin other parts
+                pairs[parts[0]] = " ".join(parts[1:])
 
     if variable in pairs:
         return pairs[variable]
