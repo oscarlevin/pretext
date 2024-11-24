@@ -2341,13 +2341,13 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <option name="primary-color-dark" check-contrast="#23241f"/>
     </theme>
     <theme name="salem" focused-toc="yes">
-        <!-- <option name="provide-dark-mode" default="yes"/>
+        <option name="provide-dark-mode" default="yes"/>
         <option name="palette" default="default"/>
         <option name="color-main" check-contrast="#fff"/>
         <option name="color-do" check-contrast="#fff"/>
         <option name="color-fact" check-contrast="#fff"/>
         <option name="color-meta" check-contrast="#fff"/>
-        <option name="primary-color-dark" check-contrast="#23241f"/> -->
+        <option name="primary-color-dark" check-contrast="#23241f"/>
     </theme>
     <theme name="paper">
         <option name="provide-dark-mode" default="yes"/>
@@ -2364,17 +2364,21 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- the selected theme                                                           -->
 <xsl:key name="html-theme-option-key" match="theme" use="@name"/>
 
-<!-- I can't figure out how to turn the results of the for-each into a node-set -->
-<!-- without using another variable                                             -->
-<!-- node-set( ) around the key call does not work                              -->
-<xsl:variable name="html-theme-temp">
+<xsl:template match="node()|@*" mode="wtf">
+  <xsl:copy>
+    <xsl:apply-templates select="node()|@*" mode="wtf"/>
+  </xsl:copy>
+</xsl:template>
+
+
+<xsl:variable name="html-theme-rtf">
     <xsl:for-each select="exsl:node-set($html-theme-option-list)">
-        <xsl:value-of select="key('html-theme-option-key', $html-theme-name)" />
+        <xsl:copy-of select="key('html-theme-option-key', $html-theme-name)"/>
     </xsl:for-each>
 </xsl:variable>
 
-<!-- Turn tree fragment into a node-set                                          -->
-<xsl:variable name="html-theme" select="exsl:node-set($html-theme-temp)"/>
+<!-- Turn tree fragment into a node-set  -->
+<xsl:variable name="html-theme" select="exsl:node-set($html-theme-rtf)/theme"/>
 
 <!-- Get an option (attr) from pub file css/theme. Available options    -->
 <!-- are constrained by html-theme-option-list above.                   -->
@@ -2410,15 +2414,26 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:variable name="html-theme-options">
     <xsl:text>{</xsl:text>
         <xsl:text>&quot;options&quot;:{</xsl:text>
-        <xsl:for-each select="$publication/html/css/@*">
-            <xsl:if test="position() > 1"><xsl:text>, </xsl:text></xsl:if>
-            <xsl:value-of select="concat('&quot;', name(.), '&quot;:')"/>
-            <xsl:value-of select="concat('&quot;', ., '&quot;')"/>
-        </xsl:for-each>
+        <!-- if inside for-each, so can't use position to selectively add -->
+        <!-- commas. So build a string with a , after each item           -->
+        <!-- trim the trailing ,                                          -->
+        <xsl:variable name="options-string">
+            <xsl:for-each select="$publication/html/css/@*">
+                <xsl:variable name="optname" select="name(.)"/>
+                <!-- only pass on values that match theme options -->
+                <xsl:if test="$html-theme/option[@name = $optname]">
+                    <xsl:value-of select="concat('&quot;', name(.), '&quot;:')"/>
+                    <xsl:value-of select="concat('&quot;', ., '&quot;')"/>
+                    <xsl:text>,</xsl:text>
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:variable>
+        <!-- then trim the trailing ,                                     -->
+        <xsl:value-of select="substring($options-string, 1, string-length($options-string) - 1)"/>
         <xsl:text>}</xsl:text>
         <xsl:text>,&quot;contrast-checks&quot;:{</xsl:text>
         <xsl:for-each select="$html-theme/*[@check-contrast]">
-            <xsl:if test="position() > 1"><xsl:text>, </xsl:text></xsl:if>
+            <xsl:if test="position() > 1"><xsl:text>,</xsl:text></xsl:if>
             <xsl:value-of select="concat('&quot;', @name, '&quot;:')"/>
             <xsl:value-of select="concat('&quot;', @check-contrast, '&quot;')"/>
         </xsl:for-each>
