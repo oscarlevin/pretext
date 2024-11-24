@@ -3606,12 +3606,12 @@ def _move_prebuilt_theme(theme_name, theme_opts, tmp_dir):
         "secondary-color": "#347a3a",
       },
       "purples": {
-        "primary-color": "hsl{321, 40%, 20%}",
-        "secondary-color": "hsl{321, 60%, 32%}",
+        "primary-color": "hsl(321, 40%, 20%)",
+        "secondary-color": "hsl(321, 60%, 32%)",
       },
       "blues": {
-        "primary-color": "hsl{217, 70%, 20%}",
-        "secondary-color": "hsl{217, 43%, 37%}",
+        "primary-color": "hsl(217, 70%, 20%)",
+        "secondary-color": "hsl(217, 43%, 37%)",
       }
     }
 
