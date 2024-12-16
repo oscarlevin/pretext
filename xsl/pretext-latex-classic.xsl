@@ -104,7 +104,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:call-template name="cleardoublepage"/>
     <xsl:call-template name="standard-packages"/>
     <xsl:call-template name="latex-theorem-environments"/>
-    <!--<xsl:call-template name="tcolorbox-init"/>-->
+    <xsl:call-template name="tcolorbox-init"/>
     <!--<xsl:call-template name="page-setup"/>-->
     <!--<xsl:call-template name="latex-engine-support"/>-->
     <xsl:call-template name="font-support"/>
@@ -134,6 +134,39 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 </xsl:template>
 
 
+<!-- Includes an "event" for presentations -->
+<xsl:template name="title-page-info-article">
+    <xsl:text>%% Title page information for article&#xa;</xsl:text>
+    <xsl:text>\title{</xsl:text>
+    <xsl:apply-templates select="." mode="title-full" />
+    <xsl:if test="subtitle">
+        <xsl:text>\\&#xa;</xsl:text>
+        <!-- Trying to match author fontsize -->
+        <xsl:text>{\large </xsl:text>
+        <xsl:apply-templates select="." mode="subtitle" />
+        <xsl:text>}</xsl:text>
+    </xsl:if>
+    <xsl:if test="$docinfo/event">
+        <xsl:if test="title">
+            <xsl:text>\\</xsl:text>
+        </xsl:if>
+        <xsl:apply-templates select="$docinfo/event" />
+    </xsl:if>
+
+    <xsl:text>}&#xa;</xsl:text>
+    <xsl:if test="$bibinfo/support">
+        <xsl:text>\thanks{</xsl:text>
+        <xsl:apply-templates select="$bibinfo/support" mode="article-info"/>
+        <xsl:text>}&#xa;</xsl:text>
+    </xsl:if>
+    <xsl:if test="$bibinfo/author or $bibinfo/editor">
+        <xsl:text>\author{</xsl:text>
+        <xsl:apply-templates select="$bibinfo/author" mode="article-info"/>
+        <xsl:apply-templates select="$bibinfo/editor" mode="article-info"/>
+        <xsl:text>}&#xa;</xsl:text>
+    </xsl:if>
+    <xsl:text>\date{</xsl:text><xsl:apply-templates select="$bibinfo/date" /><xsl:text>}&#xa;</xsl:text>
+</xsl:template>
 
 <!-- Tables -->
 <xsl:template name="tables">
@@ -339,6 +372,13 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>% End conclusion&#xa;</xsl:text>
 </xsl:template>
 
+
+
+<!-- ################### -->
+<!-- References Sections -->
+<!-- ################### -->
+<!-- The following will certainly change when the bibliography work is completed -->
+
 <xsl:template match="references">
     <xsl:text>\bibliographystyle{</xsl:text>
     <xsl:value-of select="$bibliographystyle"/>
@@ -348,15 +388,8 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\end{thebibliography}&#xa;&#xa;</xsl:text>
 </xsl:template>
 
-<!-- ################### -->
-<!-- References Sections -->
-<!-- ################### -->
-<!-- We use description lists to manage bibliographies,  -->
-<!-- and \bibitem seems comfortable there, so our source -->
-<!-- is nearly compatible with the usual usage           -->
 
-<!-- As an item of a description list, but       -->
-<!-- compatible with thebibliography environment -->
+
 <xsl:template match="biblio[@type='raw'] | biblio[@type='bibtex']">
 
     <xsl:text>\bibitem</xsl:text>
