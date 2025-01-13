@@ -3533,7 +3533,7 @@ def query_runestone_services(services_url):
     # Make a request with requests, which could fail if offline
     if online_success:
         try:
-            services_response = requests.get(services_url, timeout=10)
+            services_response = requests.get(services_url, timeout=(1,10)) # 1 second connect, 10 second read
         except requests.exceptions.RequestException as e:
             msg = '\n'.join(['there was a network problem while trying to retrieve "{}"',
                              'from the Runestone CDN and the reported problem is:',
@@ -3773,7 +3773,7 @@ def get_web_asset(url):
         raise Exception(msg)
 
     try:
-        services_response = requests.get(url, timeout=10)
+        services_response = requests.get(url, timeout=(1,10))
     except requests.exceptions.RequestException as e:
         msg = '\n'.join(['There was a network problem while trying to download "{}"',
                             'and the reported problem is:',
