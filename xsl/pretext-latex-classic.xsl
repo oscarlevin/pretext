@@ -86,7 +86,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 </xsl:template>
 
 <!-- Defaults that can be overriden by style files -->
-<xsl:variable name="documentclass" select="'amsart'"/>
+<xsl:variable name="documentclass" select="'article'"/>
 <xsl:variable name="bibliographystyle" select="'amsplain'"/>
 
 <!-- An article, LaTeX structure -->
@@ -120,6 +120,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 
 <xsl:template name="latex-preamble">
+    <xsl:call-template name="journal-packages"/>
     <xsl:call-template name="preamble-early"/>
     <xsl:call-template name="cleardoublepage"/>
     <xsl:call-template name="standard-packages"/>
@@ -153,6 +154,8 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:call-template name="late-preamble-adjustments"/>
 </xsl:template>
 
+<!-- No journal-packages by default; can be overridden by importing xsl -->
+<xsl:template name="journal-packages"/>
 
 <!-- paragraph and page setup -->
 <!-- TODO: Clean this up with just what -classic needs. -->
@@ -166,11 +169,11 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <!-- In a similar fashion we save/restore the parskip, only should    -->
     <!-- an ambitious publisher try to set it globally                    -->
     <xsl:text>%% Save default paragraph indentation and parskip for use later, when adjusting parboxes&#xa;</xsl:text>
-    <!--<xsl:text>\newlength{\normalparindent}&#xa;</xsl:text>-->
-    <xsl:text>\newlength{\normalparskip}&#xa;</xsl:text>
-    <xsl:text>\AtBeginDocument{\setlength{\normalparindent}{\parindent}}&#xa;</xsl:text>
-    <xsl:text>\AtBeginDocument{\setlength{\normalparskip}{\parskip}}&#xa;</xsl:text>
-    <xsl:text>\newcommand{\setparstyle}{\setlength{\parindent}{\normalparindent}\setlength{\parskip}{\normalparskip}}</xsl:text>
+    <xsl:text>\newlength{\ptxnormalparindent}&#xa;</xsl:text>
+    <xsl:text>\newlength{\ptxnormalparskip}&#xa;</xsl:text>
+    <xsl:text>\AtBeginDocument{\setlength{\ptxnormalparindent}{\parindent}}&#xa;</xsl:text>
+    <xsl:text>\AtBeginDocument{\setlength{\ptxnormalparskip}{\parskip}}&#xa;</xsl:text>
+    <xsl:text>\newcommand{\setparstyle}{\setlength{\parindent}{\ptxnormalparindent}\setlength{\parskip}{\ptxnormalparskip}}</xsl:text>
 
     <!-- could condition on "subfigure-reps" -->
     <xsl:if test="$b-has-sidebyside">
@@ -237,51 +240,30 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 <!-- By default, no bibinfo is included before the \begin{document}.     -->
 <!-- Other latex styles can override this to put some information there. -->
-<xsl:template name="bibinfo-pre-begin-document"/>
+<xsl:template name="bibinfo-pre-begin-document">
+    <xsl:apply-templates select="$document-root" mode="article-title"/>
+    <!--<xsl:apply-templates select="$bibinfo/support" mode="article-frontmatter"/>-->
+    <xsl:call-template name="article-authors"/>
+    <xsl:apply-templates select="$bibinfo/date" mode="article-frontmatter"/>
+</xsl:template>
 
 
 <!-- By default, all bibinfo goes inside (after) \begin{document}.             -->
 <!-- Other latex styles can override this in combination with the pre-version. -->
+<!-- Order of bibinfo elements after \begin{document} -->
 <xsl:template name="bibinfo-post-begin-document">
-    <xsl:apply-templates select="$document-root" mode="article-title"/>
-    <xsl:if test="$bibinfo/author or $bibinfo/editor">
-        <xsl:apply-templates select="$bibinfo/author" mode="article-info"/>
-        <xsl:apply-templates select="$bibinfo/editor" mode="article-info"/>
-    </xsl:if>
-    <xsl:if test="$bibinfo/keywords[@authority='msc']">
-        <xsl:text>\subjclass[</xsl:text>
-        <xsl:value-of select="$bibinfo/keywords[@authority='msc']/@variant"/>
-        <xsl:text>]{</xsl:text>
-        <xsl:apply-templates select="$bibinfo/keywords[@authority='msc']"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
-    <xsl:if test="$bibinfo/date">
-        <xsl:text>\date{</xsl:text>
-        <xsl:apply-templates select="$bibinfo/date"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
-    <xsl:if test="$bibinfo/keywords[not(@authority='msc')]">
-        <xsl:text>\keywords{</xsl:text>
-        <xsl:apply-templates select="$bibinfo/keywords[not(@authority='msc')]"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
-    <xsl:if test="$bibinfo/support">
-        <xsl:text>\dedicatory{</xsl:text>
-        <xsl:apply-templates select="$bibinfo/support" mode="article-info"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
-    <xsl:if test="$document-root/frontmatter/abstract">
-        <xsl:apply-templates select="$document-root/frontmatter/abstract"/>
-    </xsl:if>
     <xsl:text>\maketitle&#xa;</xsl:text>
+    <xsl:apply-templates select="$document-root/frontmatter/abstract" mode="article-frontmatter"/>
+    <!-- keywords are included in abstract -->
+    <!--<xsl:apply-templates select="$bibinfo/keywords[@authority='msc']" mode="article-frontmatter"/>
+    <xsl:apply-templates select="$bibinfo/keywords[not(@authority='msc')]" mode="article-frontmatter"/>-->
 </xsl:template>
 
 <xsl:template match="*" mode="article-title">
     <xsl:text>%% Title page information for article&#xa;</xsl:text>
-    <xsl:text>\title[</xsl:text>
-    <xsl:apply-templates select="." mode="title-short"/>
-    <xsl:text>]{</xsl:text>
+    <xsl:text>\title{</xsl:text>
     <xsl:apply-templates select="." mode="title-full"/>
+    <xsl:apply-templates select="$bibinfo/support" mode="article-frontmatter"/>
     <xsl:if test="subtitle">
         <xsl:text>\\&#xa;</xsl:text>
         <!-- Trying to match author fontsize -->
@@ -292,55 +274,86 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>}&#xa;</xsl:text>
 </xsl:template>
 
-<xsl:template match="bibinfo/author" mode="article-info">
+
+<!-- For now, this just wraps the common article-info for author in an \author{...} tag -->
+<xsl:template name="article-authors">
     <xsl:text>\author{</xsl:text>
-    <xsl:apply-templates select="personname"/>
+    <xsl:apply-templates select="$bibinfo/author" mode="article-frontmatter"/>
     <xsl:text>}&#xa;</xsl:text>
-    <xsl:if test="affiliation">
-        <xsl:text>\address{</xsl:text>
-        <xsl:apply-templates select="affiliation"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
-    <xsl:if test="email">
-        <xsl:text>\email{</xsl:text>
-        <xsl:apply-templates select="email"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
+</xsl:template>
+
+
+<xsl:template match="author" mode="article-frontmatter">
+    <xsl:apply-templates select="personname" />
     <xsl:if test="support">
         <xsl:text>\thanks{</xsl:text>
-        <xsl:apply-templates select="support"/>
-        <xsl:text>}&#xa;</xsl:text>
+        <xsl:apply-templates select="support" />
+        <xsl:text>}</xsl:text>
     </xsl:if>
+    <xsl:if test="affiliation">
+        <xsl:text>\\&#xa;</xsl:text>
+        <xsl:apply-templates select="affiliation" />
+    </xsl:if>
+    <xsl:if test="email">   
+        <xsl:text>\\&#xa;</xsl:text>
+        <xsl:apply-templates select="email" />
+    </xsl:if>
+    <xsl:if test="following-sibling::author" >
+        <xsl:text>&#xa;\and</xsl:text>
+    </xsl:if>
+    <xsl:text>&#xa;</xsl:text>
 </xsl:template>
+
 
 <!-- Preprocessor always puts Department, Institution, and Address          -->
 <!-- inside Affiliation. This just adds line breaks between them as needed. -->
 <xsl:template match="affiliation">
     <xsl:if test="department">
         <xsl:apply-templates select="department" />
-        <xsl:text>\\&#xa;</xsl:text>
+        <xsl:if test="department/following-sibling::*">
+            <xsl:text>\\&#xa;</xsl:text>
+        </xsl:if>
     </xsl:if>
     <xsl:if test="institution">
         <xsl:apply-templates select="institution" />
-        <xsl:text>\\&#xa;</xsl:text>
+        <xsl:if test="institution/following-sibling::*">
+            <xsl:text>\\&#xa;</xsl:text>
+        </xsl:if>
     </xsl:if>
     <xsl:if test="location">
         <xsl:apply-templates select="location" />
-        <xsl:text>\\&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
-<xsl:template match="bibinfo/keywords">
-    <xsl:apply-templates select="*" />
-    <xsl:text>.</xsl:text>
+
+<xsl:template match="bibinfo/date" mode="article-frontmatter">
+    <xsl:text>\date{</xsl:text>
+    <xsl:apply-templates select="."/>
+    <xsl:text>}&#xa;</xsl:text>
 </xsl:template>
 
-<xsl:template match="abstract">
+
+
+
+
+<xsl:template match="bibinfo/support" mode="article-frontmatter">
+    <xsl:text>\support{</xsl:text>
+    <xsl:apply-templates select="$bibinfo/support" mode="article-info"/>
+    <xsl:text>}&#xa;</xsl:text>
+</xsl:template>
+
+
+<xsl:template match="frontmatter/abstract" mode="article-frontmatter">
     <xsl:text>\begin{abstract}&#xa;</xsl:text>
-    <xsl:apply-templates select="*"/>
+        <xsl:apply-templates select="*"/>
+        <xsl:apply-templates select="$bibinfo/keywords"/>
     <xsl:text>\end{abstract}&#xa;</xsl:text>
 </xsl:template>
 
+
+<xsl:template match="email" mode="article-info">
+    <xsl:value-of select="." />
+</xsl:template>
 
 <!-- Since the bibinfo-post-begin-document takes care of all frontmatter, we kill the frontmatter as a separate thing here -->
 <xsl:template match="article/frontmatter"/>
@@ -363,11 +376,17 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- For preamble -->
 <xsl:template name="latex-theorem-environments">
     <xsl:text>%% Theorem-like environments&#xa;</xsl:text>
+    <xsl:text>%&#xa;% amsthm package: redundant if using amsart documentclass, but required otherwise.&#xa;</xsl:text>
+    <xsl:text>\usepackage{amsthm}%&#xa;%&#xa;</xsl:text>
     <xsl:text>\theoremstyle{plain}&#xa;</xsl:text>
-    <!-- We add a basic block element "thmbox" just to have a counter always -->
-    <xsl:text>\newtheorem{thmbox}{}[section]&#xa;</xsl:text>
+    <!-- We need a counter, and want it to be "theorem" to agree with some journal styles -->
+    <!-- So if the document contains theorem's, we can create it.  Otherwise we don't care-->
+    <!-- what it is called, so we can still use this and it will just have a blank name.  -->
+    <xsl:text>\newtheorem{theorem}{</xsl:text>
+    <xsl:apply-templates select="($document-root//theorem)[1]" mode="type-name"/>
+    <xsl:text>}[section]&#xa;</xsl:text>
+    <!-- Now continue with the remaining elements, checking to see if they are present -->
     <xsl:variable name="theoremstyle-plain" select="
-        ($document-root//theorem)[1]|
         ($document-root//lemma)[1]|
         ($document-root//proposition)[1]|
         ($document-root//corollary)[1]|
@@ -436,7 +455,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
                 <xsl:value-of select="local-name(.)"/>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>}[thmbox]{</xsl:text>
+        <xsl:text>}[theorem]{</xsl:text>
         <xsl:apply-templates select="." mode="type-name"/>
         <xsl:text>}&#xa;</xsl:text>
 </xsl:template>

@@ -225,6 +225,13 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
                         <line>Tacoma, Washington, USA</line>
                     </institution>
                     <email>beezer@pugetsound.edu</email>
+                    <support>Individual author support statement here.</support>
+                </author>
+
+                <author>
+                    <personname>Author Two</personname>
+                    <institution>University of Fiction</institution>
+                    <email>fake@fu.edu</email>
                 </author>
 
                 <!-- Can set date manually or use the "today" element -->
