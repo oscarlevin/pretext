@@ -306,14 +306,10 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:template match="texstyle//title">
     <xsl:text>\</xsl:text>
     <xsl:value-of select="@cmd"/>
-    <xsl:if test="opt">
-        <xsl:text>[</xsl:text>
-        <xsl:apply-templates select="opt/*"/>
-        <xsl:text>]</xsl:text>
-    </xsl:if>
-    <xsl:text>{</xsl:text>
-    <xsl:apply-templates select="arg/*"/>
-    <xsl:text>}&#xa;</xsl:text>
+    <xsl:apply-templates select="*">
+        <xsl:with-param name="ptx-node" select="$document-root"/>
+    </xsl:apply-templates>
+    <xsl:text>&#xa;</xsl:text>
 </xsl:template>
 
 <xsl:template match="texstyle//title//ptx-short-title">
@@ -338,9 +334,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:if test="$bibinfo/support">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
-        <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="arg/*"/>
-        <xsl:text>}&#xa;</xsl:text>
+        <xsl:apply-templates select="*">
+            <xsl:with-param name="ptx-node" select="$bibinfo"/>
+        </xsl:apply-templates>
     </xsl:if>
 </xsl:template>
 
@@ -352,21 +348,13 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:if test="$bibinfo/date">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
-        <xsl:apply-templates select="arg">
+        <xsl:apply-templates select="*">
             <xsl:with-param name="ptx-node" select="$bibinfo"/>
         </xsl:apply-templates>
         <xsl:text>&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
-<xsl:template match="arg">
-    <xsl:param name="ptx-node"/>
-    <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="node()">
-            <xsl:with-param name="ptx-node" select="$ptx-node"/>
-        </xsl:apply-templates>
-    <xsl:text>}</xsl:text>
-</xsl:template>
 
 <!-- Author listings -->
 
@@ -411,18 +399,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:param name="ptx-node"/>
     <xsl:text>\</xsl:text>
     <xsl:value-of select="@cmd"/>
-    <xsl:if test="opt">
-        <xsl:text>[</xsl:text>
-        <xsl:apply-templates select="opt/*">
-            <xsl:with-param name="ptx-node" select="$ptx-node"/>
-        </xsl:apply-templates>
-        <xsl:text>]</xsl:text>
-    </xsl:if>
-    <xsl:text>{</xsl:text>
-    <xsl:apply-templates select="arg/*">
+    <xsl:apply-templates select="*">
         <xsl:with-param name="ptx-node" select="$ptx-node"/>
     </xsl:apply-templates>
-    <xsl:text>}&#xa;</xsl:text>
 </xsl:template>
 
 <xsl:template match="texstyle//author-list/affiliation">
@@ -430,11 +409,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:if test="$ptx-node/affiliation">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
-        <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="arg/*">
+        <xsl:apply-templates select="*">
             <xsl:with-param name="ptx-node" select="$ptx-node"/>
         </xsl:apply-templates>
-        <xsl:text>}&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
@@ -454,11 +431,10 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:if test="$ptx-node/email">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
-        <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="arg/*">
+        <xsl:apply-templates select="*">
             <xsl:with-param name="ptx-node" select="$ptx-node"/>
         </xsl:apply-templates>
-        <xsl:text>}&#xa;</xsl:text>
+        <xsl:text>&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
@@ -472,6 +448,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Context: ptx-source (likely an author element) -->
 <!-- NB this is currently assuming only one structure of the ts-node.            -->
 <!-- In particular, we do not pass back to the ts-node as we did for author-list -->
+<!-- TODO: should this just be author-list in the ts file? -->
 <xsl:template match="*" mode="affiliation-list">
     <xsl:param name="ts-node"/>
     <xsl:if test="$ts-node/affiliation">
@@ -565,9 +542,10 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:if test="@cmd">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
-        <xsl:text>{%&#xa;</xsl:text>
-        <xsl:apply-templates select="arg/*"/>
-        <xsl:text>}%&#xa;%&#xa;</xsl:text>
+        <xsl:apply-templates select="*">
+            <xsl:with-param name="ptx-node" select="$bibinfo"/>
+        </xsl:apply-templates>
+        <xsl:text>&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
@@ -621,9 +599,8 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:when test="@cmd">
             <xsl:text>\</xsl:text>
             <xsl:value-of select="@cmd"/>
-            <xsl:text>{%&#xa;</xsl:text>
-            <xsl:apply-templates select="arg/*"/>
-            <xsl:text>}&#xa;</xsl:text>
+            <xsl:apply-templates select="*"/>
+            <xsl:text>&#xa;</xsl:text>
         </xsl:when>
         <xsl:when test="@env">
             <xsl:text>\begin{</xsl:text>
@@ -751,16 +728,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:template match="texstyle/backmatter">
     <xsl:text>\</xsl:text>
     <xsl:value-of select="@cmd"/>
-    <xsl:if test="opt">
-        <xsl:text>[</xsl:text>
-        <xsl:apply-templates select="opt/*"/>
-        <xsl:text>]</xsl:text>
-    </xsl:if>
-    <xsl:if test="arg">
-        <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="arg/*"/>
-        <xsl:text>}</xsl:text>
-    </xsl:if>
+    <xsl:apply-templates select="*"/>
     <xsl:text>&#xa;</xsl:text>
 </xsl:template>
 
@@ -842,6 +810,29 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 <xsl:template match="medskip">
     <xsl:text>\par\medskip&#xa;</xsl:text>
+</xsl:template>
+
+
+<!-- Wrappers for opts and args -->
+<!-- These are applied inside commands.  Context is a ts-node -->
+<!-- we always pass the ptx-node parent of any element we will apply using a ptx-element -->
+<!-- NB we select "node()" here to include text nodes, as texstyle files might have text hard coded. -->
+<xsl:template match="opt">
+    <xsl:param name="ptx-node"/>
+    <xsl:text>[</xsl:text>
+        <xsl:apply-templates select="node()">
+            <xsl:with-param name="ptx-node" select="$ptx-node"/>
+        </xsl:apply-templates>
+    <xsl:text>]</xsl:text>
+</xsl:template>
+
+<xsl:template match="arg">
+    <xsl:param name="ptx-node"/>
+    <xsl:text>{</xsl:text>
+        <xsl:apply-templates select="node()">
+            <xsl:with-param name="ptx-node" select="$ptx-node"/>
+        </xsl:apply-templates>
+    <xsl:text>}</xsl:text>
 </xsl:template>
 
 </xsl:stylesheet>
