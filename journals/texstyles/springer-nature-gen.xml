@@ -28,7 +28,7 @@
         \usepackage{xcolor}%
         \usepackage{textcomp}%
         \usepackage{manyfoot}%
-        \usepackage{booktabs}%
+        \usepackage{booktabs}%      
         \usepackage{algorithm}%
         \usepackage{algorithmicx}%
         \usepackage{algpseudocode}%

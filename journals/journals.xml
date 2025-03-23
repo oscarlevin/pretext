@@ -130,6 +130,12 @@
     <code>ann-pure-appl-logic</code>
     <name>Annals of Pure and Applied Logic</name>
     <publisher>Elsevier</publisher>
-    <method latex-style="elsart"/>
+    <method latex-style="elsevier"/>
+  </journal>
+
+  <journal>
+    <code>elsevier-general</code>
+    <name>Eslevier General - all other journals</name>
+    <publisher>Elsevier</publisher>
   </journal>
 </ptx-journals>

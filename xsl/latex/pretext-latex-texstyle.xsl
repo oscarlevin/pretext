@@ -286,7 +286,24 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Frontmatter and bibinfo stuff -->
 <!-- - - - - - - - - - - - - - - - -->
 
-<xsl:template match="texstyle/title">
+<!-- Some journals wrap some of the bibinfo in a `frontmatter` environment -->
+<!-- NB only environment supported as of 2025-03-23 -->
+<xsl:template match="texstyle/frontmatter">
+    <xsl:if test="@env">
+        <xsl:text>\begin{</xsl:text>
+        <xsl:value-of select="@env"/>
+        <xsl:text>}&#xa;%&#xa;</xsl:text>
+    </xsl:if>
+    <xsl:apply-templates select="*"/>
+    <xsl:if test="@env">
+        <xsl:text>\end{</xsl:text>
+        <xsl:value-of select="@env"/>
+        <xsl:text>}&#xa;%&#xa;</xsl:text>
+    </xsl:if>
+</xsl:template>
+
+<!-- A title texstyle element.  Currently assumes @cmd structured with opt and arg -->
+<xsl:template match="texstyle//title">
     <xsl:text>\</xsl:text>
     <xsl:value-of select="@cmd"/>
     <xsl:if test="opt">
@@ -314,7 +331,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     </xsl:if>
 </xsl:template>
 
-
+<!-- Article-level support statement.  Assumes @cmd as of 2025-03-23 -->
+<!-- NB careful that this does not conflict with author-level support. -->
+<!-- That is, don't allow <support> in author, use <ptx-support> always. -->
 <xsl:template match="texstyle//support">
     <xsl:if test="$bibinfo/support">
         <xsl:text>\</xsl:text>
@@ -324,7 +343,6 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:text>}&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
-
 
 <xsl:template match="ptx-bibinfo-support">
     <xsl:apply-templates select="$bibinfo/support"/>
@@ -347,7 +365,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- of the texstyle node, so we can keep looking around there. -->
 <!-- NB this works for either framework, either as a direct child of texstyle -->
 <!-- or as a child of author -->
-<xsl:template match="texstyle/author-list|texstyle/author/author-list">
+<xsl:template match="texstyle//author-list">
     <xsl:apply-templates select="$bibinfo/author" mode="author-list">
         <xsl:with-param name="ts-node" select="."/>
     </xsl:apply-templates>
@@ -369,30 +387,34 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     </xsl:if>
 </xsl:template>
 
-<!-- Context: texstyle nodes, Param: ptx-source node -->
-<xsl:template match="texstyle/author-list/author">
+<!-- Context: texstyle nodes, Param: ptx-source node (for the author)-->
+<xsl:template match="texstyle//author-list/author">
     <xsl:param name="ptx-node"/>
     <xsl:text>\</xsl:text>
     <xsl:value-of select="@cmd"/>
     <xsl:if test="opt">
         <xsl:text>[</xsl:text>
         <xsl:apply-templates select="opt/*">
-            <xsl:with-param name="source-node" select="$ptx-node"/>
+            <xsl:with-param name="ptx-node" select="$ptx-node"/>
         </xsl:apply-templates>
         <xsl:text>]</xsl:text>
     </xsl:if>
     <xsl:text>{</xsl:text>
-    <xsl:apply-templates select="$ptx-node/personname"/>
+    <xsl:apply-templates select="arg/*">
+        <xsl:with-param name="ptx-node" select="$ptx-node"/>
+    </xsl:apply-templates>
     <xsl:text>}&#xa;</xsl:text>
 </xsl:template>
 
-<xsl:template match="texstyle/author-list/affiliation">
+<xsl:template match="texstyle//author-list/affiliation">
     <xsl:param name="ptx-node"/>
     <xsl:if test="$ptx-node/affiliation">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
         <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="$ptx-node/affiliation"/>
+        <xsl:apply-templates select="arg/*">
+            <xsl:with-param name="ptx-node" select="$ptx-node"/>
+        </xsl:apply-templates>
         <xsl:text>}&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
@@ -408,19 +430,21 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     </xsl:if>
 </xsl:template>
 
-<xsl:template match="texstyle/author-list/email">
+<xsl:template match="texstyle//author-list/email">
     <xsl:param name="ptx-node"/>
     <xsl:if test="$ptx-node/email">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
         <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="$ptx-node/email"/>
+        <xsl:apply-templates select="arg/*">
+            <xsl:with-param name="ptx-node" select="$ptx-node"/>
+        </xsl:apply-templates>
         <xsl:text>}&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
 <!-- We do the same thing for affiliation-list -->
-<xsl:template match="texstyle/affiliation-list">
+<xsl:template match="texstyle//affiliation-list">
     <xsl:apply-templates select="$bibinfo/author" mode="affiliation-list">
         <xsl:with-param name="ts-node" select="."/>
     </xsl:apply-templates>
@@ -437,7 +461,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:if test="$ts-node/affiliation/opt">
             <xsl:text>[</xsl:text>
             <xsl:apply-templates select="$ts-node/affiliation/opt/*">
-                <xsl:with-param name="source-node" select="."/>
+                <xsl:with-param name="ptx-node" select="."/>
             </xsl:apply-templates>
             <xsl:text>]</xsl:text>
         </xsl:if>
@@ -453,18 +477,54 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- node.  NB we use mode="texstyle-number" to avoid a conflict    -->
 <!-- with the default number modal template.                        -->
 <xsl:template match="affiliation-ordinal">
-    <xsl:param name="source-node"/>
-    <xsl:apply-templates select="$source-node" mode="texstyle-number"/>
+    <xsl:param name="ptx-node"/>
+    <xsl:apply-templates select="$ptx-node" mode="texstyle-number"/>
 </xsl:template>
 
 <xsl:template match="*" mode="texstyle-number">
     <xsl:number/>
 </xsl:template>
 
+<!-- Some journals put footnote commands with their contents elsewhere, linked by an id -->
+<xsl:template match="fnmark">
+    <xsl:param name="ptx-node"/>
+    <xsl:text>\</xsl:text>
+    <xsl:value-of select="@cmd"/>
+    <xsl:text>{</xsl:text>
+    <xsl:choose>
+        <xsl:when test="@arg = 'unique-id'">
+            <xsl:value-of select="$ptx-node/@unique-id"/>
+        </xsl:when>
+        <!-- Todo: add other options here -->
+    </xsl:choose>
+    <xsl:text>}</xsl:text>
+</xsl:template>
+
+<xsl:template match="fntext">
+    <xsl:param name="ptx-node"/>
+    <xsl:text>\</xsl:text>
+    <xsl:value-of select="@cmd"/>
+    <xsl:if test="@opt">
+        <xsl:text>[</xsl:text>
+        <xsl:choose>
+            <xsl:when test="@opt = 'unique-id'">
+                <xsl:value-of select="$ptx-node/@unique-id"/>
+            </xsl:when>
+        </xsl:choose>
+        <xsl:text>]</xsl:text>
+    </xsl:if>
+    <xsl:text>{</xsl:text>
+    <xsl:apply-templates select="arg/*">
+        <xsl:with-param name="ptx-node" select="$ptx-node"/>
+    </xsl:apply-templates>
+    <xsl:text>}</xsl:text>
+</xsl:template>
+
 <!-- Now for the second option for listing authors.        -->
 <!-- We only need the top level template here; everything  -->
 <!-- else will be handled by the general author-list above -->
-<xsl:template match="texstyle/author">
+<!-- NB we can't use texstyle//author because that conflicts with texstyle//authorlist/author -->
+<xsl:template match="texstyle/author|/texstyle/frontmatter/author">
     <xsl:if test="@cmd">
         <xsl:text>\</xsl:text>
         <xsl:value-of select="@cmd"/>
@@ -487,7 +547,20 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 <xsl:template match="ptx-affiliation">
     <xsl:param name="ptx-node"/>
-    <xsl:apply-templates select="$ptx-node/affiliation"/>
+    <!-- Variable for sep param; use value of attribute or '\\&#xa;' for default. -->
+    <xsl:variable name="sep">
+        <xsl:choose>
+            <xsl:when test="@sep">
+                <xsl:value-of select="@sep"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>\\&#xa;</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:variable>
+    <xsl:apply-templates select="$ptx-node/affiliation">
+        <xsl:with-param name="sep" select="$sep"/>
+    </xsl:apply-templates>
 </xsl:template>
 
 <xsl:template match="ptx-email">
@@ -501,7 +574,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 <!-- Abstract, keywords, etc. -->
 
-<xsl:template match="texstyle/abstract">
+<xsl:template match="texstyle//abstract">
     <xsl:choose>
         <xsl:when test="@cmd">
             <xsl:text>\</xsl:text>
@@ -523,11 +596,27 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 </xsl:template>
 
 
+<xsl:template match="texstyle//keywords[keywords]">
+    <xsl:if test="@env">
+        <xsl:text>\begin{</xsl:text>
+        <xsl:value-of select="@env"/>
+        <xsl:text>}&#xa;</xsl:text>
+    </xsl:if>
+    <xsl:apply-templates select="*"/>
+    <xsl:if test="@env">
+        <xsl:text>\end{</xsl:text>
+        <xsl:value-of select="@env"/>
+        <xsl:text>}&#xa;</xsl:text>
+    </xsl:if>
+</xsl:template>
+
+
 <!-- First we select which source keyword element to use for a particular texstyle -->
 <!-- keyword element by matching up their "authority" (with authority="author" the -->
 <!-- default for source). In either case, we jump to a modal template with context -->
 <!-- on the source node, passing the texstyle node as a param.                     -->
-<xsl:template match="texstyle//keywords">
+<!-- NB we can group keywords inside a parent keywords element, but that's not what we want here. -->
+<xsl:template match="texstyle//keywords[not(keywords)]">
     <xsl:choose>
         <xsl:when test="@authority = 'author'">
             <xsl:apply-templates select="$bibinfo/keywords[@authority='author' or not(@authority)]" mode="keywords">
@@ -589,6 +678,12 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
             </xsl:apply-templates>
             <xsl:text>&#xa;</xsl:text>
         </xsl:when>
+        <xsl:otherwise>
+            <xsl:apply-templates select="keyword">
+                <xsl:with-param name="sep" select="$ts-node/@sep"/>
+            </xsl:apply-templates>
+            <xsl:text>&#xa;</xsl:text>
+        </xsl:otherwise>
     </xsl:choose>
 </xsl:template>
 

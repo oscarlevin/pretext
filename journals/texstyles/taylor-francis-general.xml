@@ -35,7 +35,7 @@
                 <support cmd="thanks">
                     <arg><ptx-support/></arg>
                 </support>
-                <ptx-affiliation/>
+                <ptx-affiliation sep="\\&#xa;"/>
                 <ptx-email/>
             </author-list>
         </arg>
