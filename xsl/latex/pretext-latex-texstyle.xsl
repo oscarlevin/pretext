@@ -348,6 +348,25 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:apply-templates select="$bibinfo/support"/>
 </xsl:template>
 
+<xsl:template match="texstyle//date">
+    <xsl:if test="$bibinfo/date">
+        <xsl:text>\</xsl:text>
+        <xsl:value-of select="@cmd"/>
+        <xsl:apply-templates select="arg">
+            <xsl:with-param name="ptx-node" select="$bibinfo"/>
+        </xsl:apply-templates>
+        <xsl:text>&#xa;</xsl:text>
+    </xsl:if>
+</xsl:template>
+
+<xsl:template match="arg">
+    <xsl:param name="ptx-node"/>
+    <xsl:text>{</xsl:text>
+        <xsl:apply-templates select="node()">
+            <xsl:with-param name="ptx-node" select="$ptx-node"/>
+        </xsl:apply-templates>
+    <xsl:text>}</xsl:text>
+</xsl:template>
 
 <!-- Author listings -->
 
@@ -495,6 +514,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:when test="@arg = 'unique-id'">
             <xsl:value-of select="$ptx-node/@unique-id"/>
         </xsl:when>
+        <xsl:when test="@arg = 'ordinal'">
+            <xsl:apply-templates select="$ptx-node" mode="texstyle-number"/>
+        </xsl:when>
         <!-- Todo: add other options here -->
     </xsl:choose>
     <xsl:text>}</xsl:text>
@@ -510,8 +532,23 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
             <xsl:when test="@opt = 'unique-id'">
                 <xsl:value-of select="$ptx-node/@unique-id"/>
             </xsl:when>
+            <xsl:when test="@arg = 'ordinal'">
+                <xsl:apply-templates select="$ptx-node" mode="texstyle-number"/>
+            </xsl:when>
         </xsl:choose>
         <xsl:text>]</xsl:text>
+    </xsl:if>
+    <xsl:if test="@arg">
+        <xsl:text>{</xsl:text>
+        <xsl:choose>
+            <xsl:when test="@arg = 'unique-id'">
+                <xsl:value-of select="$ptx-node/@unique-id"/>
+            </xsl:when>
+            <xsl:when test="@arg = 'ordinal'">
+                <xsl:apply-templates select="$ptx-node" mode="texstyle-number"/>
+            </xsl:when>
+        </xsl:choose>
+        <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:text>{</xsl:text>
     <xsl:apply-templates select="arg/*">
@@ -566,6 +603,11 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:template match="ptx-email">
     <xsl:param name="ptx-node"/>
     <xsl:apply-templates select="$ptx-node/email" mode="article-info"/>
+</xsl:template>
+
+<xsl:template match="ptx-date">
+    <xsl:param name="ptx-node"/>
+    <xsl:apply-templates select="$ptx-node/date"/>
 </xsl:template>
 
 <!-- End of author information -->
