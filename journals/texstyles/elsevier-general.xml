@@ -36,11 +36,9 @@
             <author cmd="author">
                 <arg>
                     <ptx-personname/>
-                    <!-- NEED TO IMPLEMENT -->
                     <fnmark cmd="fnref" arg="unique-id"/>
                 </arg>
             </author>
-            <!-- NEED TO IMPLEMENT -->
             <fntext cmd="fntext" opt="unique-id">
                 <arg><ptx-support/></arg>
             </fntext>

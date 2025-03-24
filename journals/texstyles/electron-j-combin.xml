@@ -31,8 +31,8 @@
 
     <date cmd="dateline">
         <arg><ptx-date/></arg>
-        <arg>TBD</arg>
-        <arg>TBD</arg>
+        <arg><text>TBD</text></arg>
+        <arg><text>TBD</text></arg>
     </date>
 
     <keywords authority="msc" cmd="MSC" sep=", "/>

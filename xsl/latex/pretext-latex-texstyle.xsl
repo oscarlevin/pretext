@@ -109,7 +109,12 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     </xsl:choose>
 </xsl:template>
 
-<!--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-->
+<!-- end of texstyle file import logic -->
+
+
+<!--%%%%%%%%%%%%%%%%%%%%%%%%-->
+<!-- Main "entry" templates -->
+<!--%%%%%%%%%%%%%%%%%%%%%%%%-->
 
 <!-- The main template that will be controlled by the texstyle file -->
 <xsl:template match="article">
@@ -153,19 +158,22 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Preamble stuff  -->
 <!-- - - - - - - - - -->
 
+<!-- For the document class -->
+<!-- TODO: respond to options with correct options -->
 <xsl:template match="texstyle/documentclass">
     <xsl:text>\documentclass{</xsl:text>
     <xsl:value-of select="@name"/>
     <xsl:text>}&#xa;%&#xa;</xsl:text>
 </xsl:template>
 
-
+<!-- Sometimes journals require specific packages -->
 <xsl:template match="texstyle/packages">
 <xsl:text>% Required packages:&#xa;</xsl:text>
     <xsl:call-template name="sanitize-text">
         <xsl:with-param name="text" select="." />
     </xsl:call-template>
 </xsl:template>
+
 
 <!-- Here we build the "standard" (classic) latex preamble,       -->
 <!-- with some minor modifications suggested by the texstyle file -->
@@ -249,7 +257,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         ($document-root//data)[1]
 "/>
 
-<!-- Determine which \newtheorem environments to create -->
+<!-- Determine which \newtheorem environments to create based on what is in the texstyle file -->
 <xsl:template match="theoremstyle">
     <xsl:text>%&#xa;</xsl:text>
     <xsl:text>\theoremstyle{</xsl:text>
@@ -286,30 +294,23 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Frontmatter and bibinfo stuff -->
 <!-- - - - - - - - - - - - - - - - -->
 
+<!-- Note: for the rest of the template commands, we will use a couple      -->
+<!-- utility templates, located at the end of this file, to consistently    -->
+<!-- wrap the pretext content in environments, command options and          -->
+<!-- arguments, or below headings. Each of the following templates will     -->
+<!-- pass the appropriate pretext node as needed to these utility templates.-->
+
 <!-- Some journals wrap some of the bibinfo in a `frontmatter` environment -->
 <!-- NB only environment supported as of 2025-03-23 -->
 <xsl:template match="texstyle/frontmatter">
-    <xsl:if test="@env">
-        <xsl:text>\begin{</xsl:text>
-        <xsl:value-of select="@env"/>
-        <xsl:text>}&#xa;%&#xa;</xsl:text>
-    </xsl:if>
-    <xsl:apply-templates select="*"/>
-    <xsl:if test="@env">
-        <xsl:text>\end{</xsl:text>
-        <xsl:value-of select="@env"/>
-        <xsl:text>}&#xa;%&#xa;</xsl:text>
-    </xsl:if>
+    <xsl:apply-templates select="." mode="env-cmd-header-wrap"/>
 </xsl:template>
 
 <!-- A title texstyle element.  Currently assumes @cmd structured with opt and arg -->
 <xsl:template match="texstyle//title">
-    <xsl:text>\</xsl:text>
-    <xsl:value-of select="@cmd"/>
-    <xsl:apply-templates select="*">
+    <xsl:apply-templates select="." mode="env-cmd-header-wrap">
         <xsl:with-param name="ptx-node" select="$document-root"/>
     </xsl:apply-templates>
-    <xsl:text>&#xa;</xsl:text>
 </xsl:template>
 
 <xsl:template match="texstyle//title//ptx-short-title">
@@ -332,9 +333,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- That is, don't allow <support> in author, use <ptx-support> always. -->
 <xsl:template match="texstyle//support">
     <xsl:if test="$bibinfo/support">
-        <xsl:text>\</xsl:text>
-        <xsl:value-of select="@cmd"/>
-        <xsl:apply-templates select="*">
+        <xsl:apply-templates select="." mode="env-cmd-header-wrap">
             <xsl:with-param name="ptx-node" select="$bibinfo"/>
         </xsl:apply-templates>
     </xsl:if>
@@ -346,12 +345,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 <xsl:template match="texstyle//date">
     <xsl:if test="$bibinfo/date">
-        <xsl:text>\</xsl:text>
-        <xsl:value-of select="@cmd"/>
-        <xsl:apply-templates select="*">
+        <xsl:apply-templates select="." mode="env-cmd-header-wrap">
             <xsl:with-param name="ptx-node" select="$bibinfo"/>
         </xsl:apply-templates>
-        <xsl:text>&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
@@ -397,9 +393,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Context: texstyle nodes, Param: ptx-source node (for the author)-->
 <xsl:template match="texstyle//author-list/author">
     <xsl:param name="ptx-node"/>
-    <xsl:text>\</xsl:text>
-    <xsl:value-of select="@cmd"/>
-    <xsl:apply-templates select="*">
+    <xsl:apply-templates select="." mode="env-cmd-header-wrap">
         <xsl:with-param name="ptx-node" select="$ptx-node"/>
     </xsl:apply-templates>
 </xsl:template>
@@ -407,34 +401,28 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:template match="texstyle//author-list/affiliation">
     <xsl:param name="ptx-node"/>
     <xsl:if test="$ptx-node/affiliation">
-        <xsl:text>\</xsl:text>
-        <xsl:value-of select="@cmd"/>
-        <xsl:apply-templates select="*">
+        <xsl:apply-templates select="." mode="env-cmd-header-wrap">
             <xsl:with-param name="ptx-node" select="$ptx-node"/>
         </xsl:apply-templates>
     </xsl:if>
 </xsl:template>
 
+
 <xsl:template match="texstyle//author-list/support">
     <xsl:param name="ptx-node"/>
     <xsl:if test="$ptx-node/support">
-        <xsl:text>\</xsl:text>
-        <xsl:value-of select="@cmd"/>
-        <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="$ptx-node/support"/>
-        <xsl:text>}&#xa;</xsl:text>
+        <xsl:apply-templates select="." mode="env-cmd-header-wrap">
+            <xsl:with-param name="ptx-node" select="$ptx-node"/>
+        </xsl:apply-templates>
     </xsl:if>
 </xsl:template>
 
 <xsl:template match="texstyle//author-list/email">
     <xsl:param name="ptx-node"/>
     <xsl:if test="$ptx-node/email">
-        <xsl:text>\</xsl:text>
-        <xsl:value-of select="@cmd"/>
-        <xsl:apply-templates select="*">
+        <xsl:apply-templates select="." mode="env-cmd-header-wrap">
             <xsl:with-param name="ptx-node" select="$ptx-node"/>
         </xsl:apply-templates>
-        <xsl:text>&#xa;</xsl:text>
     </xsl:if>
 </xsl:template>
 
@@ -527,11 +515,10 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         </xsl:choose>
         <xsl:text>}</xsl:text>
     </xsl:if>
-    <xsl:text>{</xsl:text>
-    <xsl:apply-templates select="arg/*">
+    <xsl:apply-templates select="*">
         <xsl:with-param name="ptx-node" select="$ptx-node"/>
     </xsl:apply-templates>
-    <xsl:text>}</xsl:text>
+    <xsl:text>&#xa;</xsl:text>
 </xsl:template>
 
 <!-- Now for the second option for listing authors.        -->
@@ -539,14 +526,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- else will be handled by the general author-list above -->
 <!-- NB we can't use texstyle//author because that conflicts with texstyle//authorlist/author -->
 <xsl:template match="texstyle/author|/texstyle/frontmatter/author">
-    <xsl:if test="@cmd">
-        <xsl:text>\</xsl:text>
-        <xsl:value-of select="@cmd"/>
-        <xsl:apply-templates select="*">
-            <xsl:with-param name="ptx-node" select="$bibinfo"/>
-        </xsl:apply-templates>
-        <xsl:text>&#xa;</xsl:text>
-    </xsl:if>
+    <xsl:apply-templates select="." mode="env-cmd-header-wrap">
+        <xsl:with-param name="ptx-node" select="$bibinfo"/>
+    </xsl:apply-templates>
 </xsl:template>
 
 
@@ -595,38 +577,12 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Abstract, keywords, etc. -->
 
 <xsl:template match="texstyle//abstract">
-    <xsl:choose>
-        <xsl:when test="@cmd">
-            <xsl:text>\</xsl:text>
-            <xsl:value-of select="@cmd"/>
-            <xsl:apply-templates select="*"/>
-            <xsl:text>&#xa;</xsl:text>
-        </xsl:when>
-        <xsl:when test="@env">
-            <xsl:text>\begin{</xsl:text>
-            <xsl:value-of select="@env"/>
-            <xsl:text>}&#xa;</xsl:text>
-            <xsl:apply-templates select="*"/>
-            <xsl:text>\end{</xsl:text>
-            <xsl:value-of select="@env"/>
-            <xsl:text>}&#xa;</xsl:text>
-        </xsl:when>
-    </xsl:choose>
+    <xsl:apply-templates select="." mode="env-cmd-header-wrap" />
 </xsl:template>
 
 
 <xsl:template match="texstyle//keywords[keywords]">
-    <xsl:if test="@env">
-        <xsl:text>\begin{</xsl:text>
-        <xsl:value-of select="@env"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
-    <xsl:apply-templates select="*"/>
-    <xsl:if test="@env">
-        <xsl:text>\end{</xsl:text>
-        <xsl:value-of select="@env"/>
-        <xsl:text>}&#xa;</xsl:text>
-    </xsl:if>
+    <xsl:apply-templates select="." mode="env-cmd-header-wrap"/>
 </xsl:template>
 
 
@@ -726,13 +682,10 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 
 <!-- Backmatter -->
 <xsl:template match="texstyle/backmatter">
-    <xsl:text>\</xsl:text>
-    <xsl:value-of select="@cmd"/>
-    <xsl:apply-templates select="*"/>
-    <xsl:text>&#xa;</xsl:text>
+    <xsl:apply-templates select="." mode="env-cmd-header-wrap" />
 </xsl:template>
 
-
+<!-- Todo: fix these -->
 <xsl:template match="texstyle/supplement">
     <xsl:message>PTX:WARNING: Supplements are not yet available in PreTeXt so this feature is not available currently.</xsl:message>
     <xsl:if test="$document-root//supplement">
@@ -812,15 +765,61 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:text>\par\medskip&#xa;</xsl:text>
 </xsl:template>
 
+<!-- For cases when the texstyle file should include raw text -->
+<xsl:template match="text">
+    <xsl:value-of select="."/>
+</xsl:template>
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  -->
+<!-- Utility templates for wrapping pretext content in environments, -->
+<!-- command options and arguments, or below headings.               -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  -->
+
+
+<!-- First we have a template that will put in the \begin{env}...\end{env}, -->
+<!-- or \cmd or heading depending on what the current ts-node has as an     -->
+<!-- attribute.  We might pass a ptx-node depending on the originating      -->
+<!-- template as well.                                                      -->
+<xsl:template match="*" mode="env-cmd-header-wrap">
+    <xsl:param name="ptx-node"/>
+    <xsl:choose>
+        <xsl:when test="@env">
+            <xsl:text>\begin{</xsl:text>
+            <xsl:value-of select="@env"/>
+            <xsl:text>}&#xa;</xsl:text>
+            <xsl:apply-templates select="*">
+                <xsl:with-param name="ptx-node" select="$ptx-node"/>
+            </xsl:apply-templates>
+            <xsl:text>\end{</xsl:text>
+            <xsl:value-of select="@env"/>
+            <xsl:text>}&#xa;</xsl:text>
+        </xsl:when>
+        <xsl:when test="@cmd">
+            <xsl:text>\</xsl:text>
+            <xsl:value-of select="@cmd"/>
+            <xsl:apply-templates select="*">
+                <xsl:with-param name="ptx-node" select="$ptx-node"/>
+            </xsl:apply-templates>
+            <xsl:text>&#xa;</xsl:text>
+        </xsl:when>
+        <xsl:when test="@heading">
+            <xsl:value-of select="@heading"/>
+            <xsl:apply-templates select="*">
+                <xsl:with-param name="ptx-node" select="$ptx-node"/>
+            </xsl:apply-templates>
+            <xsl:text>&#xa;</xsl:text>
+        </xsl:when>
+    </xsl:choose>
+</xsl:template>
 
 <!-- Wrappers for opts and args -->
 <!-- These are applied inside commands.  Context is a ts-node -->
 <!-- we always pass the ptx-node parent of any element we will apply using a ptx-element -->
-<!-- NB we select "node()" here to include text nodes, as texstyle files might have text hard coded. -->
 <xsl:template match="opt">
     <xsl:param name="ptx-node"/>
     <xsl:text>[</xsl:text>
-        <xsl:apply-templates select="node()">
+        <xsl:apply-templates select="*">
             <xsl:with-param name="ptx-node" select="$ptx-node"/>
         </xsl:apply-templates>
     <xsl:text>]</xsl:text>
@@ -829,10 +828,11 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:template match="arg">
     <xsl:param name="ptx-node"/>
     <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="node()">
+        <xsl:apply-templates select="*">
             <xsl:with-param name="ptx-node" select="$ptx-node"/>
         </xsl:apply-templates>
     <xsl:text>}</xsl:text>
 </xsl:template>
+
 
 </xsl:stylesheet>
