@@ -40,6 +40,11 @@ li > .autopermalink {
   padding-right: 0.2em;
 }
 
+.feedback-link {
+  top: 4.5ex;
+  left: - 2.5em;
+  font-size: 75%;
+}
 
 // Move permalink for division titles etc a little bit lower
 .appendix > .autopermalink,
@@ -50,6 +55,15 @@ li > .autopermalink {
 .references > .autopermalink,
 .exercises > .autopermalink {
   top: 1.5ex;
+}
+.appendix > .feedback-link,
+.chapter > .feedback-link,
+.index > .feedback-link,
+.section > .feedback-link,
+.subsection > .feedback-link,
+.references > .feedback-link,
+.exercises > .feedback-link {
+  top: 5.5ex;
 }
 
 // In some styles, the autopermalink for paras land right on the border line.

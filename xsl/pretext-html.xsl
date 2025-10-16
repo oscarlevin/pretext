@@ -545,6 +545,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
                 <xsl:apply-templates select="conclusion|outcomes"/>
                 <!-- Insert permalink -->
                 <xsl:apply-templates select="." mode="permalink"/>
+                <xsl:apply-templates select="." mode="granular-feedback"/>
             </section>
         </xsl:with-param>
     </xsl:apply-templates>
@@ -697,6 +698,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 
         <!-- Include permalink for the section as last child -->
         <xsl:apply-templates select="." mode="permalink"/>
+        <xsl:apply-templates select="." mode="granular-feedback"/>
     </section>
 </xsl:template>
 
@@ -2108,6 +2110,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         </xsl:choose>
         <!-- Insert permalink directly below the title or caption -->
         <xsl:apply-templates select="." mode="permalink"/>
+        <xsl:apply-templates select="." mode="granular-feedback"/>
     </figcaption>
 </xsl:template>
 
@@ -5130,6 +5133,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
         <xsl:apply-templates select="." mode="workspace"/>
         <!-- Insert permalink -->
         <xsl:apply-templates select="." mode="permalink"/>
+        <xsl:apply-templates select="." mode="granular-feedback"/>
     </div>
 </xsl:template>
 
@@ -5225,6 +5229,7 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
     <xsl:apply-templates select="." mode="workspace"/>
     <!-- Insert permalink -->
     <xsl:apply-templates select="." mode="permalink"/>
+    <xsl:apply-templates select="." mode="granular-feedback"/>
     </div>
 </xsl:template>
 
@@ -11664,6 +11669,52 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- appear at  https://github.com/PreTeXtBook/pretext/pull/2534    -->
 <xsl:template match="feedback/p" mode="permalink"/>
 
+<!--                   -->
+<!-- Granular Feedback -->
+<!--                   -->
+
+<xsl:template match="*" mode="granular-feedback">
+    <!-- We only add anything if the publication variable is set -->
+    <xsl:if test="$b-has-granular-feedback and not($granular-feedback-href = '')">
+        <xsl:variable name="gf-href">
+            <xsl:choose>
+                <xsl:when test="$granular-feedback = 'email'">
+                    <xsl:value-of select="concat('mailto:', $granular-feedback-href)"/>
+                </xsl:when>
+                <xsl:when test="$granular-feedback = 'github'">
+                    <xsl:value-of select="$granular-feedback-href"/>
+                </xsl:when>
+                <xsl:when test="$granular-feedback = 'google-form'">
+                    <xsl:value-of select="$granular-feedback-href"/>
+                </xsl:when>
+                <!-- These are the only supported services currently -->
+                <xsl:otherwise/>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="gf-description">
+            <xsl:text>Provide feedback on this block</xsl:text>
+        </xsl:variable>
+        <div class="autopermalink feedback-link">
+            <xsl:attribute name="data-description">
+                <xsl:value-of select="$gf-description"/>
+            </xsl:attribute>
+            <a>
+                <xsl:attribute name="href">
+                    <xsl:value-of select="$gf-href"/>
+                </xsl:attribute>
+                <xsl:attribute name="title">
+                    <xsl:value-of select="$gf-description"/>
+                </xsl:attribute>
+                <xsl:attribute name="aria-label">
+                    <xsl:value-of select="$gf-description"/>
+                </xsl:attribute>
+                <xsl:call-template name="insert-symbol">
+                    <xsl:with-param name="name" select="'feedback'"/>
+                </xsl:call-template>
+            </a>
+        </div>
+    </xsl:if>
+</xsl:template>
 
 <!--                     -->
 <!-- Navigation Sections -->
