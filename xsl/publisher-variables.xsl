@@ -1965,6 +1965,22 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- for the election of a feedback button         -->
 <xsl:variable name="b-has-feedback-button" select="not($feedback-button-href = '')"/>
 
+<!--                    -->
+<!-- Granular Feedback  -->
+<!--                    -->
+
+<!-- For now, we implement this as a new child of publication/html -->
+<!-- Will discuss merging this with the feedback element later     -->
+<xsl:variable name="granular-feedback" select="$publication/html/granular-feedback/@service"/>
+<xsl:variable name="b-has-granular-feedback" select="not($granular-feedback = '')"/>
+<xsl:variable name="granular-feedback-href">
+    <xsl:if test="$b-has-granular-feedback and $publication/html/granular-feedback/@href = ''">
+        <xsl:message>PTX:ERROR:  an HTML "granular-feedback" service of "<xsl:value-of select="$granular-feedback"/>" must have a @href attribute to work</xsl:message>
+    </xsl:if>
+    <xsl:value-of select="$publication/html/granular-feedback/@href"/>
+</xsl:variable>
+
+
 <!--                       -->
 <!-- HTML WeBWorK Dynamism -->
 <!--                       -->
@@ -3283,6 +3299,10 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
             <pi:pub-attribute name="host" default="web" options="runestone" legacy-options="aim"/>
             <pi:pub-attribute name="portable" default="no" options="yes"/>
         </platform>
+        <granular-feedback>
+            <pi:pub-attribute name="service" default="none" options="email github google-form"/>
+            <pi:pub-attribute name="href" freeform="yes"/>
+        </granular-feedback>
     </html>
     <epub>
         <cover>
