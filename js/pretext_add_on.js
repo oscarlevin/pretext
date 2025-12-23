@@ -967,6 +967,19 @@ function toggleWorkspaceHighlight(isChecked) {
     }
 }
 
+//// Add event listeners for print preview links
+//document.addEventListener("DOMContentLoaded", function() {
+//    const printPreviewLinks = document.querySelectorAll('.print-link');
+//    // disable default behavior of links and instead update the css file used for print preview
+//    printPreviewLinks.forEach(link => {
+//        link.addEventListener('click', function(event) {
+//            event.preventDefault();
+//            // change the value of the <link> element with id="print-preview-css" to the href of the clicked link
+//            const printPreviewCSS = document.getElementById('print-preview-css');
+//        });
+//    });
+//});
+
 // Printout print preview and page setup
 window.addEventListener("load",function(event) {
   // We condition on the existence of the papersize radio buttons, which only appear in the printout print preview.

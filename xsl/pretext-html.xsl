@@ -504,12 +504,17 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
 <!-- "heading-level", which begins at 2 to account for an "h1" -->
 <!-- being used in the masthead of the page infrastructure.    -->
 <xsl:template match="&STRUCTURAL;" mode="chunk">
+    <xsl:if test="self::worksheet or self::handout or .//worksheet or .//handout">
+        <xsl:variable name="is-printable" select="true()"/>
+    </xsl:if>
     <xsl:apply-templates select="." mode="file-wrap">
         <xsl:with-param name="content">
             <xsl:apply-templates select=".">
                  <xsl:with-param name="heading-level" select="2"/>
             </xsl:apply-templates>
         </xsl:with-param>
+        <!-- Set b-printable to true if the structural node is or contains a worksheet or handout -->
+        <xsl:with-param name="b-printable" select="self::worksheet or self::handout or .//worksheet or .//handout"/>
     </xsl:apply-templates>
 </xsl:template>
 
@@ -11092,7 +11097,8 @@ along with MathBook XML.  If not, see <http://www.gnu.org/licenses/>.
             <!-- grab the contents every page gets -->
             <xsl:choose>
                 <xsl:when test="$b-printable">
-                    <xsl:copy-of select="$file-wrap-full-head-cache-printable"/>
+                    <!--<xsl:copy-of select="$file-wrap-full-head-cache-printable"/>-->
+                    <xsl:copy-of select="$file-wrap-full-head-cache"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:copy-of select="$file-wrap-full-head-cache"/>
