@@ -3510,12 +3510,21 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="md">
-    <xs:complexType>
+    <xs:complexType mixed="true">
       <xs:sequence>
         <xs:element ref="mrow"/>
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element ref="mrow"/>
-          <xs:element ref="intertext"/>
+        <xs:choice>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="FillInMath"/>
+            <xs:element ref="var"/>
+          </xs:choice>
+          <xs:sequence>
+            <xs:element ref="mrow"/>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element ref="mrow"/>
+              <xs:element ref="intertext"/>
+            </xs:choice>
+          </xs:sequence>
         </xs:choice>
       </xs:sequence>
       <xs:attribute name="number">
@@ -3539,20 +3548,14 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="mdn">
-    <xs:complexType mixed="true">
-      <xs:choice>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="mrow"/>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:group ref="FillInMath"/>
-          <xs:element ref="var"/>
-        </xs:choice>
-        <xs:sequence>
           <xs:element ref="mrow"/>
-          <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element ref="mrow"/>
-            <xs:element ref="intertext"/>
-          </xs:choice>
-        </xs:sequence>
-      </xs:choice>
+          <xs:element ref="intertext"/>
+        </xs:choice>
+      </xs:sequence>
       <xs:attribute name="number">
         <xs:simpleType>
           <xs:restriction base="xs:token">
