@@ -113,6 +113,27 @@
     // These three helpers (Get, Set, Commit) hide that difference so the rest
     // of the code can be version-agnostic.
 
+    // ── Debug logging ────────────────────────────────────────────────────────
+    //
+    // Set window.ptxScormDebug = true  OR  add ?ptxscormdebug to the page URL
+    // *before* the page finishes loading to enable verbose API-call tracing.
+    // Every Get/Set/Commit/Terminate call will be logged with its return value
+    // and the LMS error code, making it easy to see what Blackboard (or any
+    // other LMS) is actually accepting or rejecting.
+    //
+    // Example (browser console, before navigating to the page):
+    //   localStorage.setItem('ptxscormdebug', '1');
+    // Then reload — the flag is also read from localStorage for convenience.
+    var _debug = !!(
+        window.ptxScormDebug ||
+        (window.location.search.indexOf('ptxscormdebug') !== -1) ||
+        (typeof localStorage !== 'undefined' && localStorage.getItem('ptxscormdebug'))
+    );
+
+    function dbg(msg) {
+        if (_debug) console.log('[PTX-SCORM DEBUG] ' + msg);
+    }
+
     /**
      * Read a SCORM data model element from the LMS.
      * Returns an empty string when no API is present.
@@ -122,7 +143,10 @@
         var val = (_ver === '2004')
             ? _api.GetValue(key)
             : _api.LMSGetValue(key);
-        return String(val);
+        var result = String(val);
+        var err = lastError();
+        dbg('Get(' + key + ') = ' + JSON.stringify(result) + '  err=' + err);
+        return result;
     }
 
     /**
@@ -131,11 +155,14 @@
      */
     function Set(key, val) {
         if (!_api) return;
+        var result;
         if (_ver === '2004') {
-            _api.SetValue(key, String(val));
+            result = _api.SetValue(key, String(val));
         } else {
-            _api.LMSSetValue(key, String(val));
+            result = _api.LMSSetValue(key, String(val));
         }
+        var err = lastError();
+        dbg('Set(' + key + ', ' + JSON.stringify(String(val)) + ') = ' + result + '  err=' + err);
     }
 
     /**
@@ -146,11 +173,33 @@
      */
     function Commit() {
         if (!_api) return;
+        var result;
         if (_ver === '2004') {
-            _api.Commit('');
+            result = _api.Commit('');
         } else {
-            _api.LMSCommit('');
+            result = _api.LMSCommit('');
         }
+        var err = lastError();
+        dbg('Commit() = ' + result + '  err=' + err);
+    }
+
+    /**
+     * End the SCORM session.  This is the signal most LMSes (Blackboard
+     * in particular) need before they will post the score to the gradebook.
+     * Sets _initialized = false so that a subsequent page in the same package
+     * will re-initialize cleanly.
+     */
+    function Terminate() {
+        if (!_api) return;
+        var result;
+        if (_ver === '2004') {
+            result = _api.Terminate('');
+        } else {
+            result = _api.LMSFinish('');
+        }
+        var err = lastError();
+        dbg('Terminate() = ' + result + '  err=' + err);
+        _initialized = false;
     }
 
     /**
@@ -227,6 +276,10 @@
     // it is page-specific; for a single-page SCORM assignment (the expected case)
     // this is simply the total number of questions on the assignment.
     var _totalQuestions = 0;
+
+    // True once we have set completion_status / lesson_status to "completed" in
+    // this session.  Used to skip redundant Set calls on subsequent interactions.
+    var _statusCompleted = false;
 
     // ── localStorage persistence ──────────────────────────────────────────────
     //
@@ -369,15 +422,28 @@
             return;
         }
         _initialized = true;
+        dbg('Initialize() = ' + result + '  err=' + err + '  ver=' + _ver);
+
+        // ── Log key LMS-supplied values so Blackboard behaviour is visible ──
+        var entryKey = _ver === '2004' ? 'cmi.entry' : 'cmi.core.entry';
+        var learnerId = Get(_ver === '2004' ? 'cmi.learner_id' : 'cmi.core.student_id');
+        var entry = Get(entryKey);
+        var rawForLog = Get('cmi.suspend_data');
+        dbg('entry=' + JSON.stringify(entry) +
+            '  learner_id=' + JSON.stringify(learnerId) +
+            '  suspend_data length=' + rawForLog.length);
 
         // ── Restore accumulated totals from previous pages ──────────────────
         // cmi.suspend_data is a free-form string that persists across pages
         // within a session.  We use it to store our running score as JSON.
-        var raw = Get('cmi.suspend_data');
+        var raw = rawForLog;
         if (raw) {
             try {
                 // Merge saved values into _state; unknown keys are ignored
                 Object.assign(_state, JSON.parse(raw));
+                dbg('Restored _state from suspend_data: correct=' + _state.correct +
+                    '  graded=' + _state.graded +
+                    '  answers=' + Object.keys(_state.answers || {}).length + ' keys');
             } catch (e) {
                 // Malformed suspend_data is not fatal; we just start fresh
                 console.warn('[PTX-SCORM] Could not parse suspend_data:', e);
@@ -401,12 +467,17 @@
             ? 'cmi.completion_status'
             : 'cmi.core.lesson_status';
         var currentStatus = Get(completionKey);
+        dbg('completion_status on entry = ' + JSON.stringify(currentStatus));
         if (currentStatus === 'not attempted' ||
             currentStatus === 'unknown'       ||
             currentStatus === '') {
             Set(completionKey, 'incomplete');
             Commit();
         }
+        // Remember if the LMS already shows "completed" (e.g. returning student on
+        // an LMS that preserves status across attempts, such as Blackboard).
+        _statusCompleted = (currentStatus === 'completed' || currentStatus === 'passed');
+        dbg('_statusCompleted=' + _statusCompleted);
 
         console.log('[PTX-SCORM] Session ready (SCORM ' + _ver + ').' +
                     '  Prior interactions: ' + _state.iCount + ',' +
@@ -746,19 +817,27 @@
             }
         }
 
-        // ── e) Note: completion_status intentionally stays "incomplete" ──────
+        // ── e) Mark SCO "completed" so the LMS posts the score to the gradebook ─
         //
-        // Setting completion_status="completed" (or lesson_status="completed"
-        // in SCORM 1.2) causes Canvas — and many other LMSes — to treat the
-        // next visit as a brand-new attempt, resetting all runtime data
-        // including cmi.suspend_data.  Keeping the status as "incomplete"
-        // (set at session start in loadRestoreData) tells the LMS the student
-        // is still working and the same attempt should be resumed next time.
+        // Blackboard (and some other LMSes) only record a grade when
+        // completion_status (SCORM 2004) / lesson_status (SCORM 1.2) is set to
+        // "completed".  We set this on the first graded interaction so the score
+        // is posted immediately rather than waiting for the student to finish
+        // every question.
         //
-        // Canvas records the score independently of completion status, so the
-        // grade will appear correctly in the gradebook.  For Canvas module
-        // completion requirements, instructors should use "must score at
-        // least X%" rather than "must complete this item."
+        // Canvas records scores independently of completion_status, so this does
+        // not affect Canvas grade reporting.  Canvas may start a new attempt on the
+        // next visit (clearing cmi.suspend_data), but Section 13 / loadRestoreData
+        // already falls back to localStorage for answer restoration in that case.
+        //
+        // cmi.exit is set to "suspend" at page-unload (Section 14), which signals
+        // LMSes that support it (Blackboard, Moodle) to resume the same attempt
+        // next time, preserving suspend_data for cross-device restoration.
+        if (!_statusCompleted) {
+            var compKey = (_ver === '2004') ? 'cmi.completion_status' : 'cmi.core.lesson_status';
+            Set(compKey, 'completed');
+            _statusCompleted = true;
+        }
 
         // ── f) Persist state for the next page ───────────────────────────────
         //
@@ -1774,6 +1853,9 @@
             Set(completionKey, 'incomplete');
             Commit();
         }
+        // Remember if the LMS already shows "completed" (e.g. returning student on
+        // an LMS that preserves status across attempts, such as Blackboard).
+        _statusCompleted = (currentStatus === 'completed' || currentStatus === 'passed');
 
         // ── Build restore map from saved answers ─────────────────────────────
         //
@@ -1981,10 +2063,10 @@
     // closing the browser tab, etc.) we want to make sure any buffered writes
     // are flushed to the LMS before the page is destroyed.
     //
-    // IMPORTANT: We call Commit() here but NOT Terminate()/LMSFinish().
-    // Terminate() would close the SCORM session entirely, which would prevent
-    // the learner from resuming later.  We only terminate when the learner
-    // explicitly exits the course (which the LMS typically handles itself).
+    // We call both Commit() and Terminate() so that LMSes such as Blackboard
+    // will post the score to the gradebook.  cmi.exit is set to "suspend" before
+    // Terminate() so that LMSes that honour it (Blackboard, Moodle) will resume
+    // the same attempt on the next visit, preserving suspend_data cross-device.
 
     window.addEventListener('beforeunload', function () {
         if (!_initialized) return;
@@ -1995,21 +2077,28 @@
         var json = JSON.stringify(_state);
         Set('cmi.suspend_data', json);
 
-        // Set cmi.exit = "suspend" — the standard SCORM signal meaning "save this
-        // attempt and resume it next time the student opens this content."
+        // cmi.exit = "suspend" tells LMSes that honour it (Blackboard, Moodle) to
+        // resume the same attempt on the next visit, setting entry="resume" and
+        // providing the saved suspend_data.  This enables cross-device answer
+        // restoration on those LMSes.  Canvas ignores this and starts a new attempt
+        // anyway, which is why we also mirror state to localStorage.
         //
-        // Without this the LMS may treat the next visit as a new attempt (ab-initio)
-        // and clear all saved data.  Combined with keeping completion_status as
-        // "incomplete" (never "completed"), this gives Canvas the clearest possible
-        // signal to preserve suspend_data across sessions.
-        //
-        // SCORM 2004: cmi.exit  (valid values: suspend, logout, time-out, "")
+        // SCORM 2004: cmi.exit       (valid values: suspend, logout, time-out, "")
         // SCORM 1.2:  cmi.core.exit  (valid values: suspend, logout, time-out, "")
-        Set(_ver === '2004' ? 'cmi.exit' : 'cmi.core.exit', 'suspend');
+        var exitKey = _ver === '2004' ? 'cmi.exit' : 'cmi.core.exit';
+        Set(exitKey, 'suspend');
 
+        // Commit flushes all pending data writes to the LMS.
+        // Terminate() formally ends the SCORM communication session.  Most LMSes —
+        // Blackboard in particular — only post the score to the gradebook once the
+        // session is terminated.  Without this call the data is buffered on the LMS
+        // side and the gradebook column may never be updated.
         Commit();
+        Terminate();
         saveToLocalStorage();
-        console.log('[PTX-SCORM] Page unloading — state saved. exit=suspend set.');
+
+        dbg('Unload complete: suspend_data saved, exit=suspend, Terminated.');
+        console.log('[PTX-SCORM] Page unloading — state saved, session terminated.');
     });
 
 })();  // end IIFE — no symbols leak into the global scope
