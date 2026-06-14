@@ -82,16 +82,30 @@
     (function discoverApi() {
         var win = window;
         for (var i = 0; i < 10; i++) {
-            // SCORM 2004 API object
-            if (win.API_1484_11) {
-                _api = win.API_1484_11;
-                _ver = '2004';
-                return;
-            }
-            // SCORM 1.2 API object
-            if (win.API) {
-                _api = win.API;
-                _ver = '1.2';
+            try {
+                // SCORM 2004 API object
+                if (win.API_1484_11) {
+                    _api = win.API_1484_11;
+                    _ver = '2004';
+                    return;
+                }
+                // SCORM 1.2 API object
+                if (win.API) {
+                    _api = win.API;
+                    _ver = '1.2';
+                    return;
+                }
+            } catch (e) {
+                // Accessing properties of a cross-origin parent frame throws a
+                // SecurityError.  This means the LMS is serving the SCORM content
+                // from a different origin than the API frame — standard SCORM
+                // property-based discovery cannot work in this configuration.
+                console.warn('[PTX-SCORM] Cross-origin frame encountered at level ' + i +
+                             ' during API discovery. The SCORM API cannot be reached ' +
+                             'due to browser security restrictions. ' +
+                             'Check that the content is loaded as a SCORM package (not ' +
+                             'a plain file/link) and that the LMS serves it from the ' +
+                             'same origin as the gradebook frame.');
                 return;
             }
             // Stop climbing if we have reached the top of the frame hierarchy
@@ -101,7 +115,9 @@
         // Running without a SCORM LMS is fine — exercises still work, we just
         // cannot report to any grade book.
         console.warn('[PTX-SCORM] No SCORM API found. ' +
-                     'Exercises will work normally but scores will not be reported.');
+                     'Exercises will work normally but scores will not be reported. ' +
+                     'If this is inside a SCORM-capable LMS, verify the content was ' +
+                     'added as a SCORM package, not a plain file or web link.');
     })();
 
 
