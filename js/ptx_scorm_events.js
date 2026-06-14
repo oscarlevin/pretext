@@ -61,14 +61,35 @@
 (function () {
     'use strict';
 
+    // ── Debug logging (initialised first so it is available during API discovery)
+    //
+    // Enable by any of these methods before the page loads:
+    //   • Add  ?ptxscormdebug  to the page URL
+    //   • Run  localStorage.setItem('ptxscormdebug', '1')  in the console, then reload
+    //   • Set  window.ptxScormDebug = true  before this script runs
+    //
+    // When enabled, every Get/Set/Commit/Terminate call — and every step of the
+    // SCORM API discovery — is logged with its result and LMS error code.
+    var _debug = !!(
+        window.ptxScormDebug ||
+        (window.location.search.indexOf('ptxscormdebug') !== -1) ||
+        (typeof localStorage !== 'undefined' && localStorage.getItem('ptxscormdebug'))
+    );
+
+    function dbg(msg) {
+        if (_debug) console.log('[PTX-SCORM DEBUG] ' + msg);
+    }
+
+
     // ═══════════════════════════════════════════════════════════════════════
     // SECTION 1 — SCORM API DISCOVERY
     // ═══════════════════════════════════════════════════════════════════════
     //
     // The LMS embeds the SCO content in an iframe (or nested iframes).  The
     // SCORM API object lives somewhere on the parent window chain — usually
-    // window.parent, but sometimes higher up.  We walk up at most 10 levels
-    // to locate it.
+    // window.parent, but sometimes higher up.  We walk up to 50 levels to
+    // handle unusually deep LMS frame hierarchies (Blackboard Ultra, for
+    // example, nests content in several wrapper frames).
     //
     // SCORM 2004 exposes: window.API_1484_11
     // SCORM 1.2  exposes: window.API
@@ -80,38 +101,62 @@
     var _ver = null;   // '2004' or '1.2'
 
     (function discoverApi() {
-        var win = window;
-        for (var i = 0; i < 10; i++) {
-            try {
-                // SCORM 2004 API object
-                if (win.API_1484_11) {
-                    _api = win.API_1484_11;
-                    _ver = '2004';
-                    return;
-                }
-                // SCORM 1.2 API object
-                if (win.API) {
-                    _api = win.API;
-                    _ver = '1.2';
-                    return;
-                }
-            } catch (e) {
-                // Accessing properties of a cross-origin parent frame throws a
-                // SecurityError.  This means the LMS is serving the SCORM content
-                // from a different origin than the API frame — standard SCORM
-                // property-based discovery cannot work in this configuration.
-                console.warn('[PTX-SCORM] Cross-origin frame encountered at level ' + i +
-                             ' during API discovery. The SCORM API cannot be reached ' +
-                             'due to browser security restrictions. ' +
-                             'Check that the content is loaded as a SCORM package (not ' +
-                             'a plain file/link) and that the LMS serves it from the ' +
-                             'same origin as the gradebook frame.');
-                return;
+        // Try to read the SCORM API from a single window reference.
+        // Returns true and sets _api/_ver on success; false if not present;
+        // throws SecurityError if the window is cross-origin.
+        function checkWin(w, label) {
+            if (w.API_1484_11) {
+                _api = w.API_1484_11;
+                _ver = '2004';
+                dbg('Found SCORM 2004 API at ' + label);
+                return true;
             }
-            // Stop climbing if we have reached the top of the frame hierarchy
-            if (win.parent === win) break;
+            if (w.API) {
+                _api = w.API;
+                _ver = '1.2';
+                dbg('Found SCORM 1.2 API at ' + label);
+                return true;
+            }
+            dbg('No API at ' + label);
+            return false;
+        }
+
+        // ── 1. Walk up the parent-frame chain ──────────────────────────────
+        // Cross-origin frames throw on property access; we catch the error,
+        // log it, and keep climbing — the API may be on a higher same-origin
+        // frame above the cross-origin one.
+        var win = window;
+        for (var i = 0; i < 50; i++) {
+            try {
+                if (checkWin(win, 'frame level ' + i)) return;
+            } catch (e) {
+                dbg('Cross-origin frame at level ' + i + ' — skipping, continuing up.');
+                console.warn('[PTX-SCORM] Cross-origin frame at level ' + i +
+                             ' — cannot read API properties here, continuing to climb.');
+            }
+            if (win.parent === win) break;   // reached the topmost frame
             win = win.parent;
         }
+
+        // ── 2. Try window.top directly ─────────────────────────────────────
+        // This jumps straight to the topmost frame without iterating every
+        // level, which helps when the chain above is very deep or when an
+        // intermediate cross-origin frame blocked the loop.
+        try {
+            if (window.top !== win && checkWin(window.top, 'window.top')) return;
+        } catch (e) {
+            dbg('window.top is cross-origin — cannot check for API there.');
+        }
+
+        // ── 3. Try window.opener ───────────────────────────────────────────
+        // Some SCORM players open content in a popup; the API lives on the
+        // opener window rather than a parent frame.
+        try {
+            if (window.opener && checkWin(window.opener, 'window.opener')) return;
+        } catch (e) {
+            dbg('window.opener is cross-origin — cannot check for API there.');
+        }
+
         // Running without a SCORM LMS is fine — exercises still work, we just
         // cannot report to any grade book.
         console.warn('[PTX-SCORM] No SCORM API found. ' +
@@ -129,26 +174,8 @@
     // These three helpers (Get, Set, Commit) hide that difference so the rest
     // of the code can be version-agnostic.
 
-    // ── Debug logging ────────────────────────────────────────────────────────
-    //
-    // Set window.ptxScormDebug = true  OR  add ?ptxscormdebug to the page URL
-    // *before* the page finishes loading to enable verbose API-call tracing.
-    // Every Get/Set/Commit/Terminate call will be logged with its return value
-    // and the LMS error code, making it easy to see what Blackboard (or any
-    // other LMS) is actually accepting or rejecting.
-    //
-    // Example (browser console, before navigating to the page):
-    //   localStorage.setItem('ptxscormdebug', '1');
-    // Then reload — the flag is also read from localStorage for convenience.
-    var _debug = !!(
-        window.ptxScormDebug ||
-        (window.location.search.indexOf('ptxscormdebug') !== -1) ||
-        (typeof localStorage !== 'undefined' && localStorage.getItem('ptxscormdebug'))
-    );
-
-    function dbg(msg) {
-        if (_debug) console.log('[PTX-SCORM DEBUG] ' + msg);
-    }
+    // (_debug and dbg() are defined at the top of the IIFE so they are
+    // available during API discovery in Section 1.)
 
     /**
      * Read a SCORM data model element from the LMS.
