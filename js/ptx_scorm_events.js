@@ -285,6 +285,7 @@
     //              for cross-session restore.  suspend_data persists forever.)
 
     var _initialized = false;           // true once Initialize() has succeeded
+    var _submitted   = false;           // true after submitSession() fires; guards beforeunload
     var _state = {
         correct: 0,   // sum of percentage scores for graded questions
         graded:  0,   // total number of graded question answers received
@@ -1005,6 +1006,7 @@
         requestParentResize();
         installWeBWorKSrcdocIntercept();
         installWeBWorKAjaxIntercept();
+        addSubmitButton();
 
         // Add status badges to WeBWorK problems that the student has already answered.
         // WeBWorK is not a RunestoneBase component so the restore hook's decorateStatus
@@ -2099,7 +2101,125 @@
 
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SECTION 14 — PAGE-UNLOAD SAVE
+    // SECTION 14 — EXPLICIT SUBMIT
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // submitSession() performs a "final" SCORM termination: it marks the SCO
+    // completed and sets cmi.exit to "" (normal exit, not "suspend") so that
+    // Blackboard moves the attempt from "In Progress" to "Submitted" in its
+    // gradebook.  Using "suspend" in beforeunload preserves the cross-session
+    // resume flow but prevents Blackboard from recording the submission.
+    //
+    // addSubmitButton() injects a visible "Submit Assignment" button at the
+    // bottom of the page content.  After clicking, the LMS player (Blackboard
+    // in particular) typically navigates the student back to the course
+    // automatically once Terminate() completes.  If it does not, we show a
+    // fallback status message and disable the button.
+
+    /**
+     * Finalize the SCORM session as a student submission.
+     * Uses cmi.exit="" (normal exit) rather than "suspend" so the LMS records
+     * this as a submitted attempt, not an in-progress one.
+     */
+    function submitSession() {
+        if (!_api || !_initialized || _submitted) return;
+
+        // Ensure lesson/completion status reflects that the student engaged.
+        if (!_statusCompleted) {
+            var compKey = (_ver === '2004') ? 'cmi.completion_status' : 'cmi.core.lesson_status';
+            Set(compKey, 'completed');
+            _statusCompleted = true;
+        }
+
+        // Flush current state to both stores before terminating.
+        Set('cmi.suspend_data', JSON.stringify(_state));
+        saveToLocalStorage();
+
+        // Empty string exit = "normal exit" — Blackboard interprets this as the
+        // student intentionally finishing and moves the attempt to Submitted.
+        // Contrast with "suspend" (used in beforeunload for page-to-page navigation)
+        // which tells the LMS to keep the attempt open for a future resume.
+        var exitKey = (_ver === '2004') ? 'cmi.exit' : 'cmi.core.exit';
+        Set(exitKey, '');
+
+        Commit();
+        Terminate();
+
+        _submitted = true;
+        dbg('submitSession() complete — exit="", session terminated.');
+        console.log('[PTX-SCORM] Assignment submitted — session terminated.');
+    }
+
+    /**
+     * Insert a "Submit Assignment" button at the bottom of the page content.
+     * Only added when a SCORM API is present (i.e. we are inside an LMS).
+     */
+    function addSubmitButton() {
+        if (!_api) return;
+
+        var wrapper = document.createElement('div');
+        wrapper.id = 'ptx-scorm-submit-wrapper';
+        wrapper.style.cssText = 'margin:2em 0 1em;padding:1.2em 1em 0.8em;border-top:2px solid #ccc;text-align:center;';
+
+        var btn = document.createElement('button');
+        btn.id = 'ptx-scorm-submit-btn';
+        btn.type = 'button';
+        btn.textContent = 'Submit Assignment';
+        btn.style.cssText = [
+            'padding:0.55em 2em',
+            'font-size:1.05em',
+            'font-weight:bold',
+            'background:#006db0',
+            'color:#fff',
+            'border:none',
+            'border-radius:4px',
+            'cursor:pointer',
+        ].join(';');
+
+        var warning = document.createElement('p');
+        warning.style.cssText = 'margin:0.5em 0 0;font-size:0.85em;color:#666;';
+        warning.textContent = 'Once submitted, further work on this page will not be saved.';
+
+        var statusMsg = document.createElement('p');
+        statusMsg.style.cssText = 'margin:0.6em 0 0;font-size:1em;font-weight:bold;color:#155724;display:none;';
+
+        btn.addEventListener('mouseover', function () { this.style.background = '#00508a'; });
+        btn.addEventListener('mouseout',  function () { if (!_submitted) this.style.background = '#006db0'; });
+
+        btn.addEventListener('click', function () {
+            submitSession();
+
+            btn.disabled = true;
+            btn.textContent = 'Submitted ✓';
+            btn.style.background = '#5a9e6f';
+            btn.style.cursor = 'default';
+            warning.style.display = 'none';
+
+            // The LMS often navigates the student away automatically after
+            // Terminate() completes.  Show a fallback message after 600 ms
+            // in case the page is still visible.
+            setTimeout(function () {
+                statusMsg.style.display = 'block';
+                statusMsg.textContent = 'Assignment submitted. You may now close this window.';
+            }, 600);
+        });
+
+        wrapper.appendChild(btn);
+        wrapper.appendChild(warning);
+        wrapper.appendChild(statusMsg);
+
+        // Append after the last content element inside the page body.
+        var content = document.querySelector('article.ptx-content') ||
+                      document.querySelector('main') ||
+                      document.body;
+        content.appendChild(wrapper);
+
+        console.log('[PTX-SCORM] Submit button added.');
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SECTION 15 — PAGE-UNLOAD SAVE
     // ═══════════════════════════════════════════════════════════════════════
     //
     // When the learner navigates away from a page (clicking the Next button,
@@ -2110,9 +2230,12 @@
     // will post the score to the gradebook.  cmi.exit is set to "suspend" before
     // Terminate() so that LMSes that honour it (Blackboard, Moodle) will resume
     // the same attempt on the next visit, preserving suspend_data cross-device.
+    //
+    // If the student already clicked "Submit Assignment" (_submitted = true),
+    // Terminate() was already called with exit="" and we skip this handler.
 
     window.addEventListener('beforeunload', function () {
-        if (!_initialized) return;
+        if (!_initialized || _submitted) return;
 
         // Re-save the current state in case anything changed since the last Commit.
         // We write to both stores: suspend_data for LMSes that preserve it across
