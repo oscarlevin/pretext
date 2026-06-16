@@ -1025,8 +1025,8 @@
     content.appendChild(wrapper);
     console.log("[PTX-SCORM] Submit button added.");
   }
-  window.addEventListener("beforeunload", function() {
-    if (!_initialized || _submitted) return;
+  function handlePageExit(isPersisted) {
+    if (isPersisted || !_initialized || _submitted) return;
     var json = JSON.stringify(_state);
     Set("cmi.suspend_data", json);
     var exitKey = _ver === "2004" ? "cmi.exit" : "cmi.core.exit";
@@ -1034,8 +1034,14 @@
     Commit();
     Terminate();
     saveToLocalStorage();
-    dbg("Unload complete: suspend_data saved, exit=suspend, Terminated.");
-    console.log("[PTX-SCORM] Page unloading \u2014 state saved, session terminated.");
+    dbg("Page exit: suspend_data saved, exit=suspend, Terminated.");
+    console.log("[PTX-SCORM] Page unloading \u2014 state saved, session terminated (suspended).");
+  }
+  window.addEventListener("beforeunload", function() {
+    handlePageExit(false);
+  });
+  window.addEventListener("pagehide", function(event) {
+    handlePageExit(event.persisted);
   });
 })();
 //# sourceMappingURL=ptx_scorm_events.js.map

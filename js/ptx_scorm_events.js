@@ -2222,49 +2222,61 @@
     // SECTION 15 — PAGE-UNLOAD SAVE
     // ═══════════════════════════════════════════════════════════════════════
     //
-    // When the learner navigates away from a page (clicking the Next button,
-    // closing the browser tab, etc.) we want to make sure any buffered writes
-    // are flushed to the LMS before the page is destroyed.
+    // When the learner navigates away we flush state and terminate the SCORM
+    // session.  We register on BOTH beforeunload and pagehide:
     //
-    // We call both Commit() and Terminate() so that LMSes such as Blackboard
-    // will post the score to the gradebook.  cmi.exit is set to "suspend" before
-    // Terminate() so that LMSes that honour it (Blackboard, Moodle) will resume
-    // the same attempt on the next visit, preserving suspend_data cross-device.
+    //   beforeunload — fires synchronously during in-page navigation (reliable
+    //                  for browser Back, address-bar changes, link clicks).
+    //   pagehide     — fires on mobile browsers and when the *outer* Blackboard
+    //                  frame navigates away (destroying the SCORM iframe), which
+    //                  can bypass beforeunload.  We only act when event.persisted
+    //                  is false (page is truly being discarded, not cached).
+    //
+    // We use exit="" (normal exit, not "suspend") so that Blackboard records the
+    // attempt as "Submitted" rather than leaving it "In Progress".  Using "suspend"
+    // told Blackboard the student would return to finish — correct for courseware
+    // but wrong for an assignment where the work is already scored per-question.
+    // localStorage provides same-device restore without relying on the LMS to
+    // resume a suspended attempt.
     //
     // If the student already clicked "Submit Assignment" (_submitted = true),
-    // Terminate() was already called with exit="" and we skip this handler.
+    // Terminate() was already called and we skip this handler.
 
-    window.addEventListener('beforeunload', function () {
-        if (!_initialized || _submitted) return;
+    function handlePageExit(isPersisted) {
+        if (isPersisted || !_initialized || _submitted) return;
 
         // Re-save the current state in case anything changed since the last Commit.
-        // We write to both stores: suspend_data for LMSes that preserve it across
-        // sessions, and localStorage for LMSes (like Canvas) that reset suspend_data.
         var json = JSON.stringify(_state);
         Set('cmi.suspend_data', json);
 
-        // cmi.exit = "suspend" tells LMSes that honour it (Blackboard, Moodle) to
-        // resume the same attempt on the next visit, setting entry="resume" and
-        // providing the saved suspend_data.  This enables cross-device answer
-        // restoration on those LMSes.  Canvas ignores this and starts a new attempt
-        // anyway, which is why we also mirror state to localStorage.
+        // exit="suspend" tells the LMS to preserve this attempt as "In Progress"
+        // so the student can resume where they left off.  The grade is already
+        // recorded from each question submission; "In Progress" is the correct
+        // display state until the student explicitly clicks "Submit Assignment".
         //
         // SCORM 2004: cmi.exit       (valid values: suspend, logout, time-out, "")
         // SCORM 1.2:  cmi.core.exit  (valid values: suspend, logout, time-out, "")
         var exitKey = _ver === '2004' ? 'cmi.exit' : 'cmi.core.exit';
         Set(exitKey, 'suspend');
 
-        // Commit flushes all pending data writes to the LMS.
-        // Terminate() formally ends the SCORM communication session.  Most LMSes —
-        // Blackboard in particular — only post the score to the gradebook once the
-        // session is terminated.  Without this call the data is buffered on the LMS
-        // side and the gradebook column may never be updated.
+        // Commit flushes pending data, then Terminate() formally closes the
+        // SCORM communication session.  Calling Terminate() here (not just Commit)
+        // is what clears Blackboard's "open session" flag — without it the next
+        // visit shows "You may have this course open in another window."
         Commit();
         Terminate();
         saveToLocalStorage();
 
-        dbg('Unload complete: suspend_data saved, exit=suspend, Terminated.');
-        console.log('[PTX-SCORM] Page unloading — state saved, session terminated.');
-    });
+        dbg('Page exit: suspend_data saved, exit=suspend, Terminated.');
+        console.log('[PTX-SCORM] Page unloading — state saved, session terminated (suspended).');
+    }
+
+    window.addEventListener('beforeunload', function () { handlePageExit(false); });
+
+    // pagehide is the reliable companion: fires on mobile and when Blackboard's
+    // outer frame navigates (which destroys the iframe without firing beforeunload).
+    // event.persisted === true means the page is going into the back-forward cache
+    // (not destroyed), so we skip Terminate() in that case.
+    window.addEventListener('pagehide', function (event) { handlePageExit(event.persisted); });
 
 })();  // end IIFE — no symbols leak into the global scope
