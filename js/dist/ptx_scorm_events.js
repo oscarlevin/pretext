@@ -1,45 +1,92 @@
 (function() {
   "use strict";
+  var _debug = !!(window.ptxScormDebug || window.location.search.indexOf("ptxscormdebug") !== -1 || typeof localStorage !== "undefined" && localStorage.getItem("ptxscormdebug"));
+  function dbg(msg) {
+    if (_debug) console.log("[PTX-SCORM DEBUG] " + msg);
+  }
   var _api = null;
   var _ver = null;
   (function discoverApi() {
-    var win = window;
-    for (var i = 0; i < 10; i++) {
-      if (win.API_1484_11) {
-        _api = win.API_1484_11;
+    function checkWin(w, label) {
+      if (w.API_1484_11) {
+        _api = w.API_1484_11;
         _ver = "2004";
-        return;
+        dbg("Found SCORM 2004 API at " + label);
+        return true;
       }
-      if (win.API) {
-        _api = win.API;
+      if (w.API) {
+        _api = w.API;
         _ver = "1.2";
-        return;
+        dbg("Found SCORM 1.2 API at " + label);
+        return true;
+      }
+      dbg("No API at " + label);
+      return false;
+    }
+    var win = window;
+    for (var i = 0; i < 50; i++) {
+      try {
+        if (checkWin(win, "frame level " + i)) return;
+      } catch (e) {
+        dbg("Cross-origin frame at level " + i + " \u2014 skipping, continuing up.");
+        console.warn("[PTX-SCORM] Cross-origin frame at level " + i + " \u2014 cannot read API properties here, continuing to climb.");
       }
       if (win.parent === win) break;
       win = win.parent;
     }
-    console.warn("[PTX-SCORM] No SCORM API found. Exercises will work normally but scores will not be reported.");
+    try {
+      if (window.top !== win && checkWin(window.top, "window.top")) return;
+    } catch (e) {
+      dbg("window.top is cross-origin \u2014 cannot check for API there.");
+    }
+    try {
+      if (window.opener && checkWin(window.opener, "window.opener")) return;
+    } catch (e) {
+      dbg("window.opener is cross-origin \u2014 cannot check for API there.");
+    }
+    console.warn("[PTX-SCORM] No SCORM API found. Exercises will work normally but scores will not be reported. If this is inside a SCORM-capable LMS, verify the content was added as a SCORM package, not a plain file or web link.");
   })();
   function Get(key) {
     if (!_api) return "";
     var val = _ver === "2004" ? _api.GetValue(key) : _api.LMSGetValue(key);
-    return String(val);
+    var result = String(val);
+    var err = lastError();
+    dbg("Get(" + key + ") = " + JSON.stringify(result) + "  err=" + err);
+    return result;
   }
   function Set(key, val) {
     if (!_api) return;
+    var result;
     if (_ver === "2004") {
-      _api.SetValue(key, String(val));
+      result = _api.SetValue(key, String(val));
     } else {
-      _api.LMSSetValue(key, String(val));
+      result = _api.LMSSetValue(key, String(val));
     }
+    var err = lastError();
+    dbg("Set(" + key + ", " + JSON.stringify(String(val)) + ") = " + result + "  err=" + err);
   }
   function Commit() {
     if (!_api) return;
+    var result;
     if (_ver === "2004") {
-      _api.Commit("");
+      result = _api.Commit("");
     } else {
-      _api.LMSCommit("");
+      result = _api.LMSCommit("");
     }
+    var err = lastError();
+    dbg("Commit() = " + result + "  err=" + err);
+  }
+  function Terminate() {
+    if (!_api) return;
+    var result;
+    if (_ver === "2004") {
+      result = _api.Terminate("");
+    } else {
+      result = _api.LMSFinish("");
+    }
+    var err = lastError();
+    dbg("Terminate() = " + result + "  err=" + err);
+    _initialized = false;
   }
   function lastError() {
     if (!_api) return "0";
@@ -47,6 +94,7 @@
     return String(code);
   }
   var _initialized = false;
+  var _submitted = false;
   var _state = {
     correct: 0,
     // sum of percentage scores for graded questions
@@ -63,6 +111,7 @@
   var _doenetSentStateAt = {};
   var DOENET_INIT_WINDOW_MS = 8e3;
   var _totalQuestions = 0;
+  var _statusCompleted = false;
   var _learnerId = "";
   function lsKey() {
     return "ptx-scorm:" + (_learnerId || "anon") + ":" + window.location.pathname;
@@ -132,10 +181,17 @@
       return;
     }
     _initialized = true;
-    var raw = Get("cmi.suspend_data");
+    dbg("Initialize() = " + result + "  err=" + err + "  ver=" + _ver);
+    var entryKey = _ver === "2004" ? "cmi.entry" : "cmi.core.entry";
+    var learnerId = Get(_ver === "2004" ? "cmi.learner_id" : "cmi.core.student_id");
+    var entry = Get(entryKey);
+    var rawForLog = Get("cmi.suspend_data");
+    dbg("entry=" + JSON.stringify(entry) + "  learner_id=" + JSON.stringify(learnerId) + "  suspend_data length=" + rawForLog.length);
+    var raw = rawForLog;
     if (raw) {
       try {
         Object.assign(_state, JSON.parse(raw));
+        dbg("Restored _state from suspend_data: correct=" + _state.correct + "  graded=" + _state.graded + "  answers=" + Object.keys(_state.answers || {}).length + " keys");
       } catch (e) {
         console.warn("[PTX-SCORM] Could not parse suspend_data:", e);
       }
@@ -144,10 +200,13 @@
     _state.iCount = isNaN(lmsCount) ? 0 : lmsCount;
     var completionKey = _ver === "2004" ? "cmi.completion_status" : "cmi.core.lesson_status";
     var currentStatus = Get(completionKey);
+    dbg("completion_status on entry = " + JSON.stringify(currentStatus));
     if (currentStatus === "not attempted" || currentStatus === "unknown" || currentStatus === "") {
       Set(completionKey, "incomplete");
       Commit();
     }
+    _statusCompleted = currentStatus === "completed" || currentStatus === "passed";
+    dbg("_statusCompleted=" + _statusCompleted);
     console.log("[PTX-SCORM] Session ready (SCORM " + _ver + ").  Prior interactions: " + _state.iCount + ",  Prior score: " + _state.correct + "/" + _state.graded);
   }
   var RUNESTONE_TO_SCORM_TYPE = {
@@ -302,6 +361,11 @@
         Set("cmi.core.score.raw", (scaled * 100).toFixed(1));
       }
     }
+    if (!_statusCompleted) {
+      var compKey = _ver === "2004" ? "cmi.completion_status" : "cmi.core.lesson_status";
+      Set(compKey, "completed");
+      _statusCompleted = true;
+    }
     _state.answers[ev.div_id || "unknown"] = {
       answer: response,
       correct: score === null ? null : score >= 1,
@@ -351,6 +415,7 @@
     requestParentResize();
     installWeBWorKSrcdocIntercept();
     installWeBWorKAjaxIntercept();
+    addSubmitButton();
     Object.keys(_state.answers).forEach(function(divId) {
       var container = document.getElementById(divId);
       if (!container || !container.dataset) return;
@@ -784,6 +849,7 @@
       Set(completionKey, "incomplete");
       Commit();
     }
+    _statusCompleted = currentStatus === "completed" || currentStatus === "passed";
     var map = {};
     var divIds = Object.keys(_state.answers || {});
     divIds.forEach(function(divId) {
@@ -893,14 +959,83 @@
     window.RunestoneBase.__ptxScormRestoreHooked = true;
     console.log("[PTX-SCORM] Restore hook installed (" + n + " saved answers available).");
   }
+  function submitSession() {
+    if (!_api || !_initialized || _submitted) return;
+    if (!_statusCompleted) {
+      var compKey = _ver === "2004" ? "cmi.completion_status" : "cmi.core.lesson_status";
+      Set(compKey, "completed");
+      _statusCompleted = true;
+    }
+    Set("cmi.suspend_data", JSON.stringify(_state));
+    saveToLocalStorage();
+    var exitKey = _ver === "2004" ? "cmi.exit" : "cmi.core.exit";
+    Set(exitKey, "");
+    Commit();
+    Terminate();
+    _submitted = true;
+    dbg('submitSession() complete \u2014 exit="", session terminated.');
+    console.log("[PTX-SCORM] Assignment submitted \u2014 session terminated.");
+  }
+  function addSubmitButton() {
+    if (!_api) return;
+    var wrapper = document.createElement("div");
+    wrapper.id = "ptx-scorm-submit-wrapper";
+    wrapper.style.cssText = "margin:2em 0 1em;padding:1.2em 1em 0.8em;border-top:2px solid #ccc;text-align:center;";
+    var btn = document.createElement("button");
+    btn.id = "ptx-scorm-submit-btn";
+    btn.type = "button";
+    btn.textContent = "Submit Assignment";
+    btn.style.cssText = [
+      "padding:0.55em 2em",
+      "font-size:1.05em",
+      "font-weight:bold",
+      "background:#006db0",
+      "color:#fff",
+      "border:none",
+      "border-radius:4px",
+      "cursor:pointer"
+    ].join(";");
+    var warning = document.createElement("p");
+    warning.style.cssText = "margin:0.5em 0 0;font-size:0.85em;color:#666;";
+    warning.textContent = "Once submitted, further work on this page will not be saved.";
+    var statusMsg = document.createElement("p");
+    statusMsg.style.cssText = "margin:0.6em 0 0;font-size:1em;font-weight:bold;color:#155724;display:none;";
+    btn.addEventListener("mouseover", function() {
+      this.style.background = "#00508a";
+    });
+    btn.addEventListener("mouseout", function() {
+      if (!_submitted) this.style.background = "#006db0";
+    });
+    btn.addEventListener("click", function() {
+      submitSession();
+      btn.disabled = true;
+      btn.textContent = "Submitted \u2713";
+      btn.style.background = "#5a9e6f";
+      btn.style.cursor = "default";
+      warning.style.display = "none";
+      setTimeout(function() {
+        statusMsg.style.display = "block";
+        statusMsg.textContent = "Assignment submitted. You may now close this window.";
+      }, 600);
+    });
+    wrapper.appendChild(btn);
+    wrapper.appendChild(warning);
+    wrapper.appendChild(statusMsg);
+    var content = document.querySelector("article.ptx-content") || document.querySelector("main") || document.body;
+    content.appendChild(wrapper);
+    console.log("[PTX-SCORM] Submit button added.");
+  }
   window.addEventListener("beforeunload", function() {
-    if (!_initialized) return;
+    if (!_initialized || _submitted) return;
     var json = JSON.stringify(_state);
     Set("cmi.suspend_data", json);
-    Set(_ver === "2004" ? "cmi.exit" : "cmi.core.exit", "suspend");
+    var exitKey = _ver === "2004" ? "cmi.exit" : "cmi.core.exit";
+    Set(exitKey, "suspend");
     Commit();
+    Terminate();
     saveToLocalStorage();
-    console.log("[PTX-SCORM] Page unloading \u2014 state saved. exit=suspend set.");
+    dbg("Unload complete: suspend_data saved, exit=suspend, Terminated.");
+    console.log("[PTX-SCORM] Page unloading \u2014 state saved, session terminated.");
   });
 })();
 //# sourceMappingURL=ptx_scorm_events.js.map
