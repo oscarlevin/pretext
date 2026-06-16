@@ -361,11 +361,6 @@
         Set("cmi.core.score.raw", (scaled * 100).toFixed(1));
       }
     }
-    if (!_statusCompleted) {
-      var compKey = _ver === "2004" ? "cmi.completion_status" : "cmi.core.lesson_status";
-      Set(compKey, "completed");
-      _statusCompleted = true;
-    }
     _state.answers[ev.div_id || "unknown"] = {
       answer: response,
       correct: score === null ? null : score >= 1,

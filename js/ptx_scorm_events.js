@@ -856,34 +856,18 @@
             } else {
                 // SCORM 1.2 has a single score field (0–100 range)
                 Set('cmi.core.score.raw', (scaled * 100).toFixed(1));
-                // We do NOT set cmi.core.lesson_status to 'passed'/'failed';
-                // we set it to 'completed' (below) and let the LMS decide.
             }
         }
 
-        // ── e) Mark SCO "completed" so the LMS posts the score to the gradebook ─
+        // ── e) Persist state for the next page ───────────────────────────────
         //
-        // Blackboard (and some other LMSes) only record a grade when
-        // completion_status (SCORM 2004) / lesson_status (SCORM 1.2) is set to
-        // "completed".  We set this on the first graded interaction so the score
-        // is posted immediately rather than waiting for the student to finish
-        // every question.
-        //
-        // Canvas records scores independently of completion_status, so this does
-        // not affect Canvas grade reporting.  Canvas may start a new attempt on the
-        // next visit (clearing cmi.suspend_data), but Section 13 / loadRestoreData
-        // already falls back to localStorage for answer restoration in that case.
-        //
-        // cmi.exit is set to "suspend" at page-unload (Section 14), which signals
-        // LMSes that support it (Blackboard, Moodle) to resume the same attempt
-        // next time, preserving suspend_data for cross-device restoration.
-        if (!_statusCompleted) {
-            var compKey = (_ver === '2004') ? 'cmi.completion_status' : 'cmi.core.lesson_status';
-            Set(compKey, 'completed');
-            _statusCompleted = true;
-        }
-
-        // ── f) Persist state for the next page ───────────────────────────────
+        // NOTE: completion_status / lesson_status is intentionally NOT set here.
+        // Setting it to "completed" on the first answer is what caused Blackboard
+        // to treat a page-navigation-away (exit="suspend") as a finalized
+        // submission, locking the attempt.  We keep status as "incomplete" until
+        // the student explicitly clicks "Submit Assignment" (submitSession()).
+        // The score fields above are committed independently and remain visible
+        // in the LMS gradebook regardless of completion status.
         //
         // cmi.suspend_data is our cross-page scratchpad.  We serialise _state
         // to JSON and write it here so that when the learner navigates to the
