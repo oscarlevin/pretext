@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--********************************************************************
+Copyright (C) 2026  Robert A. Beezer
+
+This file is part of PreTeXt.
+
+PreTeXt is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 or version 3 of the
+License (at your option).
+
+PreTeXt is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
+*********************************************************************-->
+
+<!-- Publication file for the course calendar example: a term that begins  -->
+<!-- mid-week.                                                            -->
+<!--                                                                     -->
+<!-- Identical to "publication.xml" except that @start is the Wednesday    -->
+<!-- rather than the Monday.  It exercises the short first week, which is  -->
+<!-- the case most likely to surprise.                                    -->
+<!--                                                                     -->
+<!-- Week 1 begins on the latest @week-starts day on or before @start, so  -->
+<!-- week 1 begins Monday 2026-08-24 and holds only two meetings, the      -->
+<!-- Wednesday and the Friday.  That is what an instructor means by "the   -->
+<!-- first week": weeks 2 and onward line up with the ordinary calendar    -->
+<!-- rather than being pushed two days out of phase for the whole term.    -->
+<!--                                                                     -->
+<!-- Two consequences worth looking at in the output:                      -->
+<!--                                                                     -->
+<!--   * "week1.mon" resolves to 2026-08-24, which is *before* instruction -->
+<!--     begins.  It is calendar-anchored and does not know about @start,  -->
+<!--     so the "first-day" event in this document points at a day with no -->
+<!--     class.  A schedule meant to survive this case would write         -->
+<!--     "week1.d1" instead, which is the first meeting - 2026-08-26.      -->
+<!--                                                                     -->
+<!--   * The term holds 41 meetings rather than 42, so every "classK"      -->
+<!--     reference lands one meeting earlier on the calendar than it does  -->
+<!--     in the Monday-start build, while every "weekN.day" reference is   -->
+<!--     unchanged.  The "add-drop" event, written "class5", moves from    -->
+<!--     2026-09-02 to 2026-09-04; "hw1-due", written "week2.fri", stays   -->
+<!--     at 2026-09-04.  Same split as the holiday rule, different cause.  -->
+
+<publication>
+
+    <common>
+        <exercise-inline statement="yes" hint="yes" answer="yes" solution="yes"/>
+        <exercise-divisional statement="yes" hint="yes" answer="yes" solution="yes"/>
+    </common>
+
+    <calendar start="2026-08-26" end="2026-12-04" meets="MWF"
+              week-starts="mon" as-of="week8.wed" releases="honor">
+        <holiday on="2026-09-07" name="Labor Day"/>
+        <holiday from="2026-11-25" through="2026-11-27" name="Thanksgiving"/>
+        <event id="exam2" at="week11.fri"/>
+        <release id="hw3-solutions" from="hw3-due"/>
+        <release id="course-note" from="week8.mon"/>
+    </calendar>
+
+</publication>

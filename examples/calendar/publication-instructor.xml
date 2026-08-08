@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--********************************************************************
+Copyright (C) 2026  Robert A. Beezer
+
+This file is part of PreTeXt.
+
+PreTeXt is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 or version 3 of the
+License (at your option).
+
+PreTeXt is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
+*********************************************************************-->
+
+<!-- Publication file for the course calendar example: the instructor's   -->
+<!-- full private copy.                                                   -->
+<!--                                                                     -->
+<!-- Identical to "publication.xml" except for releases="ignore", which   -->
+<!-- retains every element carrying a @release-id no matter what its      -->
+<!-- window says.  That includes the windows that have already closed, so -->
+<!-- this build is the only one holding every gated block at once.        -->
+<!--                                                                     -->
+<!-- Dates are unaffected: resolution still runs and every "date" and     -->
+<!-- "daterange" prints exactly what it prints in the student build.      -->
+<!-- Only the gating is suspended.  So an instructor gets a complete copy -->
+<!-- without editing the schedule, which is the point: the schedule is    -->
+<!-- what the students' build depends on and must not be disturbed to     -->
+<!-- produce a private one.                                               -->
+<!--                                                                     -->
+<!-- The build still reports the released/withheld split, and prints an   -->
+<!-- extra line saying that gating is suspended, so it is never a mystery -->
+<!-- which kind of build you are looking at.                              -->
+
+<publication>
+
+    <common>
+        <exercise-inline statement="yes" hint="yes" answer="yes" solution="yes"/>
+        <exercise-divisional statement="yes" hint="yes" answer="yes" solution="yes"/>
+    </common>
+
+    <calendar start="2026-08-24" end="2026-12-04" meets="MWF"
+              week-starts="mon" as-of="week8.wed" releases="ignore">
+        <holiday on="2026-09-07" name="Labor Day"/>
+        <holiday from="2026-11-25" through="2026-11-27" name="Thanksgiving"/>
+        <event id="exam2" at="week11.fri"/>
+        <release id="hw3-solutions" from="hw3-due"/>
+        <release id="course-note" from="week8.mon"/>
+    </calendar>
+
+</publication>

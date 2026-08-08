@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--********************************************************************
+Copyright (C) 2026  Robert A. Beezer
+
+This file is part of PreTeXt.
+
+PreTeXt is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 or version 3 of the
+License (at your option).
+
+PreTeXt is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
+*****************************************************************-->
+
+<!-- One target per publication file, so the builds can be made and diffed  -->
+<!-- against each other.  Every target uses the same source: the whole      -->
+<!-- point of the feature is that nothing in "main.ptx" changes between     -->
+<!-- them.  See README.md for what each build should contain.               -->
+<!--                                                                      -->
+<!-- The source and publication files sit alongside this manifest rather    -->
+<!-- than in the usual subdirectories, so both defaults are set to ".".     -->
+
+<project ptx-version="2" source="." publication="." output-dir="output">
+  <targets>
+    <!-- The student build, mid-term.  as-of="week8.wed" -->
+    <target name="web" format="html"
+            source="main.ptx" publication="publication.xml"
+            output-dir="web"/>
+
+    <!-- The same term seen from week 1: almost nothing is released yet. -->
+    <target name="web-early" format="html"
+            source="main.ptx" publication="publication-early.xml"
+            output-dir="web-early"/>
+
+    <!-- releases="ignore": every gated element retained, dates unaffected. -->
+    <target name="web-instructor" format="html"
+            source="main.ptx" publication="publication-instructor.xml"
+            output-dir="web-instructor"/>
+
+    <!-- A term beginning on a Wednesday, for the short first week. -->
+    <target name="web-wednesday" format="html"
+            source="main.ptx" publication="publication-wednesday.xml"
+            output-dir="web-wednesday"/>
+
+    <target name="print" format="pdf"
+            source="main.ptx" publication="publication.xml"
+            output-dir="print" output-filename="calendar.pdf"/>
+
+    <target name="print-instructor" format="pdf"
+            source="main.ptx" publication="publication-instructor.xml"
+            output-dir="print-instructor" output-filename="calendar-instructor.pdf"/>
+  </targets>
+</project>

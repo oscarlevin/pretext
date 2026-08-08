@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--********************************************************************
+Copyright (C) 2026  Robert A. Beezer
+
+This file is part of PreTeXt.
+
+PreTeXt is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 or version 3 of the
+License (at your option).
+
+PreTeXt is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
+*********************************************************************-->
+
+<!-- Publication file for the course calendar example: the first week.    -->
+<!--                                                                     -->
+<!-- Identical to "publication.xml" except for @as-of.  This is the whole -->
+<!-- of what it takes to preview a build at another point in the term,    -->
+<!-- and it is the reason @as-of accepts a symbolic reference: "week1.wed"-->
+<!-- keeps its meaning when the term moves.                              -->
+<!--                                                                     -->
+<!-- Only two rules are open this early: "syllabus-quiz", which has no    -->
+<!-- @from and has not yet expired, and "office-hours-note", whose window -->
+<!-- covers the first four weeks.  Everything else is still ahead.        -->
+
+<publication>
+
+    <common>
+        <exercise-inline statement="yes" hint="yes" answer="yes" solution="yes"/>
+        <exercise-divisional statement="yes" hint="yes" answer="yes" solution="yes"/>
+    </common>
+
+    <calendar start="2026-08-24" end="2026-12-04" meets="MWF"
+              week-starts="mon" as-of="week1.wed" releases="honor">
+        <holiday on="2026-09-07" name="Labor Day"/>
+        <holiday from="2026-11-25" through="2026-11-27" name="Thanksgiving"/>
+        <event id="exam2" at="week11.fri"/>
+        <release id="hw3-solutions" from="hw3-due"/>
+        <release id="course-note" from="week8.mon"/>
+    </calendar>
+
+</publication>

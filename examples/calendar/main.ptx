@@ -1,0 +1,859 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--********************************************************************
+Copyright (C) 2026  Robert A. Beezer
+
+This file is part of PreTeXt.
+
+PreTeXt is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 or version 3 of the
+License (at your option).
+
+PreTeXt is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
+*********************************************************************-->
+
+<!-- Course calendar demonstration and test document.                     -->
+<!--                                                                      -->
+<!-- This is a (fictional) set of course notes whose only purpose is to    -->
+<!-- exercise the course calendar: symbolic date references in the text,   -->
+<!-- and content gated on a date with @release-id.  The mathematics is     -->
+<!-- deliberately thin; what matters is the dates and the gating.          -->
+<!--                                                                      -->
+<!-- Every date in the output is computed.  There is not one real date in  -->
+<!-- this file: they all live in "publication.xml", which is the one file  -->
+<!-- an instructor edits when the term changes.                            -->
+<!--                                                                      -->
+<!-- Read "README.md" in this directory first.  It carries the table of    -->
+<!-- expected results, which is what makes this a test and not just a      -->
+<!-- demonstration.                                                        -->
+
+<pretext>
+    <docinfo>
+
+        <!-- ############ -->
+        <!-- The Schedule -->
+        <!-- ############ -->
+
+        <!-- The schedule is course design, so it lives here and not in    -->
+        <!-- the publication file: "the first exam is in week 6" is true   -->
+        <!-- every term, while "week 6 begins September 28" is true of      -->
+        <!-- exactly one offering.                                         -->
+        <!--                                                               -->
+        <!-- Events resolve in document order and may refer only to an      -->
+        <!-- event defined above them, so this list reads top to bottom     -->
+        <!-- like a syllabus.                                              -->
+        <calendar>
+
+            <!-- A weekday in a numbered week.  Calendar-anchored: this is -->
+            <!-- the same date whether or not a holiday falls earlier in    -->
+            <!-- the term.                                                 -->
+            <event id="first-day" at="week1.mon"/>
+
+            <!-- The fifth meeting of the term.  Sequence-anchored: a       -->
+            <!-- holiday earlier in the term slides this one meeting later. -->
+            <event id="add-drop" at="class5"/>
+
+            <event id="hw1-due" at="week2.fri"/>
+
+            <!-- The first *meeting* inside week 3's fixed seven-day block. -->
+            <!-- Week 3 opens on Labor Day in this offering, so this is     -->
+            <!-- Wednesday while "week3.mon" is the holiday Monday.  That   -->
+            <!-- divergence is the whole point of having both forms; see    -->
+            <!-- the section on holidays below.                             -->
+            <event id="project-proposal" at="week3.d1"/>
+
+            <!-- An offset from an event defined earlier.  Say "one week    -->
+            <!-- after the first assignment" once, and it stays true.       -->
+            <event id="hw2-due" at="hw1-due+1w"/>
+
+            <event id="hw3-due" at="week5.fri"/>
+            <event id="exam1" at="week6.wed"/>
+
+            <!-- A day offset, in the same spirit. -->
+            <event id="exam1-return" at="exam1+2d"/>
+
+            <event id="midpoint" at="class21"/>
+
+            <!-- The one-letter day form, which is how instructors actually -->
+            <!-- write schedules.  "week8.fri" and "week8.f" are identical. -->
+            <event id="hw4-due" at="week8.f"/>
+
+            <!-- Both fields abbreviated.  Note "r" is Thursday, not "t",   -->
+            <!-- and that Thursday is not a meeting day in this offering:   -->
+            <!-- an off-pattern review session resolves perfectly well.     -->
+            <event id="review-session" at="w9.r"/>
+
+            <!-- The escape hatch: a literal ISO 8601 date is always        -->
+            <!-- accepted.  Use it for something genuinely pinned to one    -->
+            <!-- offering, like a visitor's travel dates, and expect to     -->
+            <!-- edit it next term.                                         -->
+            <event id="guest-lecture" at="2026-10-30"/>
+
+            <!-- This one is overridden in the publication file, because     -->
+            <!-- the exam slipped two days in this particular offering.      -->
+            <!-- Everything downstream that refers to "exam2" moves with it. -->
+            <event id="exam2" at="w11.w"/>
+
+            <event id="hw5-due" at="week13.fri"/>
+            <event id="last-day" at="week15.fri"/>
+
+            <!-- A negative offset from an event defined earlier. -->
+            <event id="final-project-due" at="last-day-2d"/>
+
+            <!-- Finals week is outside the meeting pattern entirely, so a  -->
+            <!-- literal date is the honest way to say this.                 -->
+            <event id="final-exam" at="2026-12-09"/>
+
+            <!-- ######## -->
+            <!-- Releases -->
+            <!-- ######## -->
+
+            <!-- A "release" says *when* something is visible.  The source   -->
+            <!-- body only ever names the rule, with @release-id, so         -->
+            <!-- retiming a release never touches the source.                -->
+
+            <!-- @through with no @from: visible from the beginning of time  -->
+            <!-- until a deadline passes.                                    -->
+            <release id="syllabus-quiz" through="add-drop"/>
+
+            <!-- A closed window in the ordinary sense. -->
+            <release id="office-hours-note" from="first-day" through="week4.fri"/>
+
+            <!-- @from with no @through: appears, and stays.  This is the    -->
+            <!-- common case.                                                -->
+            <release id="project-guidelines" from="project-proposal-1w"/>
+
+            <!-- The flagship use: solutions the day after the deadline.     -->
+            <release id="hw1-solutions" from="hw1-due+1d"/>
+            <release id="hw2-solutions" from="hw2-due+1d"/>
+            <release id="hw3-solutions" from="hw3-due+2d"/>
+            <release id="hw4-solutions" from="hw4-due+1d"/>
+            <release id="hw5-solutions" from="hw5-due+1d"/>
+
+            <!-- Review material live only in the run-up to the exam, then   -->
+            <!-- gone: content can appear on a date, disappear on a date, or  -->
+            <!-- both.                                                       -->
+            <release id="exam1-review" from="exam1-1w" through="exam1"/>
+            <release id="exam1-key" from="exam1-return"/>
+            <release id="exam2-review" from="exam2-1w" through="exam2"/>
+            <release id="exam2-key" from="exam2+3d"/>
+
+            <!-- Whole divisions are gated with these two. -->
+            <release id="unit3" from="week7.mon"/>
+            <release id="unit4" from="week10.mon"/>
+
+            <!-- Nested inside the "unit3" division, and opening later than   -->
+            <!-- its container.                                              -->
+            <release id="unit3-advanced" from="week9.mon"/>
+
+            <!-- A short window keyed to an event, open at the default        -->
+            <!-- reference date of this example.                             -->
+            <release id="midpoint-survey" from="midpoint" through="midpoint+4d"/>
+
+            <release id="final-instructions" from="week14.mon"/>
+
+            <!-- Note there is no rule here for "course-note".  That one is   -->
+            <!-- defined only in the publication file, which is legal: the     -->
+            <!-- publication file may add rules as well as override them.      -->
+        </calendar>
+    </docinfo>
+
+    <article xml:id="calendar-example">
+        <title>Topics in Discrete Mathematics</title>
+        <subtitle>A course calendar demonstration</subtitle>
+
+        <frontmatter>
+            <bibinfo>
+                <author>
+                    <personname>A. N. Instructor</personname>
+                    <institution>Anytown State University</institution>
+                </author>
+                <!-- Two "date" elements, nested, with two different         -->
+                <!-- meanings.  The outer one is the frontmatter date of the  -->
+                <!-- schema; the inner one carries @at and is a course date.  -->
+                <!-- The @at is what tells them apart.                        -->
+                <date>Term beginning <date at="first-day" format="month-day-year"/></date>
+            </bibinfo>
+            <titlepage>
+                <titlepage-items/>
+            </titlepage>
+            <abstract>
+                <p>A short, synthetic set of course notes that exists to exercise the <pretext/> course calendar.  Every date below is computed from a single start date in the publication file, and several blocks appear or disappear depending on the date the document is built.</p>
+            </abstract>
+        </frontmatter>
+
+        <!-- ####################### -->
+        <!-- How the Machinery Works -->
+        <!-- ####################### -->
+
+        <section xml:id="sec-how-it-works">
+            <title>How This Document Works</title>
+
+            <p>These notes are rebuilt every term, and there is not one real date anywhere in the source.  That is the point.  The calendar feature splits the problem into three pieces, each of which changes on a different schedule.</p>
+
+            <p>The <term>calendar</term> lives in the publication file and holds the facts of a single offering: the first day of instruction, the meeting pattern, and the holidays.  It is the one file that changes between terms, and it is small.</p>
+
+            <p>The <term>schedule</term> lives in <c>docinfo</c> and holds named events at <em>relative</em> positions<mdash/><q>the first exam is Wednesday of week 6</q><mdash/>together with rules saying when marked content becomes visible.  Relative positions are course design, so they survive the term untouched.</p>
+
+            <p>The <term>source body</term><mdash/>this text<mdash/>refers to events by name, with <c>date</c> and <c>daterange</c>, and marks date-gated material with <c>release-id</c>.  It never contains a date and never contains a policy about when something appears.</p>
+
+            <p>So the answer to <q>when do the solutions to the third assignment appear?</q> is written once, in <c>docinfo</c>, as <c>from="hw3-due+2d"</c>, and the answer to <q>what date is that?</q> is computed from the start date in the publication file.  Moving the course to the spring is one edit.</p>
+
+            <p>This document is built against several publication files, which differ only in their reference date.  Consult <c>README.md</c> for the table of what should appear in each build.  If you are reading the mid-term build, roughly half of the gated material below is present and the rest is not; the paragraphs that survive say so about themselves.</p>
+        </section>
+
+        <!-- ################## -->
+        <!-- Dates in the Text -->
+        <!-- ################## -->
+
+        <section xml:id="sec-dates">
+            <title>Dates in the Text</title>
+
+            <introduction>
+                <p>A <c>date</c> element with an <c>at</c> attribute prints a date.  The attribute holds a <term>date reference</term>, which is a single token with no whitespace.  The first day of class was <date at="first-day"/>, written <c>at="first-day"</c>, which is the name of an event in the schedule.</p>
+            </introduction>
+
+            <subsection xml:id="subsec-formats">
+                <title>Formats</title>
+
+                <p>Six formats are available, and the default is <c>month-day-year</c>.  The first exam is the same day in every line below.</p>
+
+                <p><dl width="narrow">
+                    <li><title><c>month-day-year</c></title><p><date at="exam1" format="month-day-year"/></p></li>
+                    <li><title><c>weekday-month-day</c></title><p><date at="exam1" format="weekday-month-day"/></p></li>
+                    <li><title><c>month-day</c></title><p><date at="exam1" format="month-day"/></p></li>
+                    <li><title><c>weekday</c></title><p><date at="exam1" format="weekday"/></p></li>
+                    <li><title><c>yyyy/mm/dd</c></title><p><date at="exam1" format="yyyy/mm/dd"/></p></li>
+                    <li><title><c>iso</c></title><p><date at="exam1" format="iso"/></p></li>
+                </dl></p>
+
+                <p>The <c>weekday-month-day</c> form is the one an instructor usually wants in prose: the first exam is <date at="exam1" format="weekday-month-day"/>, and saying the weekday out loud is half of what makes the sentence useful.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-reference-forms">
+                <title>Every Form of Reference</title>
+
+                <p>A reference is one of six things, optionally followed by an offset.</p>
+
+                <p>A <term>named event</term>, as above: the third assignment is due <date at="hw3-due" format="weekday-month-day"/>.</p>
+
+                <p>A <term>weekday in a numbered week</term>: <c>week6.wed</c> is <date at="week6.wed" format="weekday-month-day"/>, and the abbreviated <c>w6.w</c> is <date at="w6.w" format="weekday-month-day"/><mdash/>the same date, because the two forms are identical in meaning.  The day letters are <c>m t w r f s u</c>, with <c>r</c> for Thursday and <c>u</c> for Sunday, which is the convention registrar systems already use.</p>
+
+                <p>A <term>numbered meeting inside a week</term>: <c>week6.d2</c> is <date at="week6.d2" format="weekday-month-day"/>, the second time the class actually met that week.  Week 6 holds no holiday, so this happens to be the same day as <c>week6.wed</c>; the subsection on holidays below is where the two forms come apart, and that divergence is the reason both exist.</p>
+
+                <p>A <term>numbered meeting of the term</term>: <c>class17</c> is <date at="class17" format="weekday-month-day"/>.  This one is useful for <q>we cover generating functions on class 17,</q> which is a claim about the sequence of meetings rather than about the calendar.</p>
+
+                <p>A <term>literal ISO 8601 date</term>, always accepted: the final examination is <date at="2026-12-09" format="weekday-month-day"/>, because finals week lies outside the meeting pattern and pretending otherwise would be dishonest.  Expect to edit a literal date next term; that is the trade.</p>
+
+                <p>And <c>today</c>, which is the date this document was built: <date at="today" format="month-day-year"/>.  Note that this is the real current date and not the calendar's reference date, so it is the one thing on this page that changes when you rebuild without editing anything.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-offsets">
+                <title>Offsets</title>
+
+                <p>Any reference may carry a calendar-day or calendar-week offset.  Exams come back two days after they are written: <c>exam1+2d</c> is <date at="exam1+2d" format="weekday-month-day"/>, where the exam itself was <date at="exam1" format="weekday-month-day"/>.</p>
+
+                <p>Offsets work on every form of reference, not just on events.  <c>week3.fri-1w</c> is <date at="week3.fri-1w" format="weekday-month-day"/>, and <c>class17+3d</c> is <date at="class17+3d" format="weekday-month-day"/>.</p>
+
+                <p>An offset counts calendar days, so it may land on a weekend or a holiday.  <c>1w</c> means exactly seven days.  There is no <q>two class meetings later</q> operator; if you need that, name an event at the meeting you mean.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-holidays">
+                <title>Holidays, and Why There Are Two Kinds of Reference</title>
+
+                <p>This offering loses the Monday of week 3 to a holiday.  Watch what the two families of reference do about it.</p>
+
+                <p>A week-and-weekday reference is <term>calendar-anchored</term>, and a holiday never moves it.  <c>week3.mon</c> is <date at="week3.mon" format="weekday-month-day"/><mdash/>which is the holiday itself.  <c>week3.wed</c> is <date at="week3.wed" format="weekday-month-day"/>, exactly two days later, just as it would be in a term with no holiday at all.</p>
+
+                <p>A meeting-ordinal reference is <term>sequence-anchored</term>, and slides.  <c>week3.d1</c> is <date at="week3.d1" format="weekday-month-day"/>, the first day the class actually met that week.  So <c>week3.mon</c> and <c>week3.d1</c> name different days in this offering and the same day in an offering with no holiday there.</p>
+
+                <p>The same split runs through the term-wide numbering.  <c>class7</c> is <date at="class7" format="weekday-month-day"/>; in a term with no holiday in week 3 it would have been Monday, September <m>7</m>.  Every later <c>classK</c> is shifted by that one lost meeting, while every later <c>weekN.day</c> is not.</p>
+
+                <p>The reason for offering both is that instructors make both kinds of claim.  <q>Exam 2 is Wednesday of week 11</q> is a promise about the calendar and should not move because a class was cancelled in September.  <q>We cover trees on class 12</q> is a promise about the sequence and should.</p>
+
+                <p>A multi-day holiday behaves the same way.  Week 14 loses its Wednesday and Friday to a break, so it holds exactly one meeting: <c>week14.d1</c> is <date at="week14.d1" format="weekday-month-day"/>, while <c>week14.wed</c> is <date at="week14.wed" format="weekday-month-day"/>, a day on which nothing happens.  Asking for <c>week14.d2</c> is an error rather than a warning, because there is no date to give back.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-ranges">
+                <title>Ranges</title>
+
+                <p>A <c>daterange</c> takes <c>from</c> and <c>through</c>, each an ordinary date reference, and both endpoints are included.  Unit 1 runs <daterange from="week1.mon" through="week3.fri"/>.  Unit 2 runs <daterange from="week4.mon" through="week6.mon" format="weekday-month-day"/>.</p>
+
+                <p>Ranges accept the same offsets as anything else, so the week before the first exam is <daterange from="exam1-1w" through="exam1-1d" format="month-day"/>, and the assignment window for the third assignment is <daterange from="hw2-due" through="hw3-due" format="month-day"/>.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-schedule">
+                <title>The Term at a Glance</title>
+
+                <p>Nothing here is special: it is the ordinary table markup with a <c>date</c> in each cell.  Rebuild against a different publication file and the whole table moves.</p>
+
+                <table xml:id="table-schedule">
+                    <title>Deadlines for the term</title>
+                    <tabular>
+                        <row header="yes" bottom="major">
+                            <cell>Item</cell>
+                            <cell>Written as</cell>
+                            <cell>Falls on</cell>
+                        </row>
+                        <row>
+                            <cell>First day of class</cell>
+                            <cell><c>week1.mon</c></cell>
+                            <cell><date at="first-day" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Last day to add or drop</cell>
+                            <cell><c>class5</c></cell>
+                            <cell><date at="add-drop" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Assignment 1 due</cell>
+                            <cell><c>week2.fri</c></cell>
+                            <cell><date at="hw1-due" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Project proposal due</cell>
+                            <cell><c>week3.d1</c></cell>
+                            <cell><date at="project-proposal" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Assignment 2 due</cell>
+                            <cell><c>hw1-due+1w</c></cell>
+                            <cell><date at="hw2-due" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Assignment 3 due</cell>
+                            <cell><c>week5.fri</c></cell>
+                            <cell><date at="hw3-due" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Examination 1</cell>
+                            <cell><c>week6.wed</c></cell>
+                            <cell><date at="exam1" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Examination 1 returned</cell>
+                            <cell><c>exam1+2d</c></cell>
+                            <cell><date at="exam1-return" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Midpoint of the term</cell>
+                            <cell><c>class21</c></cell>
+                            <cell><date at="midpoint" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Assignment 4 due</cell>
+                            <cell><c>week8.f</c></cell>
+                            <cell><date at="hw4-due" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Review session</cell>
+                            <cell><c>w9.r</c></cell>
+                            <cell><date at="review-session" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Guest lecture</cell>
+                            <cell><c>2026-10-30</c></cell>
+                            <cell><date at="guest-lecture" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Examination 2</cell>
+                            <cell><c>w11.w</c>, overridden</cell>
+                            <cell><date at="exam2" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Assignment 5 due</cell>
+                            <cell><c>week13.fri</c></cell>
+                            <cell><date at="hw5-due" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Project due</cell>
+                            <cell><c>last-day-2d</c></cell>
+                            <cell><date at="final-project-due" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Last day of class</cell>
+                            <cell><c>week15.fri</c></cell>
+                            <cell><date at="last-day" format="weekday-month-day"/></cell>
+                        </row>
+                        <row>
+                            <cell>Final examination</cell>
+                            <cell><c>2026-12-09</c></cell>
+                            <cell><date at="final-exam" format="weekday-month-day"/></cell>
+                        </row>
+                    </tabular>
+                </table>
+
+                <p>One row of that table is worth a second look.  The second examination is written <c>w11.w</c> in <c>docinfo</c>, which resolves to the Wednesday of week 11, but this offering lost a day to weather and the exam moved to the Friday.  Rather than edit the schedule<mdash/>which is supposed to be the stable part<mdash/>the publication file carries <c>&lt;event id="exam2" at="week11.fri"/&gt;</c>, which replaces the entry by <c>id</c>.  Everything downstream of it, including the review window and the answer key, moved with it and needed no edit at all.</p>
+            </subsection>
+        </section>
+
+        <!-- ############### -->
+        <!-- Basic Releases -->
+        <!-- ############### -->
+
+        <section xml:id="sec-releases">
+            <title>Content That Appears on a Date</title>
+
+            <introduction>
+                <p>An element carrying a <c>release-id</c> is present in the output only while the matching rule's window contains the build's reference date.  The attribute is an opaque name; all the timing lives in the <c>release</c> elements in <c>docinfo</c>.  Retiming a release is therefore never an edit to the body of the source, which is the entire reason the two are separated.</p>
+
+                <p>Every gated block below announces its own release identifier, so that you can read the output against the table in <c>README.md</c> and see that the right things are present.</p>
+            </introduction>
+
+            <subsection xml:id="subsec-from-only">
+                <title>Appears, and Stays</title>
+
+                <p>The ordinary case is a rule with only a <c>from</c>: the material shows up on a date and remains for the rest of the term.  Solutions to an assignment are the motivating example, and the rule is written <c>from="hw1-due+1d"</c><mdash/>the day after the deadline, whenever that turns out to be.</p>
+
+                <example xml:id="example-hw1" release-id="hw1-solutions">
+                    <title>Assignment 1, question 3 (solution)</title>
+                    <p>Released under <c>hw1-solutions</c>, which opened <date at="hw1-due+1d" format="weekday-month-day"/>.  There are <m>2^n</m> subsets of an <m>n</m>-element set, since each element is independently in or out.</p>
+                </example>
+
+                <example xml:id="example-hw4" release-id="hw4-solutions">
+                    <title>Assignment 4, question 1 (solution)</title>
+                    <p>Released under <c>hw4-solutions</c>, which opens <date at="hw4-due+1d" format="weekday-month-day"/>.  If you are reading this in the mid-term build, something is wrong: this block should not yet be here.</p>
+                </example>
+
+                <p>Those two blocks are marked identically.  The only difference between them is a date in <c>docinfo</c>, and in the mid-term build exactly one of them survives.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-windows">
+                <title>Appears, Then Goes Away</title>
+
+                <p>Because a rule takes both <c>from</c> and <c>through</c>, content can be live only inside a window.  Review material for an examination is the natural case: it is useful for the week before and clutter afterward.</p>
+
+                <remark xml:id="remark-exam1-review" release-id="exam1-review">
+                    <title>Review for Examination 1</title>
+                    <p>Released under <c>exam1-review</c>, whose window was <daterange from="exam1-1w" through="exam1" format="month-day"/>.  Bring a calculator and know the binomial theorem.</p>
+                </remark>
+
+                <remark xml:id="remark-exam2-review" release-id="exam2-review">
+                    <title>Review for Examination 2</title>
+                    <p>Released under <c>exam2-review</c>, whose window is <daterange from="exam2-1w" through="exam2" format="month-day"/>.  Note that both endpoints of this window moved when the publication file retimed <c>exam2</c>.</p>
+                </remark>
+
+                <remark xml:id="remark-midpoint-survey" release-id="midpoint-survey">
+                    <title>Mid-term survey</title>
+                    <p>Released under <c>midpoint-survey</c>, a five-day window running <daterange from="midpoint" through="midpoint+4d" format="month-day"/>.  Both endpoints are included, since the granularity is a whole day.</p>
+                </remark>
+
+                <p>The endpoints of a window are inclusive.  A build whose reference date is exactly the <c>through</c> date still shows the content; the day after, it does not.</p>
+
+                <p>An examination key is the mirror image: the rule <c>from="exam1-return"</c> opens on the day the papers go back, and there is no reason ever to close it.</p>
+
+                <assemblage xml:id="assemblage-exam1-key" release-id="exam1-key">
+                    <title>Examination 1: answer key</title>
+                    <p>Released under <c>exam1-key</c>, which opened <date at="exam1-return" format="weekday-month-day"/>.  1. (b).  2. (d).  3. <m>n(n-1)/2</m>.</p>
+                </assemblage>
+
+                <assemblage xml:id="assemblage-exam2-key" release-id="exam2-key">
+                    <title>Examination 2: answer key</title>
+                    <p>Released under <c>exam2-key</c>, which opens <date at="exam2+3d" format="weekday-month-day"/>.  This is the block whose premature appearance would be the real failure of this feature.</p>
+                </assemblage>
+            </subsection>
+
+            <subsection xml:id="subsec-through-only">
+                <title>Goes Away, Having Always Been There</title>
+
+                <p>A rule with only a <c>through</c> is visible from the start and expires.  Administrative notices are the use: they matter until a deadline and are noise afterward.</p>
+
+                <note xml:id="note-syllabus-quiz" release-id="syllabus-quiz">
+                    <title>Syllabus quiz</title>
+                    <p>Released under <c>syllabus-quiz</c>, which has no <c>from</c> at all and expires <date at="add-drop" format="weekday-month-day"/>, the last day to add or drop.</p>
+                </note>
+
+                <note xml:id="note-office-hours" release-id="office-hours-note">
+                    <title>Temporary office hours</title>
+                    <p>Released under <c>office-hours-note</c>, whose window was <daterange from="first-day" through="week4.fri" format="month-day"/>.  For the first four weeks only, office hours are in the library rather than the department.</p>
+                </note>
+
+                <p>A rule defined only in the publication file works exactly the same way.  <c>course-note</c> has no entry in <c>docinfo</c>; the publication file adds it, because it is a fact about this one offering.</p>
+
+                <note xml:id="note-course-note" release-id="course-note">
+                    <title>A note added by the publication file</title>
+                    <p>Released under <c>course-note</c>, a rule that exists only in <c>publication.xml</c>.  The publication file may add rules as well as override the ones in <c>docinfo</c>.</p>
+                </note>
+            </subsection>
+
+            <subsection xml:id="subsec-override">
+                <title>Retiming One Rule for One Offering</title>
+
+                <p>Solutions to the third assignment are normally held two days past the deadline, written <c>from="hw3-due+2d"</c>.  This section had already talked through the problems in class, so the publication file carries <c>&lt;release id="hw3-solutions" from="hw3-due"/&gt;</c> and they open on the deadline itself.  The schedule in <c>docinfo</c> is untouched and next term reverts to the two-day delay.</p>
+
+                <example xml:id="example-hw3" release-id="hw3-solutions">
+                    <title>Assignment 3, question 2 (solution)</title>
+                    <p>Released under <c>hw3-solutions</c>, retimed by the publication file to open <date at="hw3-due" format="weekday-month-day"/> rather than <date at="hw3-due+2d" format="weekday-month-day"/>.  Induct on the number of edges.</p>
+                </example>
+
+                <p>An override replaces the rule outright rather than merging with it.  A rule overridden with only a <c>from</c> has no <c>through</c>, whatever <c>docinfo</c> said.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-fine-grained">
+                <title>Marking Something Smaller Than a Block</title>
+
+                <p>The attribute goes almost everywhere <c>component</c> goes, so the unit of gating can be as small as a paragraph or a list item.  The next paragraph is a single gated <c>p</c>.</p>
+
+                <p release-id="project-guidelines">Released under <c>project-guidelines</c>, which opened a week before the proposal deadline, on <date at="project-proposal-1w" format="weekday-month-day"/>.  Proposals are two pages and name a theorem you intend to prove.</p>
+
+                <p>List items work too, which is handy for a rubric that fills in as the term goes:</p>
+
+                <p><ol>
+                    <li>Correctness of the statement.  (Always visible.)</li>
+                    <li release-id="hw1-solutions">Quality of the write-up.  (Gated on <c>hw1-solutions</c>.)</li>
+                    <li release-id="hw5-solutions">Depth of the extension.  (Gated on <c>hw5-solutions</c>, which opens <date at="hw5-due+1d" format="month-day"/>.)</li>
+                    <li>Timeliness.  (Always visible.)</li>
+                </ol></p>
+
+                <p>One block below carries both a <c>component</c> and a <c>release-id</c>.  The two attributes answer different questions<mdash/><q>which edition is this in?</q> and <q>is it visible yet?</q><mdash/>and an element that carries both must satisfy both.  No version is elected in these publication files, so <c>component</c> is inert here and only the release matters; elect one and the block must clear both filters.</p>
+
+                <remark xml:id="remark-both-attributes" component="instructor" release-id="hw2-solutions">
+                    <title>Marked with both attributes</title>
+                    <p>This carries <c>component="instructor"</c> and <c>release-id="hw2-solutions"</c>.  Add <c>&lt;version include="student"/&gt;</c> to the publication file's <c>source</c> element and it disappears even though its release is open.</p>
+                </remark>
+            </subsection>
+        </section>
+
+        <!-- ####### -->
+        <!-- Nesting -->
+        <!-- ####### -->
+
+        <section xml:id="sec-nesting">
+            <title>Releases Inside Releases</title>
+
+            <introduction>
+                <p>Nothing stops a gated element from containing another one with a different rule, and the result is the obvious one: an element appears only if it is released <em>and</em> every element containing it is released.  Gating composes by containment, so an inner rule can never rescue content from an outer one.  There are four cases and all four appear below.</p>
+
+                <p>To keep the four cases straight in the output, each surviving block names both of the rules that had to be satisfied to get it there.</p>
+            </introduction>
+
+            <subsection xml:id="subsec-nest-both-open">
+                <title>Case 1: Open Inside Open</title>
+
+                <p>Both rules are satisfied, so both blocks are present, and there is nothing surprising to report.</p>
+
+                <example xml:id="example-nest-both-open" release-id="hw1-solutions">
+                    <title>Outer block, released under <c>hw1-solutions</c></title>
+                    <p>The outer block opened <date at="hw1-due+1d" format="month-day"/>.</p>
+                    <p release-id="hw2-solutions">The inner paragraph is gated on <c>hw2-solutions</c>, which opened <date at="hw2-due+1d" format="month-day"/>.  Both rules are open, so both survive.</p>
+                </example>
+            </subsection>
+
+            <subsection xml:id="subsec-nest-inner-closed">
+                <title>Case 2: Closed Inside Open</title>
+
+                <p>The container is released and the inner block is not, which is the case that makes gated divisions useful: a unit goes live in outline and its answers fill in later.</p>
+
+                <example xml:id="example-nest-inner-closed" release-id="hw1-solutions">
+                    <title>Outer block, released under <c>hw1-solutions</c></title>
+                    <p>The outer block is present.  A paragraph gated on <c>hw5-solutions</c> follows, and in the mid-term build it should be absent, leaving this example with exactly two paragraphs.</p>
+                    <p release-id="hw5-solutions">Gated on <c>hw5-solutions</c>, which opens <date at="hw5-due+1d" format="month-day"/>.  Its presence in a mid-term build would be a bug.</p>
+                    <p>This third paragraph is not gated at all, and closes the example.</p>
+                </example>
+            </subsection>
+
+            <subsection xml:id="subsec-nest-outer-closed">
+                <title>Case 3: Open Inside Closed</title>
+
+                <p>This is the case worth pinning down.  The container is not released and the inner block is, and the inner block still does not appear<mdash/>it went with its container.  An inner rule cannot override an outer one, because the outer element was removed with everything inside it.</p>
+
+                <example xml:id="example-nest-outer-closed" release-id="exam2-key">
+                    <title>Outer block, released under <c>exam2-key</c></title>
+                    <p>The outer block opens <date at="exam2+3d" format="month-day"/>.  Neither this paragraph nor the one after it should appear before then.</p>
+                    <p release-id="hw1-solutions">Gated on <c>hw1-solutions</c>, whose window opened back on <date at="hw1-due+1d" format="month-day"/>.  It is open, and that changes nothing: this paragraph is inside a container that is closed.</p>
+                </example>
+
+                <p>If the previous subsection looks as though it is missing its example, that is the correct output.</p>
+            </subsection>
+
+            <subsection xml:id="subsec-nest-deep">
+                <title>Case 4: Three Rules Deep</title>
+
+                <introduction>
+                    <p>Depth is not limited, and a gated division, a gated exercise inside it, and a gated solution inside that is a realistic arrangement rather than a contrived one.  The subsubsection below is itself gated, and it holds the rest of this case.</p>
+                </introduction>
+
+                <subsubsection xml:id="subsubsec-nest-deep-inner" release-id="unit3">
+                    <title>A Gated Subsubsection, Released Under <c>unit3</c></title>
+
+                    <p>This whole subsubsection is gated on <c>unit3</c>, which opened <date at="week7.mon" format="weekday-month-day"/>.  A division is gated exactly like a paragraph, and everything inside it goes when it goes.</p>
+
+                    <p release-id="unit3-advanced">A paragraph two levels down, gated on <c>unit3-advanced</c>, which opens <date at="week9.mon" format="weekday-month-day"/>.  In the mid-term build the division around it is open and this paragraph is not.</p>
+
+                    <exercise xml:id="exercise-nest-deep" release-id="hw2-solutions">
+                        <title>An exercise two levels down</title>
+                        <statement>
+                            <p>Gated on <c>hw2-solutions</c>.  How many edges does the complete graph on <m>n</m> vertices have?</p>
+                        </statement>
+                        <hint release-id="hw1-solutions">
+                            <p>A hint, three levels down, gated on <c>hw1-solutions</c>.  Count ordered pairs and divide.</p>
+                        </hint>
+                        <solution release-id="hw5-solutions">
+                            <p>A solution, three levels down, gated on <c>hw5-solutions</c>, which opens <date at="hw5-due+1d" format="month-day"/>.  In the mid-term build the exercise and its hint are present and this solution is not.</p>
+                        </solution>
+                    </exercise>
+                </subsubsection>
+            </subsection>
+        </section>
+
+        <!-- ################# -->
+        <!-- Gated Divisions -->
+        <!-- ################# -->
+
+        <section xml:id="sec-unit3" release-id="unit3">
+            <title>Unit 3: Graphs</title>
+
+            <introduction>
+                <p>This entire section is gated on <c>unit3</c>, which opened <date at="week7.mon" format="weekday-month-day"/>.  Gating a whole division is a first-class use: a unit appears in the table of contents, and in the navigation, on the Monday the class starts it.</p>
+
+                <p>Note what stays fixed when a division comes and goes.  Chunking level and table-of-contents level are computed from the full edition, before any release is considered, so a document does not reshuffle its files or its URLs partway through the term.  Stability across the term is what a reader wants.</p>
+
+                <definition xml:id="definition-graph">
+                    <statement>
+                        <p>A <term>graph</term> is a pair <m>(V, E)</m> where <m>E</m> is a set of unordered pairs drawn from <m>V</m>.</p>
+                    </statement>
+                </definition>
+
+                <theorem xml:id="theorem-handshake">
+                    <title>Handshake lemma</title>
+                    <statement>
+                        <p>In any finite graph, <m>\sum_{v \in V} \deg(v) = 2\lvert E\rvert</m>.</p>
+                    </statement>
+                    <proof release-id="unit3-advanced">
+                        <p>This proof is gated on <c>unit3-advanced</c>, which opens <date at="week9.mon" format="weekday-month-day"/>: the statement goes up with the unit and the proof follows two weeks later, once the class has seen it.  Each edge contributes exactly two to the left-hand side.</p>
+                    </proof>
+                </theorem>
+            </introduction>
+
+            <subsection xml:id="subsec-unit3-advanced" release-id="unit3-advanced">
+                <title>Harder Material</title>
+
+                <p>A gated subsection inside a gated section.  Both must be open for this to appear, and in the mid-term build the outer one is and the inner one is not, so this subsection is absent while the rest of Unit 3 is present.</p>
+            </subsection>
+
+            <exercises xml:id="exercises-unit3">
+                <title>Exercises for Unit 3</title>
+
+                <exercise xml:id="exercise-unit3-1">
+                    <statement>
+                        <p>Draw every graph on three vertices, up to isomorphism.</p>
+                    </statement>
+                    <solution release-id="hw4-solutions">
+                        <p>Gated on <c>hw4-solutions</c>, which opens <date at="hw4-due+1d" format="month-day"/>.  There are four.</p>
+                    </solution>
+                </exercise>
+
+                <exercise xml:id="exercise-unit3-2">
+                    <statement>
+                        <p>Show that a tree on <m>n</m> vertices has <m>n-1</m> edges.</p>
+                    </statement>
+                    <hint release-id="hw1-solutions">
+                        <p>Gated on <c>hw1-solutions</c>, and open.  Remove a leaf.</p>
+                    </hint>
+                    <answer release-id="hw2-solutions">
+                        <p>Gated on <c>hw2-solutions</c>, and open.  Induct on <m>n</m>.</p>
+                    </answer>
+                    <solution release-id="hw5-solutions">
+                        <p>Gated on <c>hw5-solutions</c>, and not yet open.  A leaf exists because the sum of the degrees is <m>2(n-1)</m>.</p>
+                    </solution>
+                </exercise>
+            </exercises>
+        </section>
+
+        <section xml:id="sec-unit4" release-id="unit4">
+            <title>Unit 4: Generating Functions</title>
+
+            <p>This entire section is gated on <c>unit4</c>, which opens <date at="week10.mon" format="weekday-month-day"/>.  In a build before that date the section is absent from the body, from the table of contents, and from the navigation, and the numbering of anything after it moves up.  If you are reading this in the mid-term build, the release pass is not doing its job.</p>
+
+            <p>The <term>generating function</term> of a sequence <m>a_0, a_1, \dots</m> is the formal power series <m>\sum_{n \ge 0} a_n x^n</m>.</p>
+
+            <example xml:id="example-unit4">
+                <p>The generating function of the constant sequence <m>1, 1, 1, \dots</m> is <m>1/(1-x)</m>.</p>
+            </example>
+        </section>
+
+        <!-- ################### -->
+        <!-- The Expected Output -->
+        <!-- ################### -->
+
+        <section xml:id="sec-expected">
+            <title>What Should Appear, and When</title>
+
+            <p>This is the part that makes the document a test.  Every rule in the schedule is listed with the reference it was written as, so the table can be checked against a build without consulting <c>docinfo</c>.  The resolved dates below are computed by the same machinery under test, which means the table proves the references resolve consistently rather than that they resolve correctly; <c>README.md</c> carries the independently computed dates.</p>
+
+            <p>The build also reports itself.  Every build with a calendar prints a <c>PTX:CALENDAR</c> summary naming the reference date, the week, the number of meetings held, and the released and withheld rules by name<mdash/>because an instructor about to publish an answer key should not have to infer what they just published.</p>
+
+            <table xml:id="table-releases">
+                <title>Every release rule, and the window it resolves to</title>
+                <tabular>
+                    <row header="yes" bottom="major">
+                        <cell>Rule</cell>
+                        <cell>Written as</cell>
+                        <cell>Opens</cell>
+                        <cell>Closes</cell>
+                    </row>
+                    <row>
+                        <cell><c>syllabus-quiz</c></cell>
+                        <cell><c>through="add-drop"</c></cell>
+                        <cell>always</cell>
+                        <cell><date at="add-drop" format="month-day"/></cell>
+                    </row>
+                    <row>
+                        <cell><c>office-hours-note</c></cell>
+                        <cell><c>first-day</c>, <c>week4.fri</c></cell>
+                        <cell><date at="first-day" format="month-day"/></cell>
+                        <cell><date at="week4.fri" format="month-day"/></cell>
+                    </row>
+                    <row>
+                        <cell><c>project-guidelines</c></cell>
+                        <cell><c>project-proposal-1w</c></cell>
+                        <cell><date at="project-proposal-1w" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>hw1-solutions</c></cell>
+                        <cell><c>hw1-due+1d</c></cell>
+                        <cell><date at="hw1-due+1d" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>hw2-solutions</c></cell>
+                        <cell><c>hw2-due+1d</c></cell>
+                        <cell><date at="hw2-due+1d" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>hw3-solutions</c></cell>
+                        <cell><c>hw3-due+2d</c>, overridden</cell>
+                        <cell><date at="hw3-due" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>hw4-solutions</c></cell>
+                        <cell><c>hw4-due+1d</c></cell>
+                        <cell><date at="hw4-due+1d" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>hw5-solutions</c></cell>
+                        <cell><c>hw5-due+1d</c></cell>
+                        <cell><date at="hw5-due+1d" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>exam1-review</c></cell>
+                        <cell><c>exam1-1w</c>, <c>exam1</c></cell>
+                        <cell><date at="exam1-1w" format="month-day"/></cell>
+                        <cell><date at="exam1" format="month-day"/></cell>
+                    </row>
+                    <row>
+                        <cell><c>exam1-key</c></cell>
+                        <cell><c>exam1-return</c></cell>
+                        <cell><date at="exam1-return" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>exam2-review</c></cell>
+                        <cell><c>exam2-1w</c>, <c>exam2</c></cell>
+                        <cell><date at="exam2-1w" format="month-day"/></cell>
+                        <cell><date at="exam2" format="month-day"/></cell>
+                    </row>
+                    <row>
+                        <cell><c>exam2-key</c></cell>
+                        <cell><c>exam2+3d</c></cell>
+                        <cell><date at="exam2+3d" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>unit3</c></cell>
+                        <cell><c>week7.mon</c></cell>
+                        <cell><date at="week7.mon" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>unit3-advanced</c></cell>
+                        <cell><c>week9.mon</c></cell>
+                        <cell><date at="week9.mon" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>unit4</c></cell>
+                        <cell><c>week10.mon</c></cell>
+                        <cell><date at="week10.mon" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row>
+                        <cell><c>midpoint-survey</c></cell>
+                        <cell><c>midpoint</c>, <c>midpoint+4d</c></cell>
+                        <cell><date at="midpoint" format="month-day"/></cell>
+                        <cell><date at="midpoint+4d" format="month-day"/></cell>
+                    </row>
+                    <row>
+                        <cell><c>final-instructions</c></cell>
+                        <cell><c>week14.mon</c></cell>
+                        <cell><date at="week14.mon" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                    <row bottom="minor">
+                        <cell><c>course-note</c></cell>
+                        <cell><c>week8.mon</c>, publication only</cell>
+                        <cell><date at="week8.mon" format="month-day"/></cell>
+                        <cell>never</cell>
+                    </row>
+                </tabular>
+            </table>
+
+            <p>One rule in that table has no gated content anywhere in this document.  <c>final-instructions</c> is deliberately left unused, so that every build reports the warning about a rule whose identifier appears nowhere in the source.  That direction is only a warning, because shared source legitimately carries schedule entries for material a given book leaves out.</p>
+
+            <p>The other direction fails closed and is the one that matters.  A <c>release-id</c> matching no rule at all<mdash/>a typo, most likely<mdash/>is dropped rather than retained, and reported by name once however many times it was used.  The failure mode of this feature is publishing an answer key early, so a misspelling must not default to visible.</p>
+        </section>
+
+        <!-- ############ -->
+        <!-- Experiments -->
+        <!-- ############ -->
+
+        <section xml:id="sec-experiments">
+            <title>Things Worth Breaking</title>
+
+            <p>The calendar diagnostics are easier to trust once you have seen them fire.  Each of the following is a small edit to this directory that produces one specific message, and every one of them is worth doing once.</p>
+
+            <p><dl>
+                <li>
+                    <title>An orphaned identifier</title>
+                    <p>Misspell any <c>release-id</c> in this file<mdash/><c>hw1-solutions</c> as <c>hw1-solution</c>, say.  The block disappears and the build warns, once, naming the identifier.  This is the fail-closed rule, and it is the most important behavior in the feature.</p>
+                </li>
+                <li>
+                    <title>An event on a holiday</title>
+                    <p>Change <c>project-proposal</c> in <c>docinfo</c> from <c>week3.d1</c> to <c>week3.mon</c>.  It resolves<mdash/>a calendar-anchored reference does not care about holidays<mdash/>and the build warns that the event lands on Labor Day.</p>
+                </li>
+                <li>
+                    <title>A meeting that does not exist</title>
+                    <p>Change any reference to <c>week14.d2</c>.  Week 14 holds one meeting in this offering, so there is no date to return, and this is an error rather than a warning.  <c>class43</c> does the same thing at the scale of the term, which holds 42 meetings.</p>
+                </li>
+                <li>
+                    <title>A malformed reference</title>
+                    <p>Try <c>week6.weds</c>, or <c>weke6.wed</c>.  The first names no day and the second names no week, and each says so.</p>
+                </li>
+                <li>
+                    <title>The whole feature switched off</title>
+                    <p>Delete the <c>calendar</c> element from the publication file.  Every <c>release-id</c> element is then retained, because the feature is inert without a calendar, and every <c>date</c> warns that it could not be resolved and prints its own reference instead.  A document that has never heard of calendars is unaffected by any of this.</p>
+                </li>
+                <li>
+                    <title>Gating suspended, dates intact</title>
+                    <p>Build against <c>publication-instructor.xml</c>, which sets <c>releases="ignore"</c>.  Every gated block is retained, including the ones whose windows have closed, while the dates still resolve normally.  This is how an instructor makes a full private copy without editing the schedule.</p>
+                </li>
+                <li>
+                    <title>A different term</title>
+                    <p>Change <c>start</c> in the publication file and rebuild.  Every date in the document moves, no two of them independently, and nothing in this file changes at all.  That is the feature.</p>
+                </li>
+            </dl></p>
+        </section>
+    </article>
+</pretext>

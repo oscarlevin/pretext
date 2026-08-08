@@ -16,7 +16,8 @@
                     Jupyter? &
                     Braille? &
                     Text? &
-                    Webwork?
+                    Webwork? &
+                    Calendar?
                 }
 
             Common =
@@ -463,6 +464,30 @@
                     attribute user { text }?,
                     attribute password { text }?,
                     attribute task-reveal { "preceding-correct" | "all" }?
+                }
+
+            Calendar =
+                element calendar {
+                    attribute start { text },
+                    attribute end { text }?,
+                    attribute meets { text }?,
+                    attribute week-starts { text }?,
+                    attribute as-of { text }?,
+                    attribute releases { "honor" | "ignore" }?,
+                    (element holiday {
+                         (attribute on { text } |
+                          (attribute from { text }, attribute through { text })),
+                         attribute name { text }?
+                     } |
+                     element event {
+                         attribute id { text },
+                         attribute at { text }
+                     } |
+                     element release {
+                         attribute id { text },
+                         attribute from { text }?,
+                         attribute through { text }?
+                     })*
                 }
 
             }

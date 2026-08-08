@@ -199,6 +199,11 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Isolate conversion of Runestone/interactive to PreTeXt/static -->
 <xsl:import href="./pretext-runestone-static.xsl"/>
 
+<!-- Course calendars: symbolic date references, and the resolved     -->
+<!-- node-set the "release" pass below consumes.  Arithmetic only;    -->
+<!-- the pipeline itself stays here with the other passes.            -->
+<xsl:import href="./calendar.xsl"/>
+
 <!-- We explicitly do not import "pretext-common.xsl" as we want    -->
 <!-- this important pre-processing stylesheet to have no hidden     -->
 <!-- dependencies.  In almost every rational use, the "-common"     -->
@@ -385,6 +390,12 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     </xsl:copy>
 </xsl:template>
 
+<xsl:template match="node()|@*" mode="release">
+    <xsl:copy>
+        <xsl:apply-templates select="node()|@*" mode="release"/>
+    </xsl:copy>
+</xsl:template>
+
 <!-- Later, this template only *adds* an attribute to an element -->
 <!-- it is copying over to the result tree.  Here we copy text   -->
 <!-- nodes and the other attributes and the parameters are not   -->
@@ -536,6 +547,46 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
 <xsl:variable name="version-docinfo" select="$version-root/docinfo"/>
 <xsl:variable name="version-document-root" select="$version-root/*[not(self::docinfo)]"/>
 
+<!-- This pass drops content whose release window does not contain the -->
+<!-- build's reference date, so an instructor can publish solutions on -->
+<!-- a schedule without editing source between terms.                  -->
+<!--                                                                   -->
+<!-- It runs *after* "version", which is what lets calendar resolution  -->
+<!-- read $version-docinfo: the single, already-resolved "docinfo".     -->
+<!-- The multiple-"docinfo" situation that versions exist to untangle   -->
+<!-- (see the comment above the version templates) is therefore already -->
+<!-- settled here, and a "calendar" inside a component-gated "docinfo"  -->
+<!-- is perfectly legal.  This is only sound because nothing the        -->
+<!-- calendar produces feeds the version pass: release gating uses its  -->
+<!-- own @release-id, and $components-fenced never learns that          -->
+<!-- calendars exist.  Reusing @component instead would have forced     -->
+<!-- resolution in front of the version pass, and into the circular     -->
+<!-- reference the comments above warn about.                           -->
+<!--                                                                   -->
+<!-- This pass *can* delete a division - gating a whole section, an      -->
+<!-- exam review say, is a first-class use case - so it can in principle -->
+<!-- alter the gross structure that the contract for $version-root      -->
+<!-- speaks of.  In practice that costs nothing: every consumer of that -->
+<!-- structure is either $version-doc-type or one of the six booleans   -->
+<!-- at  publisher-variables.xsl:130-135  asking whether the document   -->
+<!-- has *any* parts, chapters, sections, subsections or printouts.     -->
+<!-- None of them counts divisions, so the answer only changes when a   -->
+<!-- gated division is the only one of its kind - and then pinning      -->
+<!-- chunk and toc level to the full edition is the better answer       -->
+<!-- anyway, since a document's chunking should not reshuffle mid-term. -->
+<!-- Divisions already accept @component, so this is not a new kind of  -->
+<!-- exposure, only a new time at which it arises.                      -->
+<!--                                                                   -->
+<!-- Without a calendar this pass is the identity, so (as with private  -->
+<!-- solutions above) the result tree fragment stays empty and the      -->
+<!-- filtered union hands the "version" tree itself to the next pass.   -->
+<xsl:variable name="release-rtf">
+    <xsl:if test="$b-calendar">
+        <xsl:apply-templates select="$version" mode="release"/>
+    </xsl:if>
+</xsl:variable>
+<xsl:variable name="release" select="exsl:node-set($release-rtf)[$b-calendar] | $version[not($b-calendar)]"/>
+
 <!-- This pass adds 100% internal identification for elements before   -->
 <!-- anything has been added or subtracted. The tree it builds is used -->
 <!-- for constructing "View Source" knowls in HTML output as a form of -->
@@ -567,15 +618,15 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
             <!-- representations of interactive exercises), and those must   -->
             <!-- not be blamed on the author.                                -->
             <xsl:call-template name="duplication-check-xmlid">
-                <xsl:with-param name="nodes" select="$version//*[@xml:id]"/>
+                <xsl:with-param name="nodes" select="$release//*[@xml:id]"/>
                 <xsl:with-param name="purpose" select="'authored'"/>
             </xsl:call-template>
             <xsl:call-template name="duplication-check-label">
-                <xsl:with-param name="nodes" select="$version//*[@label]"/>
+                <xsl:with-param name="nodes" select="$release//*[@label]"/>
                 <xsl:with-param name="purpose" select="'authored'"/>
             </xsl:call-template>
             <!-- checks are done, now add the "original-id" identification -->
-            <xsl:apply-templates select="$version" mode="id-attribute">
+            <xsl:apply-templates select="$release" mode="id-attribute">
                 <!-- $parent-id defaults to 'root' in template -->
                 <xsl:with-param name="attr-name" select="'original-id'"/>
             </xsl:apply-templates>
@@ -822,6 +873,88 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
         <!-- has not been selected in publisher file, so it gets dropped here -->
         <xsl:otherwise/>
     </xsl:choose>
+</xsl:template>
+
+<!-- ######## -->
+<!-- Releases -->
+<!-- ######## -->
+
+<!-- A release answers "is this visible yet?", which is a different    -->
+<!-- question from the one @component answers ("which edition is this  -->
+<!-- in?"), so it gets its own attribute and its own pass.  An element -->
+<!-- may carry both, and then it must satisfy both.                    -->
+
+<!-- The report fires exactly once, here at the root of the pass,      -->
+<!-- because an instructor about to publish solutions needs to see     -->
+<!-- what they are publishing.                                         -->
+<xsl:template match="/" mode="release">
+    <xsl:call-template name="calendar-report"/>
+    <xsl:copy>
+        <xsl:apply-templates select="node()" mode="release"/>
+    </xsl:copy>
+</xsl:template>
+
+<!-- Note the asymmetry in the two "drop" cases.  Content outside its  -->
+<!-- release window is the ordinary situation and goes quietly.  An    -->
+<!-- @release-id matching no rule is a typo, and since the failure     -->
+<!-- mode of this feature is publishing an answer key early, it fails  -->
+<!-- closed: dropped, and reported.  The report does the reporting, so -->
+<!-- that a mistyped id used twenty times is named once, not twenty    -->
+<!-- times.                                                            -->
+<xsl:template match="*[@release-id]" mode="release">
+    <xsl:variable name="rid" select="normalize-space(@release-id)"/>
+    <xsl:variable name="rule" select="$calendar-releases[@id = $rid]"/>
+    <xsl:choose>
+        <!-- gating suspended for this build, so this is a full copy -->
+        <xsl:when test="not($b-calendar-releases)">
+            <xsl:copy>
+                <xsl:apply-templates select="node()|@*" mode="release"/>
+            </xsl:copy>
+        </xsl:when>
+        <xsl:when test="$rule/@released = 'yes'">
+            <xsl:copy>
+                <xsl:apply-templates select="node()|@*" mode="release"/>
+            </xsl:copy>
+        </xsl:when>
+        <!-- unreleased, or an orphaned @release-id: drop -->
+        <xsl:otherwise/>
+    </xsl:choose>
+</xsl:template>
+
+<!-- Symbolic dates in the body are resolved here, during assembly,    -->
+<!-- rather than at output time.  Stamping the ISO value onto the      -->
+<!-- element means the conversions only ever *format* a date and need  -->
+<!-- no access to the calendar machinery at all.  A "pi:" attribute is -->
+<!-- the established carrier for this, and it survives: the pass that  -->
+<!-- strips "pi:" is "version", which has already run.                 -->
+<xsl:template match="date[@at]" mode="release">
+    <xsl:copy>
+        <xsl:apply-templates select="node()|@*" mode="release"/>
+        <xsl:attribute name="pi:iso">
+            <xsl:call-template name="calendar-resolve">
+                <xsl:with-param name="ref" select="@at"/>
+                <xsl:with-param name="context" select="'a &quot;date&quot; element'"/>
+            </xsl:call-template>
+        </xsl:attribute>
+    </xsl:copy>
+</xsl:template>
+
+<xsl:template match="daterange" mode="release">
+    <xsl:copy>
+        <xsl:apply-templates select="node()|@*" mode="release"/>
+        <xsl:attribute name="pi:iso-from">
+            <xsl:call-template name="calendar-resolve">
+                <xsl:with-param name="ref" select="@from"/>
+                <xsl:with-param name="context" select="'a &quot;daterange&quot; @from'"/>
+            </xsl:call-template>
+        </xsl:attribute>
+        <xsl:attribute name="pi:iso-through">
+            <xsl:call-template name="calendar-resolve">
+                <xsl:with-param name="ref" select="@through"/>
+                <xsl:with-param name="context" select="'a &quot;daterange&quot; @through'"/>
+            </xsl:call-template>
+        </xsl:attribute>
+    </xsl:copy>
 </xsl:template>
 
 <!-- We use various ad-hoc, non-author elements in lots of places.     -->

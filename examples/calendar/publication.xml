@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--********************************************************************
+Copyright (C) 2026  Robert A. Beezer
+
+This file is part of PreTeXt.
+
+PreTeXt is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 or version 3 of the
+License (at your option).
+
+PreTeXt is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
+*********************************************************************-->
+
+<!-- Publication file for the course calendar example: the student build, -->
+<!-- mid-term.                                                            -->
+<!--                                                                      -->
+<!-- The "calendar" element below is the entire per-term edit.  Everything -->
+<!-- in "main.ptx" and in its "docinfo" schedule is relative, so moving    -->
+<!-- this course to another term means editing @start (and the holidays)   -->
+<!-- here and nothing else anywhere.                                      -->
+
+<publication>
+
+    <source>
+        <!-- Uncomment to elect a version, and watch the one block in the -->
+        <!-- source carrying both @component and @release-id disappear    -->
+        <!-- even though its release window is open.  The two filters     -->
+        <!-- compose by intersection.                                     -->
+        <!-- <version include="student"/> -->
+    </source>
+
+    <common>
+        <!-- Set explicitly, because the point of this document is which  -->
+        <!-- solutions appear, and that should not depend on a default.   -->
+        <exercise-inline statement="yes" hint="yes" answer="yes" solution="yes"/>
+        <exercise-divisional statement="yes" hint="yes" answer="yes" solution="yes"/>
+    </common>
+
+    <!-- ############ -->
+    <!-- The Calendar -->
+    <!-- ############ -->
+
+    <!-- @start        first day of instruction; required, and the only    -->
+    <!--               thing that must change between terms                -->
+    <!-- @end          last day of instruction; bounds the meeting         -->
+    <!--               enumeration.  Absent, it is capped at 30 weeks.     -->
+    <!-- @meets        the meeting pattern over MTWRFSU, with R = Thursday -->
+    <!--               and U = Sunday.  Absent, MTWRF.                     -->
+    <!-- @week-starts  the weekday that begins a numbered week.  Absent,   -->
+    <!--               "mon".  Week 1 begins on the latest such day on or  -->
+    <!--               before @start, so a term starting mid-week has a    -->
+    <!--               short week 1 - which is what "the first week"       -->
+    <!--               means to an instructor.                             -->
+    <!-- @as-of        the reference "now" for the whole build.  Absent,   -->
+    <!--               "today".  Accepts a literal date or any symbolic    -->
+    <!--               reference, so "week8.wed" below is legal and is     -->
+    <!--               what makes this example reproducible: with "today"  -->
+    <!--               every assertion in README.md would rot overnight.   -->
+    <!-- @releases     "honor" (default) or "ignore".                      -->
+    <!--                                                                  -->
+    <!-- 2026-08-24 is a Monday, so week 1 is a full week here.  See       -->
+    <!-- publication-wednesday.xml for the short-first-week case.          -->
+    <calendar start="2026-08-24" end="2026-12-04" meets="MWF"
+              week-starts="mon" as-of="week8.wed" releases="honor">
+
+        <!-- A single-day holiday, positioned deliberately: it takes the   -->
+        <!-- Monday of week 3, which is what splits "week3.mon" (the       -->
+        <!-- holiday) from "week3.d1" (the Wednesday).                     -->
+        <holiday on="2026-09-07" name="Labor Day"/>
+
+        <!-- A multi-day holiday, given as a range.  This one takes both   -->
+        <!-- the Wednesday and the Friday of week 14, leaving that week    -->
+        <!-- with exactly one meeting, so "week14.d2" is an error.         -->
+        <holiday from="2026-11-25" through="2026-11-27" name="Thanksgiving"/>
+
+        <!-- ################################# -->
+        <!-- Per-offering overrides, by @id -->
+        <!-- ################################# -->
+
+        <!-- The second examination slipped from Wednesday to Friday in    -->
+        <!-- this offering.  Overriding it here rather than in "docinfo"   -->
+        <!-- keeps the schedule stable for next term, and every reference  -->
+        <!-- that depends on "exam2" - the review window, the answer key - -->
+        <!-- moves with it automatically.                                  -->
+        <event id="exam2" at="week11.fri"/>
+
+        <!-- This section saw the third assignment worked in class, so its -->
+        <!-- solutions open on the deadline rather than two days after.    -->
+        <!-- An override replaces the rule; it does not merge with it.     -->
+        <release id="hw3-solutions" from="hw3-due"/>
+
+        <!-- A rule with no counterpart in "docinfo" at all.  The          -->
+        <!-- publication file may add rules as well as override them.      -->
+        <release id="course-note" from="week8.mon"/>
+    </calendar>
+
+</publication>

@@ -535,7 +535,7 @@
                 element p {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute workspace {text}?,
                     TextParagraph
                 }
@@ -543,7 +543,7 @@
                 element p {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     element line {TextShort}+
                 }
             </code>
@@ -712,7 +712,16 @@
             <title>Text generators</title>
             <code>
             Generator =
-                element today {empty} |
+                element today {DateFormat?} |
+                element date {
+                    attribute at {text},
+                    DateFormat?
+                } |
+                element daterange {
+                    attribute from {text},
+                    attribute through {text},
+                    DateFormat?
+                } |
                 element timeofday {empty} |
                 element tex {empty} |
                 element latex {empty} |
@@ -921,7 +930,7 @@
             MathDisplay =
                 element md {
                     # common to both forms
-                    Component?,
+                    Component?, ReleaseId?,
                     Index*,
                     (
                         # single-line: text content, optional @xml:id
@@ -1261,7 +1270,7 @@
                 }
             Console =
                 element console {
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute prompt {text}?,
                     attribute continuation {text}?,
                     attribute width {text}?,
@@ -1311,7 +1320,7 @@
                 }
             Program =
                 element program {
-                    Component?,
+                    Component?, ReleaseId?,
                     LabelID?,
                     UniqueID?,
                     attribute width {text}?,
@@ -1378,19 +1387,19 @@
             }
             List =
                 element ol {
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute cols {"2"|"3"|"4"|"5"|"6"}?,
                     attribute marker {text}?,
                     ListItem+
                 } |
                 element ul {
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute cols {"2"|"3"|"4"|"5"|"6"}?,
                     attribute marker {"disc" | "circle" | "square" | ""}?,
                     ListItem+
                 } |
                 element dl {
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute width {"narrow" | "medium" | "wide"}?,
                     DefinitionListItem+
                 }
@@ -1672,7 +1681,7 @@
             <title>Captioned and titled displays</title>
             <code>
             Caption =
-                element caption {Component?, TextLong}
+                element caption {Component?, ReleaseId?, TextLong}
             Landscape =
                 attribute landscape {"yes" | "no"}
             Figure =
@@ -1763,7 +1772,7 @@
                 }
             Tabular =
                 element tabular {
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute width {text}?,
                     attribute margins {text}?,
                     attribute row-headers {"yes" | "no"}?,
@@ -1834,7 +1843,7 @@
                     )+
                 }
             SidebySideAttributes =
-                Component?,
+                Component?, ReleaseId?,
                 attribute margins {text}?,
                 attribute landscape {"yes" | "no"}?,
                 (attribute width {text} | attribute widths {text})?,
@@ -1911,7 +1920,7 @@
             ImageRaster =
                 element image {
                     UniqueID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute width {text}?,
                     attribute margins {text}?,
                     attribute rotate {text}?,
@@ -1931,13 +1940,13 @@
             CodeLatexImage =
                 element latex-image {
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     text
                 }
             ImageCode =
                 element image {
                     UniqueID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute width {text}?,
                     attribute margins {text}?,
                     attribute archive {text}?,
@@ -1952,19 +1961,19 @@
                             CodeLatexImage |
                             element asymptote {
                               LabelID?,
-                              Component?,
+                              Component?, ReleaseId?,
                               text
                             } |
                             element sageplot {
                                 LabelID?,
-                                Component?,
+                                Component?, ReleaseId?,
                                 attribute variant {'2d'|'3d'}?,
                                 attribute aspect {text}?,
                                 text
                             } |
                             element mermaid {
                                 LabelID?,
-                                Component?,
+                                Component?, ReleaseId?,
                                 text
                             } |
                             element pf:prefigure {
@@ -2010,7 +2019,7 @@
             SageOutput = element output {text}
             SageInput = element input {text}
             Sage = element sage {
-                Component?,
+                Component?, ReleaseId?,
                 attribute doctest {text}?,
                 attribute tolerance {text}?,
                 attribute auto-evaluate {'no'|'yes'}?,
@@ -2051,7 +2060,7 @@
                 element interactive {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute aspect { text }?,
                     attribute width { text }?,
                     attribute platform { text }?,
@@ -2105,7 +2114,7 @@
                 element slate {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     (
                       JessieCodeAtt |
                       (
@@ -2201,7 +2210,7 @@
                 element video {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute width {text}?,
                     attribute margins {text}?,
                     attribute aspect {text}?,
@@ -2217,7 +2226,7 @@
                 element audio {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute width {text}?,
                     attribute margins {text}?,
                     attribute start {xsd:integer}?,
@@ -2499,7 +2508,7 @@
                 element p {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     TextParagraphAreas
                 }
             Areas =
@@ -2705,7 +2714,7 @@
                 element datafile {
                     UniqueID?,
                     LabelID?,
-                    Component?,
+                    Component?, ReleaseId?,
                     attribute filename {text},
                     attribute rows {xsd:integer}?,
                     attribute cols {xsd:integer}?,
@@ -3022,7 +3031,7 @@
                     (
                         UniqueID?,
                         LabelID?,
-                        Component?,
+                        Component?, ReleaseId?,
                         attribute seed {xsd:integer}?,
                         attribute copy {text}?,
                         WWDescription?,
@@ -3138,7 +3147,7 @@
             <code>
             Attribution =
                 element attribution {
-                    Component?,
+                    Component?, ReleaseId?,
                     (TextLong | LongLine+)
                 }
             </code>
@@ -3169,37 +3178,44 @@
                 attribute label {text}
             Component =
                 attribute component {text}
+            ReleaseId =
+                attribute release-id {text}
+            DateFormat =
+                attribute format {
+                    "month-day-year" | "weekday-month-day" | "month-day" |
+                    "weekday" | "yyyy/mm/dd" | "iso"
+                }
             Title =
-                element title {Component?, TextLong}
+                element title {Component?, ReleaseId?, TextLong}
             LinedTitle =
-                element title {Component?, LongLine+}
+                element title {Component?, ReleaseId?, LongLine+}
             Subtitle =
-                element subtitle {Component?, TextLong}
+                element subtitle {Component?, ReleaseId?, TextLong}
             LinedSubtitle =
-                element subtitle {Component?, LongLine+}
+                element subtitle {Component?, ReleaseId?, LongLine+}
             ShortTitle =
-                element shorttitle {Component?, TextShort}
+                element shorttitle {Component?, ReleaseId?, TextShort}
             PlainTitle =
-                element plaintitle {Component?, text}
+                element plaintitle {Component?, ReleaseId?, text}
             Creator =
-                element creator {Component?, TextShort}
+                element creator {Component?, ReleaseId?, TextShort}
             XMLLang = attribute xml:lang {text}
             MetaDataTarget =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 Index*
             MetaDataTitle =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 Title,
                 Index*
             MetaDataAltTitle =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 Title,
                 ShortTitle?,
@@ -3208,7 +3224,7 @@
             MetaDataLinedTitle =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 (Title | LinedTitle),
                 ShortTitle?,
@@ -3217,7 +3233,7 @@
             MetaDataLinedSubtitle =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 (Title | LinedTitle),
                 (Subtitle | LinedSubtitle)?,
@@ -3227,27 +3243,27 @@
             MetaDataNoTitle =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 Index*
             MetaDataTitleOptional =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 Title?,
                 Index*
             MetaDataAltTitleOptional =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 (Title, ShortTitle?, PlainTitle?)?,
                 Index*
             MetaDataTitleCreatorOptional =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 Title?,
                 Creator?,
@@ -3255,7 +3271,7 @@
             MetaDataCaption =
                 UniqueID?,
                 LabelID?,
-                Component?,
+                Component?, ReleaseId?,
                 XMLLang?,
                 Title?,
                 Caption,
@@ -3607,6 +3623,7 @@
             <fragref ref="initialism" />
             <fragref ref="rename" />
             <fragref ref="directories" />
+            <fragref ref="calendar" />
             <fragref ref="authorbiographylength" />
             <fragref ref="defaults" />
             <fragref ref="doenetml" />
@@ -3679,6 +3696,30 @@
                 element directories {
                     attribute external {text}?,
                     attribute data {text}?
+                }
+            </code>
+        </fragment>
+
+        <p>A course <c>calendar</c> here is the <term>schedule</term>: named events at <em>relative</em> positions, plus rules saying when marked content becomes visible.  Relative positions are course design and survive the term, so like the source directories above they are a fact of the source.  The per-offering facts&#x2014;the start date, the meeting pattern, the holidays&#x2014;live in the publication file instead, and that file may override an individual entry here by <attr>id</attr>.  Changing terms is then a publication file edit and never a source edit, which is the entire point.</p>
+
+        <p>An <attr>at</attr>, <attr>from</attr>, or <attr>through</attr> holds a single <term>date reference</term>: a literal date such as <c>2026-10-06</c>, a weekday in a numbered week (<c>week6.wed</c>, or <c>w6.w</c>), a numbered meeting within a week (<c>week6.d3</c>), a numbered meeting of the term (<c>class17</c>), the name of an event defined earlier, or any of these with a day or week offset (<c>exam1+2d</c>, <c>week3.fri-1w</c>).  A reference carries no whitespace, and <c>.</c> separates its fields so that <c>-</c> remains available as the offset operator.</p>
+
+        <p>An element carrying <attr>release-id</attr> is retained only while the matching <c>release</c> window contains the build's reference date.  This is deliberately <em>not</em> the <attr>component</attr> attribute: <attr>component</attr> selects an edition, <attr>release-id</attr> gates on time, and an element may need both.  Without a <c>calendar</c> in the publication file the feature is inert and every marked element is retained.</p>
+
+        <fragment xml:id="calendar">
+            <title>Course calendar</title>
+            <code>
+            Configuration |=
+                element calendar {
+                    (element event {
+                         attribute id {text},
+                         attribute at {text}
+                     } |
+                     element release {
+                         attribute id {text},
+                         attribute from {text}?,
+                         attribute through {text}?
+                     })+
                 }
             </code>
         </fragment>

@@ -424,4 +424,30 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     <localization string-id='readability-assistive-technologies'>Assistive technologies</localization>
     <localization string-id='readability-expose-permalinks'>Expose permalinks</localization>
     <localization string-id='reset-all'>Reset All</localization>
+
+    <!-- Month and day names, for "today", "date", and "daterange".      -->
+    <!-- EXSLT supplies these in English only, and is the fallback when  -->
+    <!-- a translation is absent, so a locale that has not yet added     -->
+    <!-- them degrades to English rather than failing.  Months are keyed -->
+    <!-- by two-digit number, days by EXSLT's day-in-week numbering,     -->
+    <!-- which is 1-based from Sunday.                                   -->
+    <localization string-id='month-01'>January</localization>
+    <localization string-id='month-02'>February</localization>
+    <localization string-id='month-03'>March</localization>
+    <localization string-id='month-04'>April</localization>
+    <localization string-id='month-05'>May</localization>
+    <localization string-id='month-06'>June</localization>
+    <localization string-id='month-07'>July</localization>
+    <localization string-id='month-08'>August</localization>
+    <localization string-id='month-09'>September</localization>
+    <localization string-id='month-10'>October</localization>
+    <localization string-id='month-11'>November</localization>
+    <localization string-id='month-12'>December</localization>
+    <localization string-id='day-1'>Sunday</localization>
+    <localization string-id='day-2'>Monday</localization>
+    <localization string-id='day-3'>Tuesday</localization>
+    <localization string-id='day-4'>Wednesday</localization>
+    <localization string-id='day-5'>Thursday</localization>
+    <localization string-id='day-6'>Friday</localization>
+    <localization string-id='day-7'>Saturday</localization>
 </locale>

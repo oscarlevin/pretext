@@ -127,7 +127,8 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
                     Jupyter? &amp;
                     Braille? &amp;
                     Text? &amp;
-                    Webwork?
+                    Webwork? &amp;
+                    Calendar?
                 }
             </code>
         </fragment>
@@ -752,6 +753,81 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
     </section>
 
     <section>
+        <title>Course Calendar</title>
+
+        <p>
+            These are the per-offering facts about a course: when it starts, when
+            it meets, and which days it does not.  They change every term, which
+            is why they live here.  The <term>schedule</term> they are measured
+            against&#x2014;named events at relative positions, and the rules that
+            release marked content&#x2014;is course design rather than a fact of
+            the offering, so it lives in <tag>docinfo</tag> instead and is not
+            edited between terms.  An <tag>event</tag> or <tag>release</tag>
+            given here overrides the <tag>docinfo</tag> entry with the same
+            <attr>id</attr>, for the term when an exam has to move.
+        </p>
+
+        <p>
+            Absent this element entirely, every calendar behavior is inert:
+            symbolic dates do not resolve and elements carrying
+            <attr>release-id</attr> are all retained.  Adding it is therefore the
+            single act that switches the feature on.  <attr>start</attr> is
+            required for that reason.
+        </p>
+
+        <p>
+            <attr>meets</attr> is written over <c>MTWRFSU</c>, with <c>R</c> for
+            Thursday and <c>U</c> for Sunday, the convention instructors already
+            use in registrar systems; it defaults to <c>MTWRF</c>.
+            <attr>week-starts</attr> names the weekday that begins a numbered
+            week and defaults to <c>mon</c>, so a term beginning midweek has a
+            short first week&#x2014;which is what instructors mean by <q>the first
+            week</q>.  <attr>as-of</attr> is the reference <q>now</q> for the
+            whole build, defaulting to <c>today</c>, and is overridden by
+            <c>pretext build - -as-of</c>.  Setting <attr>releases</attr> to
+            <c>ignore</c> suspends release gating for one build, so an instructor
+            can produce a complete private copy without editing the schedule.
+        </p>
+
+        <p>
+            A <tag>holiday</tag> never moves a reference written as a weekday of
+            a numbered week: <c>week5.wed</c> is the same date whether or not a
+            holiday fell in week 3.  It does move references counted in meetings,
+            <c>class17</c> and <c>week3.d1</c>, which skip it and slide.  The two
+            forms answer different questions, and instructors ask both.
+        </p>
+
+        <fragment xml:id="calendar">
+            <title>Course Calendar Options</title>
+            <code>
+            Calendar =
+                element calendar {
+                    attribute start { text },
+                    attribute end { text }?,
+                    attribute meets { text }?,
+                    attribute week-starts { text }?,
+                    attribute as-of { text }?,
+                    attribute releases { "honor" | "ignore" }?,
+                    (element holiday {
+                         (attribute on { text } |
+                          (attribute from { text }, attribute through { text })),
+                         attribute name { text }?
+                     } |
+                     element event {
+                         attribute id { text },
+                         attribute at { text }
+                     } |
+                     element release {
+                         attribute id { text },
+                         attribute from { text }?,
+                         attribute through { text }?
+                     })*
+                }
+            </code>
+        </fragment>
+    </section>
+
+    <section>
         <title>Hierarchical Structure</title>
 
         <p>
@@ -777,6 +853,7 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
             <fragref ref="braille" />
             <fragref ref="text" />
             <fragref ref="webwork" />
+            <fragref ref="calendar" />
             <code>
             }
             </code>

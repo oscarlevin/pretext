@@ -2055,28 +2055,165 @@ Book (with parts), "section" at level 3
 <!-- http://stackoverflow.com/questions/1437995/how-to-convert-2009-09-18-to-18th-sept-in-xslt -->
 <!-- http://remysharp.com/2008/08/15/how-to-default-a-variable-in-xslt/ -->
 <xsl:template match="today">
-    <xsl:variable name="format">
+    <xsl:call-template name="format-iso-date">
+        <xsl:with-param name="iso" select="substring(date:date-time(),1,10)"/>
+        <xsl:with-param name="format" select="@format"/>
+    </xsl:call-template>
+</xsl:template>
+
+<!-- ############# -->
+<!-- Course Dates -->
+<!-- ############# -->
+
+<!-- A "date" with an @at, and a "daterange", carry symbolic references -->
+<!-- ("week6.wed", "exam1+2d") which the assembly "release" pass has    -->
+<!-- already turned into ISO dates and stamped on as @pi:iso.  So there -->
+<!-- is nothing to resolve here: the conversions only format.  See      -->
+<!-- calendar.xsl for the resolution, and note that an @at is           -->
+<!-- unambiguous - the two other "date" elements in the schema          -->
+<!-- (frontmatter, and CSL bibliography entries) never carry one.       -->
+<xsl:template match="date[@at]">
+    <xsl:choose>
+        <xsl:when test="@pi:iso and not(@pi:iso = '')">
+            <xsl:call-template name="format-iso-date">
+                <xsl:with-param name="iso" select="@pi:iso"/>
+                <xsl:with-param name="format" select="@format"/>
+            </xsl:call-template>
+        </xsl:when>
+        <xsl:otherwise>
+            <!-- Echo the reference rather than emitting nothing, so the -->
+            <!-- gap is visible in the output and not just in a log.     -->
+            <xsl:value-of select="@at"/>
+            <xsl:message>PTX:WARNING: the date reference "<xsl:value-of select="@at"/>" was not resolved, most likely because the publication file has no "calendar" element.</xsl:message>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<xsl:template match="daterange">
+    <xsl:choose>
+        <xsl:when test="@pi:iso-from and not(@pi:iso-from = '')">
+            <xsl:call-template name="format-iso-date">
+                <xsl:with-param name="iso" select="@pi:iso-from"/>
+                <xsl:with-param name="format" select="@format"/>
+            </xsl:call-template>
+            <xsl:text>&#x2013;</xsl:text>
+            <xsl:call-template name="format-iso-date">
+                <xsl:with-param name="iso" select="@pi:iso-through"/>
+                <xsl:with-param name="format" select="@format"/>
+            </xsl:call-template>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="@from"/>
+            <xsl:text>&#x2013;</xsl:text>
+            <xsl:value-of select="@through"/>
+            <xsl:message>PTX:WARNING: the date range "<xsl:value-of select="@from"/>" to "<xsl:value-of select="@through"/>" was not resolved, most likely because the publication file has no "calendar" element.</xsl:message>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<!-- One formatter for every date PreTeXt prints, so that adding a     -->
+<!-- format, or localizing month and day names, happens in one place.  -->
+<xsl:template name="format-iso-date">
+    <xsl:param name="iso"/>
+    <xsl:param name="format"/>
+
+    <xsl:variable name="f">
         <xsl:choose>
-            <xsl:when test="@format"><xsl:value-of select="@format" /></xsl:when>
+            <xsl:when test="$format"><xsl:value-of select="$format"/></xsl:when>
             <xsl:otherwise>month-day-year</xsl:otherwise>
         </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="datetime" select="substring(date:date-time(),1,10)" />
+
     <xsl:choose>
-        <xsl:when test="$format='month-day-year'">
-            <xsl:value-of select="date:month-name($datetime)" />
+        <xsl:when test="$f = 'month-day-year'">
+            <xsl:call-template name="localized-month-name">
+                <xsl:with-param name="iso" select="$iso"/>
+            </xsl:call-template>
             <xsl:text> </xsl:text>
-            <xsl:value-of select="date:day-in-month($datetime)" />
+            <xsl:value-of select="date:day-in-month($iso)"/>
             <xsl:text>, </xsl:text>
-            <xsl:value-of select="date:year($datetime)" />
+            <xsl:value-of select="date:year($iso)"/>
         </xsl:when>
-        <xsl:when test="$format='yyyy/mm/dd'">
-            <xsl:value-of select="substring($datetime, 1, 4)" />
+        <xsl:when test="$f = 'yyyy/mm/dd'">
+            <xsl:value-of select="substring($iso, 1, 4)"/>
             <xsl:text>/</xsl:text>
-            <xsl:value-of select="substring($datetime, 6, 2)" />
+            <xsl:value-of select="substring($iso, 6, 2)"/>
             <xsl:text>/</xsl:text>
-            <xsl:value-of select="substring($datetime, 9, 2)" />
+            <xsl:value-of select="substring($iso, 9, 2)"/>
         </xsl:when>
+        <!-- "Monday, October 6", the form the motivating user story asks for -->
+        <xsl:when test="$f = 'weekday-month-day'">
+            <xsl:call-template name="localized-day-name">
+                <xsl:with-param name="iso" select="$iso"/>
+            </xsl:call-template>
+            <xsl:text>, </xsl:text>
+            <xsl:call-template name="localized-month-name">
+                <xsl:with-param name="iso" select="$iso"/>
+            </xsl:call-template>
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="date:day-in-month($iso)"/>
+        </xsl:when>
+        <xsl:when test="$f = 'month-day'">
+            <xsl:call-template name="localized-month-name">
+                <xsl:with-param name="iso" select="$iso"/>
+            </xsl:call-template>
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="date:day-in-month($iso)"/>
+        </xsl:when>
+        <xsl:when test="$f = 'weekday'">
+            <xsl:call-template name="localized-day-name">
+                <xsl:with-param name="iso" select="$iso"/>
+            </xsl:call-template>
+        </xsl:when>
+        <xsl:when test="$f = 'iso'">
+            <xsl:value-of select="$iso"/>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="$iso"/>
+            <xsl:message>PTX:WARNING: "<xsl:value-of select="$f"/>" is not a recognized date @format; using the ISO date.  Try month-day-year, weekday-month-day, month-day, weekday, yyyy/mm/dd, or iso.</xsl:message>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:template>
+
+<!-- EXSLT's date:month-name and date:day-name are English-only, so    -->
+<!-- these prefer a localization string and fall back to EXSLT.  The   -->
+<!-- fallback is silent, unlike the general localization template: an  -->
+<!-- untranslated month is a gap to fill, not a bug to report on every -->
+<!-- page.  (This is also why "today" has quietly been English-only.)  -->
+<xsl:template name="localized-month-name">
+    <xsl:param name="iso"/>
+    <xsl:call-template name="localized-date-string">
+        <xsl:with-param name="str-id" select="concat('month-', substring($iso, 6, 2))"/>
+        <xsl:with-param name="fallback" select="date:month-name($iso)"/>
+    </xsl:call-template>
+</xsl:template>
+
+<xsl:template name="localized-day-name">
+    <xsl:param name="iso"/>
+    <xsl:call-template name="localized-date-string">
+        <xsl:with-param name="str-id" select="concat('day-', date:day-in-week($iso))"/>
+        <xsl:with-param name="fallback" select="date:day-name($iso)"/>
+    </xsl:call-template>
+</xsl:template>
+
+<xsl:template name="localized-date-string">
+    <xsl:param name="str-id"/>
+    <xsl:param name="fallback"/>
+    <xsl:variable name="lang">
+        <xsl:apply-templates select="." mode="ambient-language"/>
+    </xsl:variable>
+    <xsl:variable name="lookup">
+        <xsl:for-each select="$localizations/locale[@language = $lang]">
+            <xsl:value-of select="key('localization-key', $str-id)"/>
+        </xsl:for-each>
+    </xsl:variable>
+    <xsl:choose>
+        <xsl:when test="not($lookup = '')">
+            <xsl:value-of select="$lookup"/>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="$fallback"/>
+        </xsl:otherwise>
     </xsl:choose>
 </xsl:template>
 

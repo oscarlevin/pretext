@@ -42,6 +42,9 @@
         <optional>
           <ref name="Webwork"/>
         </optional>
+        <optional>
+          <ref name="Calendar"/>
+        </optional>
       </interleave>
     </element>
   </define>
@@ -1398,6 +1401,60 @@
           </choice>
         </attribute>
       </optional>
+    </element>
+  </define>
+  <define name="Calendar">
+    <element name="calendar">
+      <attribute name="start"/>
+      <optional>
+        <attribute name="end"/>
+      </optional>
+      <optional>
+        <attribute name="meets"/>
+      </optional>
+      <optional>
+        <attribute name="week-starts"/>
+      </optional>
+      <optional>
+        <attribute name="as-of"/>
+      </optional>
+      <optional>
+        <attribute name="releases">
+          <choice>
+            <value>honor</value>
+            <value>ignore</value>
+          </choice>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <element name="holiday">
+            <choice>
+              <attribute name="on"/>
+              <group>
+                <attribute name="from"/>
+                <attribute name="through"/>
+              </group>
+            </choice>
+            <optional>
+              <attribute name="name"/>
+            </optional>
+          </element>
+          <element name="event">
+            <attribute name="id"/>
+            <attribute name="at"/>
+          </element>
+          <element name="release">
+            <attribute name="id"/>
+            <optional>
+              <attribute name="from"/>
+            </optional>
+            <optional>
+              <attribute name="through"/>
+            </optional>
+          </element>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
 </grammar>
