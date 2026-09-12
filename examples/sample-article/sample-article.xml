@@ -16230,7 +16230,9 @@ along with PreTeXt.  If not, see <http://www.gnu.org/licenses/>.
                 <sidebyside width="45%" margins="0%">
                     <exercise workspace="1in">
                         <statement>
-                            <p>Praesent rutrum scelerisque felis sit amet adipiscing. Phasellus in mollis velit. Nunc malesuada felis sit amet massa cursus, eget elementum neque viverra.</p>
+                            <p>Below is an image that is 50% (not the full width) of the sidebyside panel that holds this exercise.</p>
+
+                            <image xml:id="cross-square-ws-sbs-exc-img" width="50%" source="images/cross-square.png"/>
                         </statement>
                     </exercise>
 
