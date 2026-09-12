@@ -2910,11 +2910,15 @@ Book (with parts), "section" at level 3
 <!--       can have a width specification on itself                       -->
 <!--   2.  in a sidebyside directly, or a figure in a sidebyside.         -->
 <!--       These widths come from the layout, and are converter dependent -->
+<!--   3.  nested deeper than a panel of a sidebyside, as within the      -->
+<!--       "statement" of an "exercise" panel or within a list item.      -->
+<!--       The layout widths do not describe such an image, so it is      -->
+<!--       sized as in case 1, relative to the panel holding it.          -->
 <!--                                                                      -->
 <!-- Entirely similar for jsxgraph, audio and video but we do             -->
 <!-- not consult default *image* width in docinfo                         -->
 
-<xsl:template match="image[not(ancestor::sidebyside)]|audio[not(ancestor::sidebyside)]|video[not(ancestor::sidebyside)]|jsxgraph[not(ancestor::sidebyside)]|interactive[not(ancestor::sidebyside)]|slate[not(ancestor::sidebyside)]" mode="get-width-percentage">
+<xsl:template match="image[not(&SBS-PANEL-FILTER;)]|audio[not(ancestor::sidebyside)]|video[not(ancestor::sidebyside)]|jsxgraph[not(ancestor::sidebyside)]|interactive[not(ancestor::sidebyside)]|slate[not(ancestor::sidebyside)]" mode="get-width-percentage">
     <!-- find it first -->
     <xsl:variable name="raw-width">
         <xsl:choose>
@@ -2952,11 +2956,13 @@ Book (with parts), "section" at level 3
     </xsl:choose>
 </xsl:template>
 
-<!-- Any way that an image gets placed in a sidebyside -->
-<!-- panel it should have a relative size filling that -->
-<!-- panel, so this is easy, just 100% all the time    -->
-<!-- Exception: asymptote WebGL needs actual pixels    -->
-<xsl:template match="image[ancestor::sidebyside]" mode="get-width-percentage">
+<!-- An image that IS a panel of a sidebyside, or that sits  -->
+<!-- directly in a "figure" or "stack" panel, has a relative -->
+<!-- size filling that panel, so this is easy, just 100% all -->
+<!-- the time.  An image nested deeper than a panel is not   -->
+<!-- described by the layout widths and is handled above.    -->
+<!-- Exception: asymptote WebGL needs actual pixels          -->
+<xsl:template match="image[&SBS-PANEL-FILTER;]" mode="get-width-percentage">
     <xsl:text>100%</xsl:text>
 </xsl:template>
 
@@ -2973,7 +2979,7 @@ Book (with parts), "section" at level 3
 <!-- Widths from sidebyside layouts have been error-checked as input    -->
 
 <!-- occurs in a figure, not contained in a sidebyside -->
-<xsl:template match="audio[ancestor::sidebyside]|video[ancestor::sidebyside]|jsxgraph[ancestor::sidebyside]|interactive[ancestor::sidebyside]|slate[ancestor::sidebyside]|image[asymptote and ancestor::sidebyside]|image[sageplot and ancestor::sidebyside]" mode="get-width-percentage">
+<xsl:template match="audio[ancestor::sidebyside]|video[ancestor::sidebyside]|jsxgraph[ancestor::sidebyside]|interactive[ancestor::sidebyside]|slate[ancestor::sidebyside]|image[asymptote and (&SBS-PANEL-FILTER;)]|image[sageplot and (&SBS-PANEL-FILTER;)]" mode="get-width-percentage">
     <!-- in a side-by-side, get layout, locate in layout -->
     <!-- and get width.  The layout-parameters template  -->
     <!-- will analyze an enclosing sbsgroup              -->
@@ -4226,7 +4232,7 @@ Book (with parts), "section" at level 3
             </xsl:when>
             <!-- not placed on image, or figure/image,      -->
             <!-- but a document-wide default margins exists -->
-            <xsl:when test="self::image and not(ancestor::sidebyside) and $docinfo/defaults/images/@margins">
+            <xsl:when test="self::image and not(&SBS-PANEL-FILTER;) and $docinfo/defaults/images/@margins">
                 <xsl:value-of select="normalize-space($docinfo/defaults/images/@margins)" />
             </xsl:when>
             <!-- default if not specified -->
@@ -4267,7 +4273,7 @@ Book (with parts), "section" at level 3
             </xsl:when>
             <!-- not placed on image, or figure/image,    -->
             <!-- but a document-wide default width exists -->
-            <xsl:when test="self::image and not(ancestor::sidebyside) and $docinfo/defaults/images/@width">
+            <xsl:when test="self::image and not(&SBS-PANEL-FILTER;) and $docinfo/defaults/images/@width">
                 <xsl:value-of select="$docinfo/defaults/images/@width" />
             </xsl:when>
             <!-- default setting if not specified, and not global -->

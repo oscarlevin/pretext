@@ -166,6 +166,17 @@
 <!ENTITY SBSPANEL "p|pre|ol|ul|dl|program|console|poem|audio|video|interactive|slate|exercise|image|figure|table|listing|list|tabular|stack">
 <!ENTITY STACKABLE "tabular|image|p|pre|ol|ul|dl|audio|video|interactive|slate|program|console">
 
+<!-- A "sidebyside" sizes exactly what it lays out.  An object that IS  -->
+<!-- a panel, or that sits directly within a "figure" or "stack" panel, -->
+<!-- fills the width the layout computed for that panel, so its own     -->
+<!-- @width and @margins do not apply.  An object nested any deeper is  -->
+<!-- not what those layout widths describe: an "image" inside the       -->
+<!-- "statement" of an "exercise" panel (a worksheet or handout, the    -->
+<!-- only place an "exercise" is a panel), or inside a list item, is    -->
+<!-- sized by its own attributes, now relative to the panel it lands    -->
+<!-- in, exactly as it would be outside a "sidebyside" entirely.        -->
+<!ENTITY SBS-PANEL-FILTER "parent::sidebyside or parent::figure/parent::sidebyside or parent::stack/parent::sidebyside">
+
 <!-- appendages of examples, exercises, tasks -->
 <!ENTITY SOLUTION-LIKE "hint|answer|solution">
 <!ENTITY SOLUTION-FILTER "self::hint or self::answer or self::solution">
